@@ -6,7 +6,6 @@ import {
   getTestReport,
   getTestReports,
 } from "./api";
-import { get } from "axios";
 
 const APIKEY = process.env.APIKEY ?? "";
 
