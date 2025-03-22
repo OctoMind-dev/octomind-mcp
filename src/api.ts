@@ -19,6 +19,8 @@ import {
   SuccessResponse,
   Environment,
   TestReport,
+  DiscoveryOptions,
+  DiscoveryResponse,
   Notification,
 } from "./types";
 
@@ -55,6 +57,29 @@ const apiCall = async <T>(
     }
     throw new Error(`API request failed. ${JSON.stringify(error, null, 2)}`);
   }
+};
+
+export const discovery = async (
+  options: DiscoveryOptions,
+): Promise<DiscoveryResponse> => {
+  const requestBody = {
+    name: options.name,
+    prompt: options.prompt,
+    entryPointUrlPath: options.entryPointUrlPath,
+    prerequisiteId: options.prerequisiteId,
+    externalId: options.externalId,
+    assignedTagIds: options.assignedTagIds,
+    folderId: options.folderId,
+  };
+
+  const response = await apiCall<DiscoveryResponse>(
+    "post",
+    "/api/apiKey/v2/test-targets/[testTargetId]/discoveries",
+    options.apiKey,
+    requestBody,
+  );
+
+  return response;
 };
 
 /* example notificytion

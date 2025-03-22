@@ -1,3 +1,42 @@
+import { z, type ZodEffects, type ZodString } from "zod";
+import { validate } from "uuid";
+
+export const uuidValidation = (
+  message = "id must be a valid UUID",
+): ZodEffects<ZodString, string, string> =>
+  z.string().refine((val) => validate(val), message);
+
+export const discoveryBody = z.object({
+  name: z.string(),
+  entryPointUrlPath: z.string().optional(),
+  prerequisiteId: uuidValidation(
+    "expected prerequisiteId to be a valid uuid",
+  ).optional(),
+  externalId: z.string().optional(),
+  assignedTagIds: z.array(uuidValidation()).optional(),
+  prompt: z.string(),
+  folderId: z.string().optional(),
+});
+
+export type DiscoveryBody = z.infer<typeof discoveryBody>;
+
+export type DiscoveryResponse = {
+  discoveryId: string;
+  testCaseId: string;
+};
+
+export interface DiscoveryOptions {
+  apiKey: string;
+  name: string;
+  prompt: string;
+  entryPointUrlPath?: string;
+  prerequisiteId?: string;
+  externalId?: string;
+  assignedTagIds?: string[];
+  folderId?: string;
+  json?: boolean;
+}
+
 export interface ExecutionContext {
   source:
     | "manual"

@@ -1,6 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { uuidValidation } from "./types";
 import {
+  discovery,
   executeTests,
   getNotifications,
   getTestReport,
@@ -261,6 +263,32 @@ export const registerTools = (server: McpServer): void => {
     },
   );
 
+  server.tool(
+    "discovery",
+    {
+      name: z.string(),
+      entryPointUrlPath: z.string().optional(),
+      prerequisiteId: uuidValidation(
+        "expected prerequisiteId to be a valid uuid",
+      ).optional(),
+      externalId: z.string().optional(),
+      assignedTagIds: z.array(uuidValidation()).optional(),
+      prompt: z.string(),
+      folderId: z.string().optional(),
+    },
+    async (params) => {
+      const res = await discovery({ apiKey: APIKEY, json: true, ...params });
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Retrieved discovery for: ${params.name}`,
+            ...res,
+          },
+        ],
+      };
+    },
+  );
   // Private location endpoints
   server.tool("getPrivateLocations", {}, async () => {
     return {
