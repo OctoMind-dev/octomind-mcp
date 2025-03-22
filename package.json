@@ -2,13 +2,24 @@
   "name": "octomind-mcp",
   "version": "1.0.0",
   "description": "an mcp server for the octomind platform",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "packageManager": "pnpm@9.15.6+sha512.139cab068fdf0b751268179ac5f909b5be72afb4a75c513d1905d151befc8977b593d3cf8671ed83d4d6637c5c94b98ffbce108125de4a5a27a31233601a99de",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "bin": {
+    "octomind": "./dist/index.js"
+  },
   "scripts": {
-    "test": "pnpm test"
+    "lint": "npx genversion -des src/version.ts && eslint src/**/*.ts tests/**/*.ts --max-warnings=0",
+    "build": "npx genversion -des src/version.ts && tsc --project tsconfig.build.json",
+    "octomind-mcp": "tsx src/index.ts",
+    "test": "npx genversion -des src/version.ts && jest",
+    "test:watch": "npx genversion -e src/version.ts && jest --watch"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sker65/mcp-octomind.git"
+    "url": "git+https://github.com/Octomind-dev/mcp-octomind.git"
   },
   "keywords": [
     "mcp",
@@ -17,9 +28,9 @@
   "author": "Stefan Rinke",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/sker65/mcp-octomind/issues"
+    "url": "https://github.com/Octomind-dev/mcp-octomind/issues"
   },
-  "homepage": "https://github.com/sker65/mcp-octomind#readme",
+  "homepage": "https://github.com/Octomind-dev/mcp-octomind#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",
     "axios": "^1.8.4",
@@ -27,6 +38,20 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/node": "^22.13.11"
+    "@types/node": "^22.13.5",
+    "@types/jest": "^29.5.1",
+    "@typescript-eslint/parser": "^8.25.0",
+    "eslint": "8.57.1",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-import-resolver-typescript": "^4.0.0",
+    "eslint-plugin-github": "^5.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jest": "^28.2.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "jest": "^29.5.0",
+    "prettier": "^3.0.1",
+    "ts-jest": "^29.2.6",
+    "tsx": "^4.19.3",
+    "typescript": "^5.0.4"
   }
 }

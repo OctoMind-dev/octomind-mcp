@@ -1,19 +1,19 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { registerTools } from "./tools";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { version } from "./version";
 
 const buildServer = (): McpServer => {
   const server = new McpServer({
     name: "Octomind MCP Server",
-    version: "1.0.0",
+    version,
   });
   registerTools(server);
   return server;
-}
+};
 
 const start = async () => {
-  if(!process.env.APIKEY) {
+  if (!process.env.APIKEY) {
     console.error("APIKEY environment variable is required");
     process.exit(1);
   }
@@ -23,9 +23,11 @@ const start = async () => {
   await server.connect(transport);
 };
 
-start().then(() => {
-  console.error("Server started");
-}).catch((error) => {
-  console.error("Error starting server:", error);
-  process.exit(1);
-});
+start()
+  .then(() => {
+    console.error(`Server version ${version} started`);
+  })
+  .catch((error) => {
+    console.error("Error starting server:", error);
+    process.exit(1);
+  });
