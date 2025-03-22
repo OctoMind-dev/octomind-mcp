@@ -3,32 +3,39 @@ import express from "express";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { registerTools } from "./tools";
 
-const server = new McpServer({
-  name: "Octomind MCP Server",
-  version: "1.0.0",
-});
+const buildServer = (): McpServer => {
+  const server = new McpServer({
+    name: "Octomind MCP Server",
+    version: "1.0.0",
+  });
+  registerTools(server);
+  return server;
+}
 
-registerTools(server);
+const servers : Record<string, McpServer> = {};
+const transports : Record<string, SSEServerTransport> = {};
 
 const app = express();
 
-let transport: SSEServerTransport | undefined =
-  undefined;
-
 app.get("/sse", async (req, res) => {
-  console.log({headers: req.headers, route: req.route, url: req.url});
-  transport = new SSEServerTransport("/messages", res);
+  console.log({ headers: req.headers, route: req.route, url: req.url });
+  const transport = new SSEServerTransport("/messages", res);
   console.log("Client connected, session", transport.sessionId);
+  const server = buildServer();
+  servers[transport.sessionId] = server;
+  transports[transport.sessionId] = transport;
   await server.connect(transport);
 });
 
 app.post("/messages", async (req, res) => {
+  const sessionId = req.query.sessionId as string;
+  const transport = transports[sessionId];
   if (!transport) {
     res.status(400);
     res.json({ error: "No transport" });
     return;
   }
-  console.log("Received message", req.body);
+  console.log({ headers: req.headers, route: req.route, url: req.url });
   await transport.handlePostMessage(req, res);
 });
 
