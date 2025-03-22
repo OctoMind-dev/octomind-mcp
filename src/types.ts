@@ -183,3 +183,25 @@ export interface DeleteEnvironmentOptions {
   environmentId: string;
   json?: boolean;
 }
+
+export interface GetTestReportsOptions {
+  apiKey: string;
+  testTargetId: string;
+  key?: {
+    createdAt: string;
+  };
+  filter?: Array<{
+    key: string;
+    operator: "EQUALS";
+    value: string;
+  }>;
+  json?: boolean;
+}
+
+export interface TestReportsResponse {
+  data: TestReport[];
+  key?: {
+    createdAt: string;
+  };
+  hasNextPage: boolean;
+}

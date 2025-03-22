@@ -2,6 +2,7 @@ import axios from "axios";
 import {
   ExecuteTestsOptions,
   GetTestReportOptions,
+  GetTestReportsOptions,
   RegisterLocationOptions,
   UnregisterLocationOptions,
   ListPrivateLocationsOptions,
@@ -12,6 +13,7 @@ import {
   DeleteEnvironmentOptions,
   TestTargetExecutionRequest,
   TestReportResponse,
+  TestReportsResponse,
   RegisterRequest,
   UnregisterRequest,
   SuccessResponse,
@@ -225,4 +227,29 @@ export const deleteEnvironment = async (
   );
 
   return({ success: true });
+};
+
+export const getTestReports = async (
+  options: GetTestReportsOptions,
+): Promise<TestReportsResponse> => {
+  const queryParams = new URLSearchParams();
+
+  if (options.key) {
+    queryParams.append('key', JSON.stringify(options.key));
+  }
+
+  if (options.filter) {
+    queryParams.append('filter', JSON.stringify(options.filter));
+  }
+
+  const queryString = queryParams.toString();
+  const endpoint = `/apiKey/v2/test-targets/${options.testTargetId}/test-reports${queryString ? `?${queryString}` : ''}`;
+
+  const response = await apiCall<TestReportsResponse>(
+    "get",
+    endpoint,
+    options.apiKey,
+  );
+
+  return response;
 };

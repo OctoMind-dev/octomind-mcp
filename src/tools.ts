@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { executeTests, getTestReport } from "./api";
+import { executeTests, getTestReport, getTestReports } from "./api";
 
 const APIKEY = process.env.APIKEY;
 
@@ -144,12 +144,13 @@ export const registerTools = (server: McpServer): void => {
       })).optional(),
     },
     async (params) => {
-      
+      const res = await getTestReports({apiKey: APIKEY!, json: true, testTargetId: params.testTargetId, key: params.key, filter: params.filter});
       return {
         content: [
           {
             type: "text",
             text: `Retrieved test reports for test target: ${params.testTargetId}`,
+            ...res
           },
         ],
       };
