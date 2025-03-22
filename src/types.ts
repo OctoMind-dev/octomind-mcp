@@ -23,7 +23,6 @@ export type Notification = {
   ack: boolean | null;
 };
 
-
 export interface TestTargetExecutionRequest {
   testTargetId: string;
   url: string;

@@ -1,6 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import {  z } from "zod";
-import { executeTests, getNotifications, getTestReport, getTestReports } from "./api";
+import { z } from "zod";
+import {
+  executeTests,
+  getNotifications,
+  getTestReport,
+  getTestReports,
+} from "./api";
 import { get } from "axios";
 
 const APIKEY = process.env.APIKEY ?? "";
@@ -11,7 +16,7 @@ export const getLastTestTargetId = (): string | undefined => {
   return lastTestTargetId;
 };
 const setLastTestTargetId = (testTargetId: string): void => {
-  if( sentNotificationsPerTestTarget[testTargetId] === undefined) {
+  if (sentNotificationsPerTestTarget[testTargetId] === undefined) {
     sentNotificationsPerTestTarget[testTargetId] = new Set<string>();
   }
   lastTestTargetId = testTargetId;
@@ -19,23 +24,25 @@ const setLastTestTargetId = (testTargetId: string): void => {
 
 const sentNotificationsPerTestTarget: Record<string, Set<string>> = {};
 
-export const checkNotifications = async (mcpServer: McpServer): Promise<void> => {
-  const testTargetId = getLastTestTargetId() 
-  if( testTargetId) {
+export const checkNotifications = async (
+  mcpServer: McpServer,
+): Promise<void> => {
+  const testTargetId = getLastTestTargetId();
+  if (testTargetId) {
     const notifications = await getNotifications(APIKEY, testTargetId);
-    notifications.forEach( async (notification) => {
-      if(!sentNotificationsPerTestTarget[testTargetId].has(notification.id)) {
+    notifications.forEach(async (notification) => {
+      if (!sentNotificationsPerTestTarget[testTargetId].has(notification.id)) {
         sentNotificationsPerTestTarget[testTargetId].add(notification.id);
         await mcpServer.server.notification({
           method: "notifications/progress",
           params: {
-            ...notification
+            ...notification,
           },
         });
       }
     });
   }
-}
+};
 
 export const registerTools = (server: McpServer): void => {
   // Test execution

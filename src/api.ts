@@ -19,7 +19,7 @@ import {
   SuccessResponse,
   Environment,
   TestReport,
-  Notification
+  Notification,
 } from "./types";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
@@ -70,8 +70,15 @@ const apiCall = async <T>(
         "ack": "IN_WEB_APP"
     },
     */
-export const getNotifications = async (apiKey: string, testTargetId: string): Promise<Notification[]> => {
-  const response = await apiCall<Notification[]>("get", `apiKey/v2/test-targets/${testTargetId}/notifications`, apiKey);
+export const getNotifications = async (
+  apiKey: string,
+  testTargetId: string,
+): Promise<Notification[]> => {
+  const response = await apiCall<Notification[]>(
+    "get",
+    `apiKey/v2/test-targets/${testTargetId}/notifications`,
+    apiKey,
+  );
   return response;
 };
 
