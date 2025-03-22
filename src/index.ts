@@ -25,8 +25,12 @@ const start = async () => {
   await server.connect(transport);
   setInterval(async () => {
     await checkNotifications(server);
-  }, 20000);
+  }, 20_000);
   // Cleanup on exit
+  process.on("SIGTERM", async () => {
+    await server.close();
+    process.exit(0);
+  });
   process.on("SIGINT", async () => {
     await server.close();
     process.exit(0);
