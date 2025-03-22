@@ -33,15 +33,15 @@ export const checkNotifications = async (
     notifications.forEach(async (notification) => {
       if (!sentNotificationsPerTestTarget[testTargetId].has(notification.id)) {
         sentNotificationsPerTestTarget[testTargetId].add(notification.id);
-        if( notification.createdAt.getTime() > serverStartupTime ) {
-              await mcpServer.server.notification({
+        if (notification.createdAt.getTime() > serverStartupTime) {
+          await mcpServer.server.notification({
             method: "notifications/progress",
             params: {
               ...notification,
             },
           });
         }
-        }
+      }
     });
   }
 };
