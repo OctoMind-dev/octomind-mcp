@@ -5,6 +5,7 @@ import {
   discovery,
   executeTests,
   getNotifications,
+  getTestCase,
   getTestReport,
   getTestReports,
 } from "./api";
@@ -49,6 +50,30 @@ export const checkNotifications = async (
 };
 
 export const registerTools = (server: McpServer): void => {
+  server.tool(
+    "getTestCase",
+    {
+      testCaseId: z.string().uuid(),
+      testTargetId: z.string().uuid(),
+    },
+    async (params) => {
+      const res = await getTestCase(
+        APIKEY,
+        params.testCaseId,
+        params.testTargetId,
+      );
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Retrieved test case: ${params.testCaseId} for test target: ${params.testTargetId}`,
+            ...res,
+          },
+        ],
+      };
+    },
+  );
+
   // Test execution
   server.tool(
     "executeTests",

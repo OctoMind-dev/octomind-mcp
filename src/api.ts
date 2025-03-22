@@ -59,6 +59,40 @@ const apiCall = async <T>(
   }
 };
 
+export type TestCaseElement = {
+  id: string;
+  index: number;
+  ignoreFailure: boolean;
+  interaction: any;
+  assertion: any;
+  selectors: any[];
+};
+
+export type TestCase = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  description: string;
+  status: string;
+  testTargetId: string;
+  discovery: any;
+  elements: TestCaseElement[];
+};
+
+export const getTestCase = async (
+  apiKey: string,
+  testCaseId: string,
+  testTargetId: string,
+): Promise<TestCase> => {
+  const response = await apiCall<TestCase>(
+    "get",
+    `/apiKey/v2/test-targets/${testTargetId}/test-cases/${testCaseId}`,
+    apiKey,
+  );
+
+  return response;
+};
+
 export const discovery = async (
   options: DiscoveryOptions,
 ): Promise<DiscoveryResponse> => {
