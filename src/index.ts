@@ -12,6 +12,8 @@ const buildServer = (): McpServer => {
   return server;
 };
 
+export const serverStartupTime = Date.now();
+
 const start = async () => {
   if (!process.env.APIKEY) {
     console.error("APIKEY environment variable is required");

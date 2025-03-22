@@ -6,6 +6,7 @@ import {
   getTestReport,
   getTestReports,
 } from "./api";
+import { serverStartupTime } from ".";
 
 const APIKEY = process.env.APIKEY ?? "";
 
@@ -32,13 +33,15 @@ export const checkNotifications = async (
     notifications.forEach(async (notification) => {
       if (!sentNotificationsPerTestTarget[testTargetId].has(notification.id)) {
         sentNotificationsPerTestTarget[testTargetId].add(notification.id);
-        await mcpServer.server.notification({
-          method: "notifications/progress",
-          params: {
-            ...notification,
-          },
-        });
-      }
+        if( notification.createdAt.getTime() > serverStartupTime ) {
+              await mcpServer.server.notification({
+            method: "notifications/progress",
+            params: {
+              ...notification,
+            },
+          });
+        }
+        }
     });
   }
 };
