@@ -1,0 +1,32 @@
+{
+  "name": "octomind-mcp",
+  "version": "1.0.0",
+  "description": "an mcp server for the octomind platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "pnpm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sker65/mcp-octomind.git"
+  },
+  "keywords": [
+    "mcp",
+    "octomind"
+  ],
+  "author": "Stefan Rinke",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sker65/mcp-octomind/issues"
+  },
+  "homepage": "https://github.com/sker65/mcp-octomind#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "axios": "^1.8.4",
+    "express": "^4.21.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.11"
+  }
+}
