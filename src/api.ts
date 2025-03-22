@@ -53,13 +53,10 @@ const apiCall = async <T>(
     } else {
       console.error("Error:", error);
     }
-    throw new Error("API request failed", error);
+    throw new Error(`API request failed. ${JSON.stringify(error, null, 2)}`);
   }
 };
 
-const outputResult = (result: unknown): void => {
-  console.log(JSON.stringify(result, null, 2));
-};
 
 type DiscoveryResponse = object;
 
@@ -89,7 +86,6 @@ export const discovery = async (
 export const executeTests = async (
   options: ExecuteTestsOptions,
 ): Promise<TestReportResponse> => {
-
   const requestBody: TestTargetExecutionRequest = {
     testTargetId: options.testTargetId,
     url: options.url,
@@ -112,26 +108,24 @@ export const executeTests = async (
     options.apiKey,
     requestBody,
   );
-  return(response);
+  return response;
 };
 
 export const getTestReport = async (
   options: GetTestReportOptions,
 ): Promise<TestReport> => {
-
   const response = await apiCall<TestReport>(
     "get",
     `/apiKey/v2/test-targets/${options.testTargetId}/test-reports/${options.reportId}`,
     options.apiKey,
   );
 
-  return(response);
+  return response;
 };
 
 export const registerLocation = async (
   options: RegisterLocationOptions,
 ): Promise<SuccessResponse> => {
-
   const requestBody: RegisterRequest = {
     name: options.name,
     registrationData: {
@@ -148,13 +142,12 @@ export const registerLocation = async (
     requestBody,
   );
 
-  return(response);
+  return response;
 };
 
 export const unregisterLocation = async (
   options: UnregisterLocationOptions,
 ): Promise<SuccessResponse> => {
-
   const requestBody: UnregisterRequest = {
     name: options.name,
   };
@@ -166,7 +159,7 @@ export const unregisterLocation = async (
     requestBody,
   );
 
-  return(response);
+  return response;
 };
 
 export const listPrivateLocations = async (
@@ -178,28 +171,24 @@ export const listPrivateLocations = async (
     options.apiKey,
   );
 
-  return(response);
-
+  return response;
 };
 
 export const listEnvironments = async (
   options: ListEnvironmentsOptions,
 ): Promise<Environment[]> => {
-
   const response = await apiCall<Environment[]>(
     "get",
     `/apiKey/v2/test-targets/${options.testTargetId}/environments`,
     options.apiKey,
   );
 
-  return(response);
-
+  return response;
 };
 
 export const createEnvironment = async (
   options: CreateEnvironmentOptions,
 ): Promise<Environment> => {
-
   const requestBody = {
     name: options.name,
     discoveryUrl: options.discoveryUrl,
@@ -216,13 +205,12 @@ export const createEnvironment = async (
     requestBody,
   );
 
-  return(response);
+  return response;
 };
 
 export const updateEnvironment = async (
   options: UpdateEnvironmentOptions,
 ): Promise<Environment> => {
-
   const requestBody = {
     name: options.name,
     discoveryUrl: options.discoveryUrl,
@@ -238,21 +226,19 @@ export const updateEnvironment = async (
     options.apiKey,
     requestBody,
   );
-  return(response);
-
+  return response;
 };
 
 export const deleteEnvironment = async (
   options: DeleteEnvironmentOptions,
 ): Promise<SuccessResponse> => {
-
   await apiCall(
     "delete",
     `/apiKey/v2/test-targets/${options.testTargetId}/environments/${options.environmentId}`,
     options.apiKey,
   );
 
-  return({ success: true });
+  return { success: true };
 };
 
 export const getTestReports = async (
@@ -261,15 +247,15 @@ export const getTestReports = async (
   const queryParams = new URLSearchParams();
 
   if (options.key) {
-    queryParams.append('key', JSON.stringify(options.key));
+    queryParams.append("key", JSON.stringify(options.key));
   }
 
   if (options.filter) {
-    queryParams.append('filter', JSON.stringify(options.filter));
+    queryParams.append("filter", JSON.stringify(options.filter));
   }
 
   const queryString = queryParams.toString();
-  const endpoint = `/apiKey/v2/test-targets/${options.testTargetId}/test-reports${queryString ? `?${queryString}` : ''}`;
+  const endpoint = `/apiKey/v2/test-targets/${options.testTargetId}/test-reports${queryString ? `?${queryString}` : ""}`;
 
   const response = await apiCall<TestReportsResponse>(
     "get",
