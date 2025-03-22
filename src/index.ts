@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { checkNotifications, registerTools } from "./tools";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
