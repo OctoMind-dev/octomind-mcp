@@ -31,7 +31,7 @@ export const checkNotifications = async (
   mcpServer: McpServer,
 ): Promise<void> => {
   const testTargetId = getLastTestTargetId();
-  if (testTargetId) {
+  /*if (testTargetId) {
     const notifications = await getNotifications(APIKEY, testTargetId);
     notifications.forEach(async (notification) => {
       if (!sentNotificationsPerTestTarget[testTargetId].has(notification.id)) {
@@ -46,7 +46,7 @@ export const checkNotifications = async (
         }
       }
     });
-  }
+  }*/
 };
 
 export const registerTools = (server: McpServer): void => {
