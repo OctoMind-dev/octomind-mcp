@@ -13,13 +13,13 @@
   "scripts": {
     "lint": "npx genversion -des src/version.ts && eslint src/**/*.ts tests/**/*.ts --max-warnings=0",
     "build": "npx genversion -des src/version.ts && tsc --project tsconfig.build.json",
-    "octomind": "tsx src/cli.ts",
+    "octomind-mcp": "tsx src/index.ts",
     "test": "npx genversion -des src/version.ts && jest",
     "test:watch": "npx genversion -e src/version.ts && jest --watch"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Octomind-dev /mcp-octomind.git"
+    "url": "git+https://github.com/Octomind-dev/mcp-octomind.git"
   },
   "keywords": [
     "mcp",
@@ -28,9 +28,9 @@
   "author": "Stefan Rinke",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Octomind-dev /mcp-octomind/issues"
+    "url": "https://github.com/Octomind-dev/mcp-octomind/issues"
   },
-  "homepage": "https://github.com/Octomind-dev /mcp-octomind#readme",
+  "homepage": "https://github.com/Octomind-dev/mcp-octomind#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",
     "axios": "^1.8.4",
