@@ -79,6 +79,9 @@ export const discovery = async (
     requestBody,
   );
 
+  return response;
+};
+
 /* example notificytion
     {
         "id": "ee8ffcdf-1df8-4b37-b789-9694dd37e6b3",
