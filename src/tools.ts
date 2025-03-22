@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { executeTests, getTestReport } from "./api";
 
-const API_KEY = "9c6f2a6223a87673df476e1fb09f44aa054656704b6e7411bd4200e7b4164986e6bfbcddd18746ea7eccb1f5a1fde24a";
+const APIKEY = process.env.APIKEY;
 
 export const registerTools = (server: McpServer): void => {
 
@@ -18,7 +18,7 @@ export const registerTools = (server: McpServer): void => {
       tags: z.array(z.string()).default([]),
     },
     async (params) => {
-      const res = await executeTests({apiKey: API_KEY, json: true,  description: "triggered by MCP Tool", ...params});
+      const res = await executeTests({apiKey: APIKEY!, json: true,  description: "triggered by MCP Tool", ...params});
       return {
         content: [
           {
@@ -163,7 +163,7 @@ export const registerTools = (server: McpServer): void => {
       testReportId: z.string().uuid(),
     },
     async (params) => {
-      const res = await getTestReport({apiKey: API_KEY, json: true, reportId: params.testReportId, testTargetId: params.testTargetId,});
+      const res = await getTestReport({apiKey: APIKEY!, json: true, reportId: params.testReportId, testTargetId: params.testTargetId,});
       return {
         content: [
           {

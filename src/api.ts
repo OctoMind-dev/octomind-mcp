@@ -19,7 +19,7 @@ import {
   TestReport,
 } from "./types";
 
-const BASE_URL = "https://app.octomind.dev/api";
+const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
 
 // Helper function for API calls
 const apiCall = async <T>(
@@ -28,6 +28,11 @@ const apiCall = async <T>(
   apiKey: string,
   data?: unknown,
 ): Promise<T> => {
+  if (!apiKey) {
+    console.error("API key is required");
+    throw new Error("API key is required");
+  }
+
   try {
     const response = await axios({
       method,
@@ -55,11 +60,7 @@ const outputResult = (result: unknown): void => {
 
 export const executeTests = async (
   options: ExecuteTestsOptions,
-): Promise<TestReportResponse|undefined> => {
-  if (!options.apiKey) {
-    console.error("API key is required");
-    throw new Error("API key is required");
-  }
+): Promise<TestReportResponse> => {
 
   const requestBody: TestTargetExecutionRequest = {
     testTargetId: options.testTargetId,
@@ -83,37 +84,12 @@ export const executeTests = async (
     options.apiKey,
     requestBody,
   );
-
-  if (options.json) {
-    outputResult(response);
-    return response;
-  }
-
-  console.log("Test execution started successfully!");
-  console.log("Test Report URL:", response.testReportUrl);
-  console.log("Report Status:", response.testReport.status);
-
-  if (response.testReport.testResults.length > 0) {
-    console.log("\nTest Results:");
-    response.testReport.testResults.forEach((result) => {
-      console.log(`- Test ${result.testCaseId}: ${result.status}`);
-      if (result.errorMessage) {
-        console.log(`  Error: ${result.errorMessage}`);
-      }
-      if (result.traceUrl) {
-        console.log(`  Trace: ${result.traceUrl}`);
-      }
-    });
-  }
+  return(response);
 };
 
 export const getTestReport = async (
   options: GetTestReportOptions,
-): Promise<TestReport|undefined> => {
-  if (!options.apiKey) {
-    console.error("API key is required");
-    throw new Error("API key is required");
-  }
+): Promise<TestReport> => {
 
   const response = await apiCall<TestReport>(
     "get",
@@ -121,36 +97,12 @@ export const getTestReport = async (
     options.apiKey,
   );
 
-  if (options.json) {
-    outputResult(response);
-    return response;
-  }
-
-  console.log("Test Report Details:");
-  console.log("Status:", response.status);
-  console.log("Execution URL:", response.executionUrl);
-
-  if (response.testResults.length > 0) {
-    console.log("\nTest Results:");
-    response.testResults.forEach((result) => {
-      console.log(`- Test ${result.testCaseId}: ${result.status}`);
-      if (result.errorMessage) {
-        console.log(`  Error: ${result.errorMessage}`);
-      }
-      if (result.traceUrl) {
-        console.log(`  Trace: ${result.traceUrl}`);
-      }
-    });
-  }
+  return(response);
 };
 
 export const registerLocation = async (
   options: RegisterLocationOptions,
-): Promise<void> => {
-  if (!options.apiKey) {
-    console.error("API key is required");
-    throw new Error("API key is required");
-  }
+): Promise<SuccessResponse> => {
 
   const requestBody: RegisterRequest = {
     name: options.name,
@@ -168,21 +120,12 @@ export const registerLocation = async (
     requestBody,
   );
 
-  if (options.json) {
-    outputResult(response);
-    return;
-  }
-
-  console.log("Registration result:", response.success ? "Success" : "Failed");
+  return(response);
 };
 
 export const unregisterLocation = async (
   options: UnregisterLocationOptions,
-): Promise<void> => {
-  if (!options.apiKey) {
-    console.error("API key is required");
-    throw new Error("API key is required");
-  }
+): Promise<SuccessResponse> => {
 
   const requestBody: UnregisterRequest = {
     name: options.name,
@@ -195,51 +138,25 @@ export const unregisterLocation = async (
     requestBody,
   );
 
-  if (options.json) {
-    outputResult(response);
-    return;
-  }
-
-  console.log(
-    "Unregistration result:",
-    response.success ? "Success" : "Failed",
-  );
+  return(response);
 };
 
 export const listPrivateLocations = async (
   options: ListPrivateLocationsOptions,
-): Promise<void> => {
-  if (!options.apiKey) {
-    console.error("API key is required");
-    throw new Error("API key is required");
-  }
-
+): Promise<PrivateLocationInfo[]> => {
   const response = await apiCall<PrivateLocationInfo[]>(
     "get",
     "/apiKey/v1/private-location",
     options.apiKey,
   );
 
-  if (options.json) {
-    outputResult(response);
-    return;
-  }
+  return(response);
 
-  console.log("Private Locations:");
-  response.forEach((location) => {
-    console.log(`- Name: ${location.name}`);
-    console.log(`  Status: ${location.status}`);
-    console.log(`  Address: ${location.address}`);
-  });
 };
 
 export const listEnvironments = async (
   options: ListEnvironmentsOptions,
-): Promise<void> => {
-  if (!options.apiKey) {
-    console.error("API key is required");
-    throw new Error("API key is required");
-  }
+): Promise<Environment[]> => {
 
   const response = await apiCall<Environment[]>(
     "get",
@@ -247,27 +164,13 @@ export const listEnvironments = async (
     options.apiKey,
   );
 
-  if (options.json) {
-    outputResult(response);
-    return;
-  }
+  return(response);
 
-  console.log("Environments:");
-  response.forEach((environment) => {
-    console.log(`- Name: ${environment.name}`);
-    console.log(`  ID: ${environment.id}`);
-    console.log(`  Discovery URL: ${environment.discoveryUrl}`);
-    console.log(`  Updated At: ${environment.updatedAt}`);
-  });
 };
 
 export const createEnvironment = async (
   options: CreateEnvironmentOptions,
-): Promise<void> => {
-  if (!options.apiKey) {
-    console.error("API key is required");
-    throw new Error("API key is required");
-  }
+): Promise<Environment> => {
 
   const requestBody = {
     name: options.name,
@@ -285,25 +188,12 @@ export const createEnvironment = async (
     requestBody,
   );
 
-  if (options.json) {
-    outputResult(response);
-    return;
-  }
-
-  console.log("Environment created successfully!");
-  console.log(`- Name: ${response.name}`);
-  console.log(`  ID: ${response.id}`);
-  console.log(`  Discovery URL: ${response.discoveryUrl}`);
-  console.log(`  Updated At: ${response.updatedAt}`);
+  return(response);
 };
 
 export const updateEnvironment = async (
   options: UpdateEnvironmentOptions,
-): Promise<void> => {
-  if (!options.apiKey) {
-    console.error("API key is required");
-    throw new Error("API key is required");
-  }
+): Promise<Environment> => {
 
   const requestBody = {
     name: options.name,
@@ -320,26 +210,13 @@ export const updateEnvironment = async (
     options.apiKey,
     requestBody,
   );
+  return(response);
 
-  if (options.json) {
-    outputResult(response);
-    return;
-  }
-
-  console.log("Environment updated successfully!");
-  console.log(`- Name: ${response.name}`);
-  console.log(`  ID: ${response.id}`);
-  console.log(`  Discovery URL: ${response.discoveryUrl}`);
-  console.log(`  Updated At: ${response.updatedAt}`);
 };
 
 export const deleteEnvironment = async (
   options: DeleteEnvironmentOptions,
-): Promise<void> => {
-  if (!options.apiKey) {
-    console.error("API key is required");
-    throw new Error("API key is required");
-  }
+): Promise<SuccessResponse> => {
 
   await apiCall(
     "delete",
@@ -347,10 +224,5 @@ export const deleteEnvironment = async (
     options.apiKey,
   );
 
-  if (options.json) {
-    outputResult({ success: true });
-    return;
-  }
-
-  console.log("Environment deleted successfully!");
+  return({ success: true });
 };
