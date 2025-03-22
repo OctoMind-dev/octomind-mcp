@@ -21,7 +21,7 @@ const start = async () => {
   console.error("Connecting server to transport...");
   const server = buildServer();
   await server.connect(transport);
-  setInterval( async() => {
+  setInterval(async () => {
     await checkNotifications(server);
   }, 20000);
   // Cleanup on exit
