@@ -29,6 +29,7 @@ export interface DiscoveryOptions {
   apiKey: string;
   name: string;
   prompt: string;
+  testTargetId: string;
   entryPointUrlPath?: string;
   prerequisiteId?: string;
   externalId?: string;

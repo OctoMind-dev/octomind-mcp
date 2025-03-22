@@ -108,7 +108,7 @@ export const discovery = async (
 
   const response = await apiCall<DiscoveryResponse>(
     "post",
-    "/api/apiKey/v2/test-targets/[testTargetId]/discoveries",
+    `/api/apiKey/v2/test-targets/${options.testTargetId}/discoveries`,
     options.apiKey,
     requestBody,
   );

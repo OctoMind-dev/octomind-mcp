@@ -50,8 +50,11 @@ export const checkNotifications = async (
 };
 
 export const registerTools = (server: McpServer): void => {
+
   server.tool(
-    "getTestCase",
+    "getTestCase",`the getTestCase tool can retrieve a test case for a given test target and test case id.
+    A test case id is unique to the test target. The test case includes a set of interactions and assertions.
+    it is the result of a discovery or a manual creation.`,
     {
       testCaseId: z.string().uuid(),
       testTargetId: z.string().uuid(),
@@ -76,7 +79,9 @@ export const registerTools = (server: McpServer): void => {
 
   // Test execution
   server.tool(
-    "executeTests",
+    "executeTests", `the executeTests tool can trigger a set of tests for a given test target.
+    The test target id is unique to the test target. The tests are executed on the provided url.
+    The context object is used to provide information about the source of the test execution.`,
     {
       testTargetId: z.string().uuid(),
       url: z.string().url(),
@@ -110,7 +115,9 @@ export const registerTools = (server: McpServer): void => {
 
   // Environment endpoints
   server.tool(
-    "getEnvironments",
+    "getEnvironments",`the getEnvironments tool can retrieve environments for a given test target.
+   an environment represents a specific setup or deployments for a test target. It include a test account when necsesary
+    to login, a header configuration, a discovery url and a set of variables.`,
     {
       testTargetId: z.string().uuid(),
     },
@@ -128,7 +135,10 @@ export const registerTools = (server: McpServer): void => {
   );
 
   server.tool(
-    "createEnvironment",
+    "createEnvironment",`the createEnvironment tool can create an environment for a given test target.
+    an environment represents a specific setup or deployments for a test target. It include a test account when necsesary
+    to login, a header configuration, a discovery url and a set of variables.`,
+
     {
       testTargetId: z.string().uuid(),
       name: z.string(),
@@ -165,7 +175,9 @@ export const registerTools = (server: McpServer): void => {
   );
 
   server.tool(
-    "updateEnvironment",
+    "updateEnvironment",`the updateEnvironment tool can update an environment for a given test target.
+    an environment represents a specific setup or deployments for a test target. It include a test account when necsesary
+    to login, a header configuration, a discovery url and a set of variables.`,
     {
       testTargetId: z.string().uuid(),
       environmentId: z.string().uuid(),
@@ -203,7 +215,11 @@ export const registerTools = (server: McpServer): void => {
   );
 
   server.tool(
-    "deleteEnvironment",
+    "deleteEnvironment", 
+    `deleteEnvironment tool can delete an environment for a given test target.
+    The environment id is unique to the test target. The call is not reversible.
+    an environment represents a specific setup or deployments for a test target. It include a test account when necsesary
+    to login, a header configuration, a discovery url and a set of variables.`,
     {
       testTargetId: z.string().uuid(),
       environmentId: z.string().uuid(),
@@ -223,7 +239,8 @@ export const registerTools = (server: McpServer): void => {
 
   // Test reports
   server.tool(
-    "getTestReports",
+    "getTestReports",`the getTestReports tool can retrieve test reports for a given test target.
+    Test reports are generated when set of tests are executed. The test report id is unique to the test target.`,
     {
       testTargetId: z.string().uuid(),
       key: z
@@ -263,7 +280,9 @@ export const registerTools = (server: McpServer): void => {
   );
 
   server.tool(
-    "getTestReport",
+    "getTestReport", `the getTestReport tool can retrieve a test report for a given test target and test report id.
+    A test report id is generated when a set of test are executed on
+    a test target. The test report id is unique to the test target.`,
     {
       testTargetId: z.string().uuid(),
       testReportId: z.string().uuid(),
@@ -290,8 +309,11 @@ export const registerTools = (server: McpServer): void => {
 
   server.tool(
     "discovery",
+    `the discovery tool can create a test case on a giver test target with a test case description or prompt.
+    one can either start from the predefined url for that test case or provide a new entry point url.`,
     {
       name: z.string(),
+      testTargetId: z.string().uuid(),
       entryPointUrlPath: z.string().optional(),
       prerequisiteId: uuidValidation(
         "expected prerequisiteId to be a valid uuid",
