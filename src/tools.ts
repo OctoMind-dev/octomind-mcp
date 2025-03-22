@@ -1,8 +1,41 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-import { executeTests, getTestReport, getTestReports } from "./api";
+import {  z } from "zod";
+import { executeTests, getNotifications, getTestReport, getTestReports } from "./api";
+import { get } from "axios";
 
 const APIKEY = process.env.APIKEY ?? "";
+
+let lastTestTargetId: string | undefined;
+
+export const getLastTestTargetId = (): string | undefined => {
+  return lastTestTargetId;
+};
+const setLastTestTargetId = (testTargetId: string): void => {
+  if( sentNotificationsPerTestTarget[testTargetId] === undefined) {
+    sentNotificationsPerTestTarget[testTargetId] = new Set<string>();
+  }
+  lastTestTargetId = testTargetId;
+};
+
+const sentNotificationsPerTestTarget: Record<string, Set<string>> = {};
+
+export const checkNotifications = async (mcpServer: McpServer): Promise<void> => {
+  const testTargetId = getLastTestTargetId() 
+  if( testTargetId) {
+    const notifications = await getNotifications(APIKEY, testTargetId);
+    notifications.forEach( async (notification) => {
+      if(!sentNotificationsPerTestTarget[testTargetId].has(notification.id)) {
+        sentNotificationsPerTestTarget[testTargetId].add(notification.id);
+        await mcpServer.server.notification({
+          method: "notifications/progress",
+          params: {
+            ...notification
+          },
+        });
+      }
+    });
+  }
+}
 
 export const registerTools = (server: McpServer): void => {
   // Test execution
@@ -20,6 +53,7 @@ export const registerTools = (server: McpServer): void => {
       tags: z.array(z.string()).default([]),
     },
     async (params) => {
+      setLastTestTargetId(params.testTargetId);
       const res = await executeTests({
         apiKey: APIKEY,
         json: true,
@@ -45,6 +79,7 @@ export const registerTools = (server: McpServer): void => {
       testTargetId: z.string().uuid(),
     },
     async (params) => {
+      setLastTestTargetId(params.testTargetId);
       return {
         content: [
           {
@@ -81,6 +116,7 @@ export const registerTools = (server: McpServer): void => {
       additionalHeaderFields: z.record(z.string()).optional(),
     },
     async (params) => {
+      setLastTestTargetId(params.testTargetId);
       return {
         content: [
           {
@@ -118,6 +154,7 @@ export const registerTools = (server: McpServer): void => {
       additionalHeaderFields: z.record(z.string()).optional(),
     },
     async (params) => {
+      setLastTestTargetId(params.testTargetId);
       return {
         content: [
           {
@@ -136,6 +173,7 @@ export const registerTools = (server: McpServer): void => {
       environmentId: z.string().uuid(),
     },
     async (params) => {
+      setLastTestTargetId(params.testTargetId);
       return {
         content: [
           {
@@ -175,6 +213,7 @@ export const registerTools = (server: McpServer): void => {
         key: params.key,
         filter: params.filter,
       });
+      setLastTestTargetId(params.testTargetId);
       return {
         content: [
           {
@@ -200,6 +239,7 @@ export const registerTools = (server: McpServer): void => {
         reportId: params.testReportId,
         testTargetId: params.testTargetId,
       });
+      setLastTestTargetId(params.testTargetId);
       return {
         content: [
           {

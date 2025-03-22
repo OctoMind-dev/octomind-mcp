@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { registerTools } from "./tools";
+import { checkNotifications, registerTools } from "./tools";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { version } from "./version";
 
@@ -21,6 +21,14 @@ const start = async () => {
   console.error("Connecting server to transport...");
   const server = buildServer();
   await server.connect(transport);
+  setInterval(() => {
+    checkNotifications(server);
+  }, 20000);
+  // Cleanup on exit
+  process.on("SIGINT", async () => {
+    await server.close();
+    process.exit(0);
+  });
 };
 
 start()
