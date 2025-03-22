@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { executeTests, getTestReport, getTestReports } from "./api";
 
-const APIKEY = process.env.APIKEY;
+const APIKEY = process.env.APIKEY ?? "";
 
 export const registerTools = (server: McpServer): void => {
 
@@ -12,13 +12,13 @@ export const registerTools = (server: McpServer): void => {
     {
       testTargetId: z.string().uuid(),
       url: z.string().url(),
-      context: z.object({}).optional(), // Simplified - would need full context schema
+      context: z.object({ source: z.literal("manual"), description: z.string(), }),
       environmentName: z.string().default("default"),
       variablesToOverwrite: z.record(z.array(z.string())).optional(),
       tags: z.array(z.string()).default([]),
     },
     async (params) => {
-      const res = await executeTests({apiKey: APIKEY!, json: true,  description: "triggered by MCP Tool", ...params});
+      const res = await executeTests({apiKey: APIKEY, json: true,  description: "triggered by MCP Tool", ...params});
       return {
         content: [
           {
@@ -144,7 +144,7 @@ export const registerTools = (server: McpServer): void => {
       })).optional(),
     },
     async (params) => {
-      const res = await getTestReports({apiKey: APIKEY!, json: true, testTargetId: params.testTargetId, key: params.key, filter: params.filter});
+      const res = await getTestReports({apiKey: APIKEY, json: true, testTargetId: params.testTargetId, key: params.key, filter: params.filter});
       return {
         content: [
           {
@@ -164,7 +164,7 @@ export const registerTools = (server: McpServer): void => {
       testReportId: z.string().uuid(),
     },
     async (params) => {
-      const res = await getTestReport({apiKey: APIKEY!, json: true, reportId: params.testReportId, testTargetId: params.testTargetId,});
+      const res = await getTestReport({apiKey: APIKEY, json: true, reportId: params.testReportId, testTargetId: params.testTargetId,});
       return {
         content: [
           {

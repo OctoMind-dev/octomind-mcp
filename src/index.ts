@@ -13,7 +13,7 @@ const buildServer = (): McpServer => {
 }
 
 const start = async () => {
-  if(process.env.APIKEY === undefined) {
+  if(!process.env.APIKEY) {
     console.error("APIKEY environment variable is required");
     process.exit(1);
   }
