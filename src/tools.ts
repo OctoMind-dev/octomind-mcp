@@ -50,9 +50,9 @@ export const checkNotifications = async (
 };
 
 export const registerTools = (server: McpServer): void => {
-
   server.tool(
-    "getTestCase",`the getTestCase tool can retrieve a test case for a given test target and test case id.
+    "getTestCase",
+    `the getTestCase tool can retrieve a test case for a given test target and test case id.
     A test case id is unique to the test target. The test case includes a set of interactions and assertions.
     it is the result of a discovery or a manual creation.`,
     {
@@ -79,16 +79,14 @@ export const registerTools = (server: McpServer): void => {
 
   // Test execution
   server.tool(
-    "executeTests", `the executeTests tool can trigger a set of tests for a given test target.
+    "executeTests",
+    `the executeTests tool can trigger a set of tests for a given test target.
     The test target id is unique to the test target. The tests are executed on the provided url.
     The context object is used to provide information about the source of the test execution.`,
     {
       testTargetId: z.string().uuid(),
       url: z.string().url(),
-      context: z.object({
-        source: z.literal("manual"),
-        description: z.string(),
-      }),
+      description: z.string().optional(),
       environmentName: z.string().default("default"),
       variablesToOverwrite: z.record(z.array(z.string())).optional(),
       tags: z.array(z.string()).default([]),
@@ -98,7 +96,7 @@ export const registerTools = (server: McpServer): void => {
       const res = await executeTests({
         apiKey: APIKEY,
         json: true,
-        description: "triggered by MCP Tool",
+        description: params.description || "triggered by MCP Tool",
         ...params,
       });
       return {
@@ -115,7 +113,8 @@ export const registerTools = (server: McpServer): void => {
 
   // Environment endpoints
   server.tool(
-    "getEnvironments",`the getEnvironments tool can retrieve environments for a given test target.
+    "getEnvironments",
+    `the getEnvironments tool can retrieve environments for a given test target.
    an environment represents a specific setup or deployments for a test target. It include a test account when necsesary
     to login, a header configuration, a discovery url and a set of variables.`,
     {
@@ -135,7 +134,8 @@ export const registerTools = (server: McpServer): void => {
   );
 
   server.tool(
-    "createEnvironment",`the createEnvironment tool can create an environment for a given test target.
+    "createEnvironment",
+    `the createEnvironment tool can create an environment for a given test target.
     an environment represents a specific setup or deployments for a test target. It include a test account when necsesary
     to login, a header configuration, a discovery url and a set of variables.`,
 
@@ -175,7 +175,8 @@ export const registerTools = (server: McpServer): void => {
   );
 
   server.tool(
-    "updateEnvironment",`the updateEnvironment tool can update an environment for a given test target.
+    "updateEnvironment",
+    `the updateEnvironment tool can update an environment for a given test target.
     an environment represents a specific setup or deployments for a test target. It include a test account when necsesary
     to login, a header configuration, a discovery url and a set of variables.`,
     {
@@ -215,7 +216,7 @@ export const registerTools = (server: McpServer): void => {
   );
 
   server.tool(
-    "deleteEnvironment", 
+    "deleteEnvironment",
     `deleteEnvironment tool can delete an environment for a given test target.
     The environment id is unique to the test target. The call is not reversible.
     an environment represents a specific setup or deployments for a test target. It include a test account when necsesary
@@ -239,7 +240,8 @@ export const registerTools = (server: McpServer): void => {
 
   // Test reports
   server.tool(
-    "getTestReports",`the getTestReports tool can retrieve test reports for a given test target.
+    "getTestReports",
+    `the getTestReports tool can retrieve test reports for a given test target.
     Test reports are generated when set of tests are executed. The test report id is unique to the test target.`,
     {
       testTargetId: z.string().uuid(),
@@ -280,7 +282,8 @@ export const registerTools = (server: McpServer): void => {
   );
 
   server.tool(
-    "getTestReport", `the getTestReport tool can retrieve a test report for a given test target and test report id.
+    "getTestReport",
+    `the getTestReport tool can retrieve a test report for a given test target and test report id.
     A test report id is generated when a set of test are executed on
     a test target. The test report id is unique to the test target.`,
     {

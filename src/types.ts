@@ -53,15 +53,17 @@ export interface ExecutionContext {
   };
 }
 
-export type Notification = {
-  id: string;
-  testTargetId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  type: string;
-  payload: string;
-  ack: boolean | null;
-};
+export const notificationSchema = z.object({
+  id: z.string(),
+  testTargetId: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  type: z.string(),
+  payload: z.any(),
+  ack: z.string().nullable(),
+});
+
+export type Notification = z.infer<typeof notificationSchema>;
 
 export interface TestTargetExecutionRequest {
   testTargetId: string;

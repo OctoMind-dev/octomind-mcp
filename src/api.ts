@@ -22,6 +22,7 @@ import {
   DiscoveryOptions,
   DiscoveryResponse,
   Notification,
+  notificationSchema,
 } from "./types";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
@@ -133,11 +134,12 @@ export const getNotifications = async (
   apiKey: string,
   testTargetId: string,
 ): Promise<Notification[]> => {
-  const response = await apiCall<Notification[]>(
+  const raw = await apiCall<Notification[]>(
     "get",
-    `apiKey/v2/test-targets/${testTargetId}/notifications`,
+    `/apiKey/v2/test-targets/${testTargetId}/notifications`,
     apiKey,
   );
+  const response = raw.map((n) => notificationSchema.parse(n));
   return response;
 };
 

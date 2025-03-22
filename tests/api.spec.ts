@@ -1,8 +1,9 @@
-import axios from "axios";
+import axios, { get } from "axios";
 import {
   createEnvironment,
   deleteEnvironment,
   executeTests,
+  getNotifications,
   getTestReport,
   listEnvironments,
   listPrivateLocations,
@@ -25,7 +26,7 @@ import {
 jest.mock("axios");
 const mockedAxios = jest.mocked(axios);
 
-describe("CLI Commands", () => {
+describe("API calls", () => {
   const apiKey = "test-api-key";
   const BASE_URL = "https://app.octomind.dev";
   afterEach(() => {
@@ -62,6 +63,26 @@ describe("CLI Commands", () => {
         }),
       }),
     );
+  });
+
+  it("getNotifications", async () => {
+    mockedAxios.mockResolvedValue({
+      data: [
+        {
+          id: "8116fa3b-09de-4c44-b283-1b8f067c3360",
+          testTargetId: "7c2cb4a3-92b6-405e-9869-da0b6c64737e",
+          createdAt: "2025-03-20T21:45:41.413Z",
+          updatedAt: "2025-03-20T21:45:41.413Z",
+          payload: { testCaseId: "27440e7b-db95-4a97-bc8b-873e0313b5bc" },
+          type: "VALIDATION_PASSED",
+          ack: null,
+        },
+      ],
+    });
+
+    const res = await getNotifications(apiKey, "testTargetId");
+
+    expect(res[0].createdAt.getTime()).toBe(1742507141413);
   });
 
   it("getTestReport", async () => {
