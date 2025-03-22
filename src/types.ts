@@ -21,8 +21,8 @@ export const discoveryBody = z.object({
 export type DiscoveryBody = z.infer<typeof discoveryBody>;
 
 export type DiscoveryResponse = {
-  discoveryId: string,
-  testCaseId: string,
+  discoveryId: string;
+  testCaseId: string;
 };
 
 export interface DiscoveryOptions {
