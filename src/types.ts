@@ -52,6 +52,16 @@ export interface ExecutionContext {
   };
 }
 
+export type Notification = {
+  id: string;
+  testTargetId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  type: string;
+  payload: string;
+  ack: boolean | null;
+};
+
 export interface TestTargetExecutionRequest {
   testTargetId: string;
   url: string;
