@@ -1,5 +1,5 @@
 {
-  "name": "octomind-mcp",
+  "name": "@octomind/octomind-mcp",
   "version": "1.0.0",
   "description": "an mcp server for the octomind platform",
   "main": "./dist/index.js",
