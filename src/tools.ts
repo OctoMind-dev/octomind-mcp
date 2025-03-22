@@ -12,7 +12,7 @@ export const registerTools = (server: McpServer): void => {
     {
       testTargetId: z.string().uuid(),
       url: z.string().url(),
-      context: z.object({}), // Simplified - would need full context schema
+      context: z.object({}).optional(), // Simplified - would need full context schema
       environmentName: z.string().default("default"),
       variablesToOverwrite: z.record(z.array(z.string())).optional(),
       tags: z.array(z.string()).default([]),
