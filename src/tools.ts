@@ -5,6 +5,7 @@ import {
   discovery,
   executeTests,
   getNotifications,
+  getTestCase,
   getTestReport,
   getTestReports,
 } from "./api";

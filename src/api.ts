@@ -59,7 +59,6 @@ const apiCall = async <T>(
   }
 };
 
-
 export type TestCaseElement = {
   id: string;
   index: number;
@@ -88,7 +87,7 @@ export const getTestCase = async (
   const response = await apiCall<TestCase>(
     "get",
     `/apiKey/v2/test-targets/${testTargetId}/test-cases/${testCaseId}`,
-    APIKEY,
+    apiKey,
   );
 
   return response;
