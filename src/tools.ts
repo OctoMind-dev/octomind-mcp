@@ -68,9 +68,9 @@ export const registerTools = (server: McpServer): void => {
       return {
         content: [
           {
-            type: "text",
             text: `Retrieved test case: ${params.testCaseId} for test target: ${params.testTargetId}`,
             ...res,
+            type: "text",
           },
         ],
       };
