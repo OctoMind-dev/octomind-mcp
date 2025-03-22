@@ -20,6 +20,7 @@ import {
   Environment,
   TestReport,
   DiscoveryOptions,
+  DiscoveryResponse,
 } from "./types";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
@@ -56,9 +57,6 @@ const apiCall = async <T>(
     throw new Error(`API request failed. ${JSON.stringify(error, null, 2)}`);
   }
 };
-
-
-type DiscoveryResponse = object;
 
 export const discovery = async (
   options: DiscoveryOptions,
