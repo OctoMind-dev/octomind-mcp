@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { executeTests, getTestReport, getTestReports } from "./api";
-import { discoveryBody } from "./types";
+import { discovery, executeTests, getTestReport, getTestReports } from "./api";
+import { discoveryBody, uuidValidation } from "./types";
 
 const APIKEY = process.env.APIKEY ?? "";
 
@@ -215,7 +215,17 @@ export const registerTools = (server: McpServer): void => {
 
 server.tool(
     "discovery",
-    {discoveryBody},
+    {
+      name: z.string(),
+      entryPointUrlPath: z.string().optional(),
+      prerequisiteId: uuidValidation(
+        "expected prerequisiteId to be a valid uuid",
+      ).optional(),
+      externalId: z.string().optional(),
+      assignedTagIds: z.array(uuidValidation()).optional(),
+      prompt: z.string(),
+      folderId: z.string().optional(),
+    },
     async (params) => {
       const res = await discovery({apiKey: APIKEY, json: true, ...params});
       return {
