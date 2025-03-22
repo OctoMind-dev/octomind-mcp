@@ -52,7 +52,7 @@ const apiCall = async <T>(
     } else {
       console.error("Error:", error);
     }
-    throw new Error("API request failed", error);
+    throw new Error("API request failed. "+ JSON.stringify(error, null, 2));
   }
 };
 
