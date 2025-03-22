@@ -19,6 +19,9 @@ import {
   SuccessResponse,
   Environment,
   TestReport,
+  DiscoveryOptions,
+  DiscoveryResponse,
+  Notification,
 } from "./types";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
@@ -56,6 +59,7 @@ const apiCall = async <T>(
   }
 };
 
+
 export type TestCaseElement = {
   id: string;
   index: number;
@@ -84,6 +88,55 @@ export const getTestCase = async (
   const response = await apiCall<TestCase>(
     "get",
     `/apiKey/v2/test-targets/${testTargetId}/test-cases/${testCaseId}`,
+    APIKEY,
+  );
+
+  return response;
+};
+
+export const discovery = async (
+  options: DiscoveryOptions,
+): Promise<DiscoveryResponse> => {
+  const requestBody = {
+    name: options.name,
+    prompt: options.prompt,
+    entryPointUrlPath: options.entryPointUrlPath,
+    prerequisiteId: options.prerequisiteId,
+    externalId: options.externalId,
+    assignedTagIds: options.assignedTagIds,
+    folderId: options.folderId,
+  };
+
+  const response = await apiCall<DiscoveryResponse>(
+    "post",
+    "/api/apiKey/v2/test-targets/[testTargetId]/discoveries",
+    options.apiKey,
+    requestBody,
+  );
+
+  return response;
+};
+
+/* example notificytion
+    {
+        "id": "ee8ffcdf-1df8-4b37-b789-9694dd37e6b3",
+        "testTargetId": "edea1e1a-5152-4c1a-ac11-8b7d0cff9a6b",
+        "createdAt": "2025-03-06T13:23:13.205Z",
+        "updatedAt": "2025-03-06T13:29:14.285Z",
+        "payload": {
+            "testCaseId": "c1ec6d3d-36e8-40eb-b77a-5c7ca4f29605"
+        },
+        "type": "VALIDATION_PASSED",
+        "ack": "IN_WEB_APP"
+    },
+    */
+export const getNotifications = async (
+  apiKey: string,
+  testTargetId: string,
+): Promise<Notification[]> => {
+  const response = await apiCall<Notification[]>(
+    "get",
+    `apiKey/v2/test-targets/${testTargetId}/notifications`,
     apiKey,
   );
   return response;

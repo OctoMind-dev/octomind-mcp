@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { registerTools } from "./tools";
+import { checkNotifications, registerTools } from "./tools";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { version } from "./version";
 
@@ -12,6 +12,8 @@ const buildServer = (): McpServer => {
   return server;
 };
 
+export const serverStartupTime = Date.now();
+
 const start = async () => {
   if (!process.env.APIKEY) {
     console.error("APIKEY environment variable is required");
@@ -21,6 +23,18 @@ const start = async () => {
   console.error("Connecting server to transport...");
   const server = buildServer();
   await server.connect(transport);
+  setInterval(async () => {
+    await checkNotifications(server);
+  }, 20_000);
+  // Cleanup on exit
+  process.on("SIGTERM", async () => {
+    await server.close();
+    process.exit(0);
+  });
+  process.on("SIGINT", async () => {
+    await server.close();
+    process.exit(0);
+  });
 };
 
 start()
