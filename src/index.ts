@@ -16,8 +16,9 @@ let transport: SSEServerTransport | undefined =
   undefined;
 
 app.get("/sse", async (req, res) => {
+  console.log({headers: req.headers, route: req.route, url: req.url});
   transport = new SSEServerTransport("/messages", res);
-  console.log("Client connected");
+  console.log("Client connected, session", transport.sessionId);
   await server.connect(transport);
 });
 
