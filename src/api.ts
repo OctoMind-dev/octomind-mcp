@@ -19,6 +19,7 @@ import {
   SuccessResponse,
   Environment,
   TestReport,
+  DiscoveryOptions,
 } from "./types";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
@@ -58,6 +59,31 @@ const apiCall = async <T>(
 
 const outputResult = (result: unknown): void => {
   console.log(JSON.stringify(result, null, 2));
+};
+
+type DiscoveryResponse = object;
+
+export const discovery = async (
+  options: DiscoveryOptions,
+): Promise<DiscoveryResponse> => {
+  const requestBody = {
+    name: options.name,
+    prompt: options.prompt,
+    entryPointUrlPath: options.entryPointUrlPath,
+    prerequisiteId: options.prerequisiteId,
+    externalId: options.externalId,
+    assignedTagIds: options.assignedTagIds,
+    folderId: options.folderId,
+  };
+
+  const response = await apiCall<DiscoveryResponse>(
+    "post",
+    "/api/apiKey/v2/test-targets/[testTargetId]/discoveries",
+    options.apiKey,
+    requestBody,
+  );
+
+  return response;
 };
 
 export const executeTests = async (

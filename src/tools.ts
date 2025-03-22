@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { executeTests, getTestReport, getTestReports } from "./api";
+import { discoveryBody } from "./types";
 
 const APIKEY = process.env.APIKEY ?? "";
 
@@ -177,6 +178,22 @@ export const registerTools = (server: McpServer): void => {
     },
   );
 
+server.tool(
+    "discovery",
+    {discoveryBody},
+    async (params) => {
+      const res = await discovery({apiKey: APIKEY, json: true, ...params});
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Retrieved discovery for: ${params.name}`,
+            ...res
+          },
+        ],
+      };
+    },
+  );
   // Private location endpoints
   server.tool(
     "getPrivateLocations",
