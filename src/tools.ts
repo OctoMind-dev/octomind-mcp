@@ -5,26 +5,33 @@ import { executeTests, getTestReport, getTestReports } from "./api";
 const APIKEY = process.env.APIKEY ?? "";
 
 export const registerTools = (server: McpServer): void => {
-
   // Test execution
   server.tool(
     "executeTests",
     {
       testTargetId: z.string().uuid(),
       url: z.string().url(),
-      context: z.object({ source: z.literal("manual"), description: z.string(), }),
+      context: z.object({
+        source: z.literal("manual"),
+        description: z.string(),
+      }),
       environmentName: z.string().default("default"),
       variablesToOverwrite: z.record(z.array(z.string())).optional(),
       tags: z.array(z.string()).default([]),
     },
     async (params) => {
-      const res = await executeTests({apiKey: APIKEY, json: true,  description: "triggered by MCP Tool", ...params});
+      const res = await executeTests({
+        apiKey: APIKEY,
+        json: true,
+        description: "triggered by MCP Tool",
+        ...params,
+      });
       return {
         content: [
           {
             type: "text",
             text: `Executing tests for target: ${params.testTargetId} on URL: ${params.url}`,
-            ...res
+            ...res,
           },
         ],
       };
@@ -38,7 +45,6 @@ export const registerTools = (server: McpServer): void => {
       testTargetId: z.string().uuid(),
     },
     async (params) => {
-
       return {
         content: [
           {
@@ -56,15 +62,21 @@ export const registerTools = (server: McpServer): void => {
       testTargetId: z.string().uuid(),
       name: z.string(),
       discoveryUrl: z.string().url(),
-      testAccount: z.object({
-        username: z.string(),
-        password: z.string(),
-        otpInitializerKey: z.string().nullable().optional(),
-      }).nullable().optional(),
-      basicAuth: z.object({
-        username: z.string(),
-        password: z.string(),
-      }).nullable().optional(),
+      testAccount: z
+        .object({
+          username: z.string(),
+          password: z.string(),
+          otpInitializerKey: z.string().nullable().optional(),
+        })
+        .nullable()
+        .optional(),
+      basicAuth: z
+        .object({
+          username: z.string(),
+          password: z.string(),
+        })
+        .nullable()
+        .optional(),
       privateLocationName: z.string().optional(),
       additionalHeaderFields: z.record(z.string()).optional(),
     },
@@ -87,15 +99,21 @@ export const registerTools = (server: McpServer): void => {
       environmentId: z.string().uuid(),
       name: z.string().optional(),
       discoveryUrl: z.string().url().optional(),
-      testAccount: z.object({
-        username: z.string(),
-        password: z.string(),
-        otpInitializerKey: z.string().nullable().optional(),
-      }).nullable().optional(),
-      basicAuth: z.object({
-        username: z.string(),
-        password: z.string(),
-      }).nullable().optional(),
+      testAccount: z
+        .object({
+          username: z.string(),
+          password: z.string(),
+          otpInitializerKey: z.string().nullable().optional(),
+        })
+        .nullable()
+        .optional(),
+      basicAuth: z
+        .object({
+          username: z.string(),
+          password: z.string(),
+        })
+        .nullable()
+        .optional(),
       privateLocationName: z.string().optional(),
       additionalHeaderFields: z.record(z.string()).optional(),
     },
@@ -134,23 +152,35 @@ export const registerTools = (server: McpServer): void => {
     "getTestReports",
     {
       testTargetId: z.string().uuid(),
-      key: z.object({
-        createdAt: z.string().datetime(),
-      }).optional(),
-      filter: z.array(z.object({
-        key: z.string(),
-        operator: z.enum(["EQUALS"]),
-        value: z.string(),
-      })).optional(),
+      key: z
+        .object({
+          createdAt: z.string().datetime(),
+        })
+        .optional(),
+      filter: z
+        .array(
+          z.object({
+            key: z.string(),
+            operator: z.enum(["EQUALS"]),
+            value: z.string(),
+          }),
+        )
+        .optional(),
     },
     async (params) => {
-      const res = await getTestReports({apiKey: APIKEY, json: true, testTargetId: params.testTargetId, key: params.key, filter: params.filter});
+      const res = await getTestReports({
+        apiKey: APIKEY,
+        json: true,
+        testTargetId: params.testTargetId,
+        key: params.key,
+        filter: params.filter,
+      });
       return {
         content: [
           {
             type: "text",
             text: `Retrieved test reports for test target: ${params.testTargetId}`,
-            ...res
+            ...res,
           },
         ],
       };
@@ -164,13 +194,18 @@ export const registerTools = (server: McpServer): void => {
       testReportId: z.string().uuid(),
     },
     async (params) => {
-      const res = await getTestReport({apiKey: APIKEY, json: true, reportId: params.testReportId, testTargetId: params.testTargetId,});
+      const res = await getTestReport({
+        apiKey: APIKEY,
+        json: true,
+        reportId: params.testReportId,
+        testTargetId: params.testTargetId,
+      });
       return {
         content: [
           {
             type: "text",
             text: `Retrieved test report: ${params.testReportId} for test target: ${params.testTargetId}`,
-            ...res
+            ...res,
           },
         ],
       };
@@ -178,20 +213,14 @@ export const registerTools = (server: McpServer): void => {
   );
 
   // Private location endpoints
-  server.tool(
-    "getPrivateLocations",
-    {},
-    async () => {
-      return {
-        content: [
-          {
-            type: "text",
-            text: "Retrieved all private locations",
-          },
-        ],
-      };
-    },
-  );
-
-
-}
+  server.tool("getPrivateLocations", {}, async () => {
+    return {
+      content: [
+        {
+          type: "text",
+          text: "Retrieved all private locations",
+        },
+      ],
+    };
+  });
+};

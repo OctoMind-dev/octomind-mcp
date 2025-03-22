@@ -10,10 +10,10 @@ const buildServer = (): McpServer => {
   });
   registerTools(server);
   return server;
-}
+};
 
 const start = async () => {
-  if(!process.env.APIKEY) {
+  if (!process.env.APIKEY) {
     console.error("APIKEY environment variable is required");
     process.exit(1);
   }
@@ -23,9 +23,11 @@ const start = async () => {
   await server.connect(transport);
 };
 
-start().then(() => {
-  console.error(`Server version ${version} started`);
-}).catch((error) => {
-  console.error("Error starting server:", error);
-  process.exit(1);
-});
+start()
+  .then(() => {
+    console.error(`Server version ${version} started`);
+  })
+  .catch((error) => {
+    console.error("Error starting server:", error);
+    process.exit(1);
+  });
