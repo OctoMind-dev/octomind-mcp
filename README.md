@@ -13,4 +13,20 @@ The server uses 2 environment variables:
 - executeTests
 
 
+# config
 
+to use the server e.g. in cursor you can configure it like this
+
+```json
+{
+  "mcpServers": {
+    "octomind": {
+      "command": "npx",
+      "args": ["@octomind/octomind-mcp"],
+      "env": {
+        "APIKEY": "...."
+      }
+    }
+  }
+}
+```
