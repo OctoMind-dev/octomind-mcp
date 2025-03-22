@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import express from "express";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { registerTools } from "./tools";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 const buildServer = (): McpServer => {
   const server = new McpServer({
@@ -12,35 +12,20 @@ const buildServer = (): McpServer => {
   return server;
 }
 
-const servers : Record<string, McpServer> = {};
-const transports : Record<string, SSEServerTransport> = {};
-
-const app = express();
-
-app.get("/sse", async (req, res) => {
-  console.log({ headers: req.headers, route: req.route, url: req.url });
-  const transport = new SSEServerTransport("/messages", res);
-  console.log("Client connected, session", transport.sessionId);
-  const server = buildServer();
-  servers[transport.sessionId] = server;
-  transports[transport.sessionId] = transport;
-  await server.connect(transport);
-});
-
-app.post("/messages", async (req, res) => {
-  const sessionId = req.query.sessionId as string;
-  const transport = transports[sessionId];
-  if (!transport) {
-    res.status(400);
-    res.json({ error: "No transport" });
-    return;
+const start = async () => {
+  if(!process.env.APIKEY) {
+    console.error("APIKEY environment variable is required");
+    process.exit(1);
   }
-  console.log({ headers: req.headers, route: req.route, url: req.url });
-  await transport.handlePostMessage(req, res);
-});
+  const transport = new StdioServerTransport();
+  console.error("Connecting server to transport...");
+  const server = buildServer();
+  await server.connect(transport);
+};
 
-const PORT = parseInt(process.env.PORT || "3002", 10);
-
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+start().then(() => {
+  console.error("Server started");
+}).catch((error) => {
+  console.error("Error starting server:", error);
+  process.exit(1);
 });
