@@ -1,42 +1,19 @@
-import {
-  McpServer,
-  ResourceTemplate,
-} from "@modelcontextprotocol/sdk/server/mcp.js";
-import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
-import { Variables } from "@modelcontextprotocol/sdk/shared/uriTemplate.js";
-import {
-  ListResourcesResult,
-  ReadResourceResult,
-} from "@modelcontextprotocol/sdk/types.js";
-import {
-  checkNotifications,
-  resetRefreshTimes,
-  listTestReports,
-  registerResources,
-  readTestReport,
-} from "../src/resources";
-import * as tools from "../src/tools";
-import * as api from "../src/api";
-import { TestReportsResponse } from "../src/types";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { checkNotifications, resetRefreshTimes } from "../src/resources";
+import { getLastTestTargetId } from "../src/tools";
+import { getNotifications, getTestReports } from "../src/api";
 
-jest.mock("../src/tools", () => ({
-  getLastTestTargetId: jest.fn(),
-  APIKEY: "test-api-key",
-}));
-
-jest.mock("../src/api", () => ({
-  getNotifications: jest.fn(),
-  getTestReports: jest
-    .fn()
-    .mockResolvedValue({ data: [], hasNextPage: false } as TestReportsResponse),
-  getTestCase: jest.fn().mockResolvedValue({ data: [] }),
-}));
+jest.mock("../src/tools");
+jest.mock("../src/api");
 
 describe("Resources module", () => {
   let server: McpServer;
   const mockTestTargetId = "123e4567-e89b-12d3-a456-426614174000";
   const baseTime = new Date("2025-03-23T10:00:00Z").getTime();
-
+  const mockGetLastTestTargetId = jest.mocked(getLastTestTargetId);
+  const mockGetNotifications = jest.mocked(getNotifications);
+  const mockGetTestReports = jest.mocked(getTestReports);
+  //const mockGetTestCases = jest.mocked(getTestCases);
   beforeEach(() => {
     jest.clearAllMocks();
     server = {
@@ -44,10 +21,6 @@ describe("Resources module", () => {
         notification: jest.fn(),
       },
     } as unknown as McpServer;
-    // Reset the module's state
-    jest.isolateModules(() => {
-      require("../src/resources");
-    });
   });
 
   describe("checkNotifications", () => {
@@ -56,20 +29,18 @@ describe("Resources module", () => {
     });
 
     it("should do nothing when no test target is set", async () => {
-      jest.spyOn(tools, "getLastTestTargetId").mockReturnValue(undefined);
+      mockGetLastTestTargetId.mockReturnValue(undefined);
 
       await checkNotifications(server);
 
-      expect(api.getNotifications).not.toHaveBeenCalled();
+      expect(mockGetNotifications).not.toHaveBeenCalled();
       expect(server.server.notification).not.toHaveBeenCalled();
-      expect(api.getTestReports).not.toHaveBeenCalled();
+      expect(mockGetTestReports).not.toHaveBeenCalled();
     });
 
     it("should reload reports when REPORT_EXECUTION_FINISHED notification is received", async () => {
-      jest
-        .spyOn(tools, "getLastTestTargetId")
-        .mockReturnValue(mockTestTargetId);
-      jest.spyOn(api, "getNotifications").mockResolvedValue([
+      mockGetLastTestTargetId.mockReturnValue(mockTestTargetId);
+      mockGetNotifications.mockResolvedValue([
         {
           id: "1",
           type: "REPORT_EXECUTION_FINISHED",
@@ -79,18 +50,16 @@ describe("Resources module", () => {
           ack: null,
         },
       ]);
-      jest
-        .spyOn(api, "getTestReports")
-        .mockResolvedValue({ data: [], hasNextPage: false });
+      mockGetTestReports.mockResolvedValue({ data: [], hasNextPage: false });
 
       await checkNotifications(server);
 
-      expect(api.getNotifications).toHaveBeenCalledWith(
-        "test-api-key",
+      expect(mockGetNotifications).toHaveBeenCalledWith(
+        "",
         mockTestTargetId,
       );
-      expect(api.getTestReports).toHaveBeenCalledWith({
-        apiKey: "test-api-key",
+      expect(mockGetTestReports).toHaveBeenCalledWith({
+        apiKey: "",
         testTargetId: mockTestTargetId,
       });
       expect(server.server.notification).toHaveBeenCalledWith({
@@ -99,10 +68,8 @@ describe("Resources module", () => {
     });
 
     it("should reload test cases when DISCOVERY_FINISHED notification is received", async () => {
-      jest
-        .spyOn(tools, "getLastTestTargetId")
-        .mockReturnValue(mockTestTargetId);
-      jest.spyOn(api, "getNotifications").mockResolvedValue([
+      mockGetLastTestTargetId.mockReturnValue(mockTestTargetId);
+      mockGetNotifications.mockResolvedValue([
         {
           id: "1",
           type: "DISCOVERY_FINISHED",
@@ -115,8 +82,8 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(api.getNotifications).toHaveBeenCalledWith(
-        "test-api-key",
+      expect(mockGetNotifications).toHaveBeenCalledWith(
+        "",
         mockTestTargetId,
       );
       expect(server.server.notification).toHaveBeenCalledWith({
@@ -125,10 +92,8 @@ describe("Resources module", () => {
     });
 
     it("should reload both when both types of notifications are received", async () => {
-      jest
-        .spyOn(tools, "getLastTestTargetId")
-        .mockReturnValue(mockTestTargetId);
-      jest.spyOn(api, "getNotifications").mockResolvedValue([
+      mockGetLastTestTargetId.mockReturnValue(mockTestTargetId);
+      mockGetNotifications.mockResolvedValue([
         {
           id: "1",
           type: "REPORT_EXECUTION_FINISHED",
@@ -146,28 +111,24 @@ describe("Resources module", () => {
           ack: null,
         },
       ]);
-      jest
-        .spyOn(api, "getTestReports")
-        .mockResolvedValue({ data: [], hasNextPage: false });
+      mockGetTestReports.mockResolvedValue({ data: [], hasNextPage: false });
 
       await checkNotifications(server);
 
-      expect(api.getNotifications).toHaveBeenCalledWith(
-        "test-api-key",
+      expect(mockGetNotifications).toHaveBeenCalledWith(
+        "",
         mockTestTargetId,
       );
-      expect(api.getTestReports).toHaveBeenCalledWith({
-        apiKey: "test-api-key",
+      expect(mockGetTestReports).toHaveBeenCalledWith({
+        apiKey: "",
         testTargetId: mockTestTargetId,
       });
       expect(server.server.notification).toHaveBeenCalledTimes(2);
     });
 
     it("should not reload when notifications are older than last refresh", async () => {
-      jest
-        .spyOn(tools, "getLastTestTargetId")
-        .mockReturnValue(mockTestTargetId);
-      jest.spyOn(api, "getNotifications").mockResolvedValue([
+      mockGetLastTestTargetId.mockReturnValue(mockTestTargetId);
+      mockGetNotifications.mockResolvedValue([
         {
           id: "1",
           type: "REPORT_EXECUTION_FINISHED",
@@ -180,11 +141,11 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(api.getNotifications).toHaveBeenCalledWith(
-        "test-api-key",
+      expect(mockGetNotifications).toHaveBeenCalledWith(
+        "",
         mockTestTargetId,
       );
-      expect(api.getTestReports).not.toHaveBeenCalled();
+      expect(mockGetTestReports).not.toHaveBeenCalled();
       expect(server.server.notification).not.toHaveBeenCalled();
     });
   });

@@ -23,7 +23,7 @@ import { TestReport } from "./types";
     return { contents: [{ uri: "foo", mimeType: "application/json", name: "location", text: "http://localhost:3000" }] };
   });*/
 
-export let reports: TestReport[] | undefined;
+let reports: TestReport[] | undefined;
 let lastReportRefreshTime = Date.now();
 let testCases: TestCase[] | undefined;
 let lastTestCaseRefreshTime = Date.now();
@@ -38,6 +38,7 @@ export const reloadTestReports = async (
   server: McpServer,
 ) => {
   const result = await getTestReports({ apiKey: APIKEY, testTargetId });
+  console.error("Reloaded reports for test target:", testTargetId);
   reports = result.data;
   await server.server.notification({
     method: "notifications/resources/list_changed",
@@ -46,7 +47,7 @@ export const reloadTestReports = async (
 };
 
 export const reloadTestCases = async (
-  testTargetId: string,
+  _testTargetId: string,
   server: McpServer,
 ) => {
   const result = { data: [] }; //await getTestCases({ apiKey: APIKEY, testTargetId });
@@ -62,6 +63,7 @@ export const checkNotifications = async (server: McpServer): Promise<void> => {
   let forceReloadReports = false;
   let forceReloadTestCases = false;
   if (testTargetId) {
+    console.error("Checking notifications for test target:", testTargetId);
     const notifications = await getNotifications(APIKEY, testTargetId);
     notifications.forEach(async (n) => {
       if (
@@ -93,7 +95,7 @@ export const listTestReports = (
     resources:
       reports?.map((report) => ({
         uri: `testreport://${report.id}`,
-        name: report.id,
+        name: `report: ${report.id} with status ${report.status} on ${report.executionUrl}`,
         mimeType: "application/json",
       })) ?? [],
   };
@@ -104,16 +106,25 @@ export const readTestReport = (
   vars: Variables,
   _extra: RequestHandlerExtra,
 ): ReadResourceResult => {
-  return {
-    contents: [
-      {
-        uri: "foo",
-        mimeType: "application/json",
-        name: "location",
-        text: "http://localhost:3000",
-      },
-    ],
-  };
+  console.error("Reading test report:", uri, vars);
+  const reportId = vars.id;
+  const report = reports?.find((r) => r.id === reportId);
+  if (report) {
+    return {
+      contents: [
+        {
+          uri: uri.toString(),
+          mimeType: "application/json",
+          name: `report: ${report.id} with status ${report.status} on ${report.executionUrl}`,
+          text: JSON.stringify(report),
+        },
+      ],
+    };
+  } else {
+    return {
+      contents: [],
+    };
+  }
 };
 
 export const registerResources = (server: McpServer): void => {

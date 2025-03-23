@@ -46,6 +46,7 @@ export const registerTools = (server: McpServer): void => {
         .describe("Unique identifier of the test target"),
     },
     async (params) => {
+      await setLastTestTargetId(server, params.testTargetId);
       const res = await getTestCase(
         APIKEY,
         params.testCaseId,
