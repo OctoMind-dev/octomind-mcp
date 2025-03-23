@@ -54,10 +54,7 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(
-        "",
-        mockTestTargetId,
-      );
+      expect(mockGetNotifications).toHaveBeenCalledWith("", mockTestTargetId);
       expect(mockGetTestReports).toHaveBeenCalledWith({
         apiKey: "",
         testTargetId: mockTestTargetId,
@@ -82,10 +79,7 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(
-        "",
-        mockTestTargetId,
-      );
+      expect(mockGetNotifications).toHaveBeenCalledWith("", mockTestTargetId);
       expect(server.server.notification).toHaveBeenCalledWith({
         method: "notifications/resources/list_changed",
       });
@@ -115,10 +109,7 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(
-        "",
-        mockTestTargetId,
-      );
+      expect(mockGetNotifications).toHaveBeenCalledWith("", mockTestTargetId);
       expect(mockGetTestReports).toHaveBeenCalledWith({
         apiKey: "",
         testTargetId: mockTestTargetId,
@@ -141,10 +132,7 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(
-        "",
-        mockTestTargetId,
-      );
+      expect(mockGetNotifications).toHaveBeenCalledWith("", mockTestTargetId);
       expect(mockGetTestReports).not.toHaveBeenCalled();
       expect(server.server.notification).not.toHaveBeenCalled();
     });
