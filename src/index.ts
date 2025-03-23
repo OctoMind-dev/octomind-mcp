@@ -5,6 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { version } from "./version";
 
 import { checkNotifications, registerResources } from "./resources";
+import { registerPrompts } from "./prompts";
 
 const buildServer = (): McpServer => {
   const server = new McpServer({
@@ -13,6 +14,7 @@ const buildServer = (): McpServer => {
   });
   registerTools(server);
   registerResources(server);
+  registerPrompts(server);
   return server;
 };
 
