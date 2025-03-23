@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { checkNotifications, registerTools } from "./tools";
+import { registerTools } from "./tools";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { version } from "./version";
+
+import { checkNotifications, registerResources } from "./resources";
 
 const buildServer = (): McpServer => {
   const server = new McpServer({
@@ -10,6 +12,7 @@ const buildServer = (): McpServer => {
     version,
   });
   registerTools(server);
+  registerResources(server);
   return server;
 };
 
