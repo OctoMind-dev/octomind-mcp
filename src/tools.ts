@@ -2,11 +2,15 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { uuidValidation } from "./types";
 import {
+  createEnvironment,
+  deleteEnvironment,
   discovery,
   executeTests,
   getTestCase,
   getTestReport,
   getTestReports,
+  listEnvironments,
+  updateEnvironment,
 } from "./api";
 
 import { reloadTestReports } from "./resources";
@@ -127,11 +131,16 @@ export const registerTools = (server: McpServer): void => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
+      const res = await listEnvironments({
+        apiKey: APIKEY,
+        testTargetId: params.testTargetId,
+      });
       return {
         content: [
           {
             type: "text",
             text: `Retrieved environments for test target: ${params.testTargetId}`,
+            ...res,
           },
         ],
       };
@@ -165,13 +174,11 @@ export const registerTools = (server: McpServer): void => {
             ),
           otpInitializerKey: z
             .string()
-            .nullable()
             .optional()
             .describe(
               "Optional OTP initializer key, if discovery needs authentication with otp",
             ),
         })
-        .nullable()
         .optional()
         .describe(
           "Optional test account credentials, if discovery needs authentication",
@@ -181,7 +188,7 @@ export const registerTools = (server: McpServer): void => {
           username: z
             .string()
             .describe(
-              "Username for basic auth, if discovery needs authentication",
+              "Username for basic auth, if discovery needs authentication ",
             ),
           password: z
             .string()
@@ -189,7 +196,6 @@ export const registerTools = (server: McpServer): void => {
               "Password for basic auth, if discovery needs authentication",
             ),
         })
-        .nullable()
         .optional()
         .describe(
           "Optional basic authentication credentials, if discovery needs authentication",
@@ -205,11 +211,16 @@ export const registerTools = (server: McpServer): void => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
+      const res = await createEnvironment({
+        apiKey: APIKEY,
+        ...params,
+      });
       return {
         content: [
           {
-            type: "text",
             text: `Created environment: ${params.name} for test target: ${params.testTargetId}`,
+            ...res,
+            type: "text",
           },
         ],
       };
@@ -253,13 +264,11 @@ export const registerTools = (server: McpServer): void => {
             ),
           otpInitializerKey: z
             .string()
-            .nullable()
             .optional()
             .describe(
               "Optional OTP initializer key, if discovery needs authentication with otp",
             ),
         })
-        .nullable()
         .optional()
         .describe(
           "Optional test account credentials, if discovery needs authentication",
@@ -277,7 +286,6 @@ export const registerTools = (server: McpServer): void => {
               "Password for basic auth, if discovery needs authentication",
             ),
         })
-        .nullable()
         .optional()
         .describe(
           "Optional basic authentication credentials, if discovery needs authentication",
@@ -297,11 +305,16 @@ export const registerTools = (server: McpServer): void => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
+      const res = await updateEnvironment({
+        apiKey: APIKEY,
+        ...params,
+      });
       return {
         content: [
           {
-            type: "text",
             text: `Updated environment: ${params.environmentId} for test target: ${params.testTargetId}`,
+            ...res,
+            type: "text",
           },
         ],
       };
@@ -326,11 +339,16 @@ export const registerTools = (server: McpServer): void => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
+      const res = await deleteEnvironment({
+        apiKey: APIKEY,
+        ...params,
+      });
       return {
         content: [
           {
             type: "text",
             text: `Deleted environment: ${params.environmentId} for test target: ${params.testTargetId}`,
+            ...res,
           },
         ],
       };
