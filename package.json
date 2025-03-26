@@ -35,7 +35,6 @@
     "@modelcontextprotocol/sdk": "^1.7.0",
     "axios": "^1.8.4",
     "express": "^4.21.2",
-    "trieve-ts-sdk": "^0.0.68",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },

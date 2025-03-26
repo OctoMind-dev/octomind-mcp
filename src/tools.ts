@@ -9,9 +9,9 @@ import {
   getTestCase,
   getTestReport,
   getTestReports,
-  initTrieve,
   listEnvironments,
   search,
+  trieveConfig,
   updateEnvironment,
 } from "./api";
 
@@ -36,7 +36,7 @@ export const setLastTestTargetId = async (
 };
 
 export const registerTools = async (server: McpServer): Promise<void> => {
-  const trieve = await initTrieve();
+  const trieve = await trieveConfig();
 
   server.tool(
     "search",

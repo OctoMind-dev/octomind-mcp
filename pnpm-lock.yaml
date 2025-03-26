@@ -17,9 +17,6 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.21.2
-      trieve-ts-sdk:
-        specifier: ^0.0.68
-        version: 0.0.68
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -2638,9 +2635,6 @@ packages:
   toidentifier@1.0.1:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
-
-  trieve-ts-sdk@0.0.68:
-    resolution: {integrity: sha512-8taBpJs9/XLMzm/gEwFgTc21o4SPDlhcCKX5thwYBcWSU329B55p09gKC0Tnpafx5EY0fHtLxHpvpZLagIu8Tw==}
 
   ts-api-utils@2.1.0:
     resolution: {integrity: sha512-CUgTZL1irw8u29bzrOD/nH85jqyc74D6SshFgujOIA7osm2Rz7dYH77agkx7H4FBNxDq7Cjf+IjaX/8zwFW+ZQ==}
@@ -5951,8 +5945,6 @@ snapshots:
       is-number: 7.0.0
 
   toidentifier@1.0.1: {}
-
-  trieve-ts-sdk@0.0.68: {}
 
   ts-api-utils@2.1.0(typescript@5.8.2):
     dependencies:
