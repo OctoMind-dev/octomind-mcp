@@ -21,27 +21,39 @@ const buildServer = async (): Promise<McpServer> => {
 const helpInstall = () => {
   const configs = {
     claude: {
-      name: "Octomind MCP Server",
-      command: "npx",
-      args: ["@octomind/octomind-mcp"],
-      env: {
-        APIKEY: "your-api-key-here",
+      mcpServers: {
+        "octomind-mcp": {
+          name: "Octomind MCP Server",
+          command: "npx",
+          args: ["@octomind/octomind-mcp"],
+          env: {
+            APIKEY: "your-api-key-here",
+          },
+        },
       },
     },
     cursor: {
-      name: "Octomind MCP Server",
-      command: "npx",
-      args: ["@octomind/octomind-mcp"],
-      env: {
-        APIKEY: "your-api-key-here",
+      mcpServers: {
+        "octomind-mcp": {
+          name: "Octomind MCP Server",
+          command: "npx",
+          args: ["@octomind/octomind-mcp"],
+          env: {
+            APIKEY: "your-api-key-here",
+          },
+        },
       },
     },
     windsurf: {
-      name: "Octomind MCP Server",
-      command: "npx",
-      args: ["@octomind/octomind-mcp"],
-      environment: {
-        APIKEY: "your-api-key-here",
+      mcpServers: {
+        "octomind-mcp": {
+          name: "Octomind MCP Server",
+          command: "npx",
+          args: ["@octomind/octomind-mcp"],
+          environment: {
+            APIKEY: "your-api-key-here",
+          },
+        },
       },
     },
   };

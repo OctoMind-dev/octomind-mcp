@@ -37,13 +37,17 @@ This will output configuration examples for Claude Desktop, Cursor, and Windsurf
 ### Claude Desktop (.claude-config.json)
 ```json
 {
-  "name": "Octomind MCP Server",
-  "command": "npx",
-  "args": [
-    "@octomind/octomind-mcp"
-  ],
-  "env": {
-    "APIKEY": "your-api-key-here"
+  "mcpServers": {
+    "octomind-mcp": {
+      "name": "Octomind MCP Server",
+      "command": "npx",
+      "args": [
+        "@octomind/octomind-mcp"
+      ],
+      "env": {
+        "APIKEY": "your-api-key-here"
+      }
+    }
   }
 }
 ```
@@ -51,13 +55,17 @@ This will output configuration examples for Claude Desktop, Cursor, and Windsurf
 ### Cursor (cursor.json)
 ```json
 {
-  "name": "Octomind MCP Server",
-  "command": "npx",
-  "args": [
-    "@octomind/octomind-mcp"
-  ],
-  "env": {
-    "APIKEY": "your-api-key-here"
+  "mcpServers": {
+    "octomind-mcp": {
+      "name": "Octomind MCP Server",
+      "command": "npx",
+      "args": [
+        "@octomind/octomind-mcp"
+      ],
+      "env": {
+        "APIKEY": "your-api-key-here"
+      }
+    }
   }
 }
 ```
@@ -65,13 +73,17 @@ This will output configuration examples for Claude Desktop, Cursor, and Windsurf
 ### Windsurf (config.json)
 ```json
 {
-  "name": "Octomind MCP Server",
-  "command": "npx",
-  "args": [
-    "@octomind/octomind-mcp"
-  ],
-  "environment": {
-    "APIKEY": "your-api-key-here"
+  "mcpServers": {
+    "octomind-mcp": {
+      "name": "Octomind MCP Server",
+      "command": "npx",
+      "args": [
+        "@octomind/octomind-mcp"
+      ],
+      "environment": {
+        "APIKEY": "your-api-key-here"
+      }
+    }
   }
 }
 ```
