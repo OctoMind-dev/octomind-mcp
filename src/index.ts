@@ -1,15 +1,20 @@
 #!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { checkNotifications, registerTools } from "./tools";
+import { registerTools } from "./tools";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { version } from "./version";
 
-const buildServer = (): McpServer => {
+import { checkNotifications, registerResources } from "./resources";
+import { registerPrompts } from "./prompts";
+
+const buildServer = async (): Promise<McpServer> => {
   const server = new McpServer({
     name: "Octomind MCP Server",
     version,
   });
-  registerTools(server);
+  await registerTools(server);
+  registerResources(server);
+  registerPrompts(server);
   return server;
 };
 
@@ -22,7 +27,7 @@ const start = async () => {
   }
   const transport = new StdioServerTransport();
   console.error("Connecting server to transport...");
-  const server = buildServer();
+  const server = await buildServer();
   await server.connect(transport);
   setInterval(async () => {
     await checkNotifications(server);

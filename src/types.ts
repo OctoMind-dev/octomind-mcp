@@ -18,6 +18,12 @@ export const discoveryBody = z.object({
   folderId: z.string().optional(),
 });
 
+export type SearchResult = {
+  title: string;
+  content: string;
+  link: string;
+};
+
 export type DiscoveryBody = z.infer<typeof discoveryBody>;
 
 export type DiscoveryResponse = {
