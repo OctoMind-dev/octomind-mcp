@@ -33,6 +33,8 @@ export const resetRefreshTimes = (time: Date) => {
   lastTestCaseRefreshTime = time.getTime();
 };
 
+let tracesForTestReport: Record<string, string> = {};
+
 export const reloadTestReports = async (
   testTargetId: string,
   server: McpServer,
@@ -40,6 +42,15 @@ export const reloadTestReports = async (
   const result = await getTestReports({ apiKey: APIKEY, testTargetId });
   console.error("Reloaded reports for test target:", testTargetId);
   reports = result.data;
+  tracesForTestReport = {};
+  reports.forEach((r) => {
+    const testResults = r.testResults;
+    for (const testResult of testResults) {
+      if (testResult.traceUrl) {
+        tracesForTestReport[r.id] = testResult.traceUrl;
+      }
+    }
+  });
   await server.server.notification({
     method: "notifications/resources/list_changed",
   });
@@ -127,6 +138,52 @@ export const readTestReport = (
   }
 };
 
+const listTestResultTraces = (
+  _extra: RequestHandlerExtra,
+): ListResourcesResult => {
+  return {
+    resources: Object.entries(tracesForTestReport).map(([id, traceUrl]) => ({
+      uri: `testresulttrace://${id}`,
+      name: `Trace ${id}`,
+      description: `Trace for test result ${id}`,
+      metadata: { traceUrl },
+    })),
+  };
+};
+
+const readTestResultTrace = async (
+  uri: URL,
+  vars: Variables,
+  _extra: RequestHandlerExtra,
+): Promise<ReadResourceResult> => {
+  const id: string = vars.id as string;
+  const traceUrl = tracesForTestReport[id];
+  if (!traceUrl) {
+    throw new Error(`No trace found for test result ${id}`);
+  }
+
+  const response = await fetch(traceUrl);
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch trace from ${traceUrl}: ${response.statusText}`,
+    );
+  }
+
+  const buffer = await response.arrayBuffer();
+  const base64Data = Buffer.from(buffer).toString("base64");
+
+  return {
+    contents: [
+      {
+        uri: traceUrl,
+        mimeType: "application/zip",
+        name: "trace",
+        text: base64Data,
+      },
+    ],
+  };
+};
+
 export const registerResources = (server: McpServer): void => {
   server.resource(
     "test reports",
@@ -134,5 +191,12 @@ export const registerResources = (server: McpServer): void => {
       list: listTestReports,
     }),
     readTestReport,
+  );
+  server.resource(
+    "test result traces",
+    new ResourceTemplate("testresulttrace://{id}", {
+      list: listTestResultTraces,
+    }),
+    readTestResultTrace,
   );
 };

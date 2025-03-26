@@ -17,6 +17,9 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.21.2
+      trieve-ts-sdk:
+        specifier: ^0.0.68
+        version: 0.0.68
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -44,7 +47,7 @@ importers:
         version: 4.2.2(eslint-plugin-import@2.31.0)(eslint@8.57.1)
       eslint-plugin-github:
         specifier: ^5.0.0
-        version: 5.1.8(eslint-import-resolver-typescript@4.2.2)(eslint@8.57.1)(typescript@5.8.2)
+        version: 5.1.8(eslint-import-resolver-typescript@4.2.2(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)(typescript@5.8.2)
       eslint-plugin-import:
         specifier: ^2.27.5
         version: 2.31.0(@typescript-eslint/parser@8.27.0(eslint@8.57.1)(typescript@5.8.2))(eslint-import-resolver-typescript@4.2.2)(eslint@8.57.1)
@@ -2636,6 +2639,9 @@ packages:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
 
+  trieve-ts-sdk@0.0.68:
+    resolution: {integrity: sha512-8taBpJs9/XLMzm/gEwFgTc21o4SPDlhcCKX5thwYBcWSU329B55p09gKC0Tnpafx5EY0fHtLxHpvpZLagIu8Tw==}
+
   ts-api-utils@2.1.0:
     resolution: {integrity: sha512-CUgTZL1irw8u29bzrOD/nH85jqyc74D6SshFgujOIA7osm2Rz7dYH77agkx7H4FBNxDq7Cjf+IjaX/8zwFW+ZQ==}
     engines: {node: '>=18.12'}
@@ -4216,7 +4222,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.27.0(eslint@8.57.1)(typescript@5.8.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@4.2.2)(eslint@8.57.1):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.27.0(eslint@8.57.1)(typescript@5.8.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@4.2.2(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -4246,7 +4252,7 @@ snapshots:
       lodash.snakecase: 4.1.1
       lodash.upperfirst: 4.3.1
 
-  eslint-plugin-github@5.1.8(eslint-import-resolver-typescript@4.2.2)(eslint@8.57.1)(typescript@5.8.2):
+  eslint-plugin-github@5.1.8(eslint-import-resolver-typescript@4.2.2(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)(typescript@5.8.2):
     dependencies:
       '@eslint/compat': 1.2.7(eslint@8.57.1)
       '@eslint/eslintrc': 3.3.1
@@ -4293,7 +4299,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.27.0(eslint@8.57.1)(typescript@5.8.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@4.2.2)(eslint@8.57.1)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.27.0(eslint@8.57.1)(typescript@5.8.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@4.2.2(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -5945,6 +5951,8 @@ snapshots:
       is-number: 7.0.0
 
   toidentifier@1.0.1: {}
+
+  trieve-ts-sdk@0.0.68: {}
 
   ts-api-utils@2.1.0(typescript@5.8.2):
     dependencies:

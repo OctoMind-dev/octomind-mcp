@@ -23,9 +23,65 @@ import {
   DiscoveryResponse,
   Notification,
   notificationSchema,
+  SearchResult,
 } from "./types";
+import { TrieveSDK } from "trieve-ts-sdk";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
+
+const mintlifyToken = "mint_dsc_3ZNWe13kDZKPFdidzxsnQFyU";
+const MINT_SUBDOMAIN = "octomind";
+const MINT_SERVER_URL = "https://leaves.mintlify.com";
+const DEFAULT_BASE_URL = "https://api.mintlifytrieve.com";
+const DOC_BASE_URL = "https://octomind.dev/docs";
+
+const trieveConfig = async () => {
+  const { data } = await axios.get(
+    `${MINT_SERVER_URL}/api/mcp/cli/${MINT_SUBDOMAIN}`,
+    {
+      headers: {
+        "X-API-Key": `${mintlifyToken}`,
+      },
+    },
+  );
+  return data;
+};
+
+export const initTrieve = async () => {
+  const config = await trieveConfig();
+
+  const trieve = new TrieveSDK({
+    apiKey: config.trieveApiKey,
+    datasetId: config.trieveDatasetId,
+    baseUrl: DEFAULT_BASE_URL,
+  });
+  return trieve;
+};
+
+export const search = async (
+  query: string,
+  trieve: TrieveSDK,
+): Promise<SearchResult[]> => {
+  const data = await trieve.autocomplete({
+    page_size: 10,
+    query,
+    search_type: "fulltext",
+    extend_results: true,
+    score_threshold: 1,
+  });
+  if (data.chunks === undefined || data.chunks.length === 0) {
+    throw new Error("No results found");
+  }
+  return data.chunks.map((result: any) => {
+    const { chunk } = result;
+    // TODO: Append custom domain to the link
+    return {
+      title: chunk.metadata.title,
+      content: chunk.chunk_html,
+      link: `${DOC_BASE_URL}/${chunk.link}`,
+    };
+  });
+};
 
 // Helper function for API calls
 const apiCall = async <T>(

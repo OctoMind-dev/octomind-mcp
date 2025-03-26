@@ -9,7 +9,9 @@ import {
   getTestCase,
   getTestReport,
   getTestReports,
+  initTrieve,
   listEnvironments,
+  search,
   updateEnvironment,
 } from "./api";
 
@@ -33,7 +35,35 @@ export const setLastTestTargetId = async (
   }
 };
 
-export const registerTools = (server: McpServer): void => {
+export const registerTools = async (server: McpServer): Promise<void> => {
+  const trieve = await initTrieve();
+
+  server.tool(
+    "search",
+    `the search tool can be used to search the octomind documentation for a given query.
+    The search results are returned as a list of links to the documentation.`,
+    {
+      query: z.string().describe("Search query"),
+    },
+    async (params) => {
+      const results = await search(params.query, trieve);
+      const c = results.map((result) => {
+        const { title, content, link } = result;
+        const text = `Title: ${title}\nContent: ${content}\nLink: ${link}`;
+        return {
+          type: "text",
+          text,
+        };
+      });
+      return {
+        content: c.map((content) => ({
+          ...content,
+          type: "text",
+        })),
+      };
+    },
+  );
+
   server.tool(
     "getTestCase",
     `the getTestCase tool can retrieve a test case for a given test target and test case id.
