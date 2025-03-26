@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { uuidValidation } from "./types";
+import { version } from "./version";
 import {
   createEnvironment,
   deleteEnvironment,
@@ -539,6 +540,23 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           {
             type: "text",
             text: "Retrieved all private locations",
+          },
+        ],
+      };
+    },
+  );
+
+  // Version information
+  server.tool(
+    "getVersion",
+    "Returns the current version of the Octomind MCP server",
+    {},
+    async () => {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Octomind MCP Server version: ${version}`,
           },
         ],
       };
