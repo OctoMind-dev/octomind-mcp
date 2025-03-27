@@ -1,4 +1,11 @@
-# octomind mcp server for tools, resources and prompts
+# octomind mcp server: let agents create and manage e2e tests
+
+<img src="images/light.svg" alt="Octomind Logo" width="150">
+
+Octomind provides a whole e2e platform for test creation, execution and management including auto-fix.
+With this MCP server you can use Octomind tools and resources in your local development environment and 
+enable it to create new e2e tests, execute them and more. see https://octomind.dev/ and 
+https://octomind.dev/docs/mcp/install-octomind-mcp for more details.
 
 ## config
 
