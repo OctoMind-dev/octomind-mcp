@@ -6,6 +6,8 @@ The server uses 2 environment variables:
 
 - APIKEY the apikey for octomind api
 - OCTOMIND_API_URL  base url for the api endpoint to use. defaults to https://app.octomind.dev/api
+- TESTTARGET_ID the id of the test target to use for notifications and resource (optional, will be set 
+  when you first ask for a test report etc.)
 
 ## Tools
 

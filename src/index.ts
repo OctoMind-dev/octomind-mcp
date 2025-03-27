@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { registerTools } from "./tools";
+import { registerTools, setLastTestTargetId } from "./tools";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { version } from "./version";
 
@@ -90,6 +90,10 @@ const start = async () => {
   setInterval(async () => {
     await checkNotifications(server);
   }, 20_000);
+  // Set last test target id if provided
+  if (process.env.TESTTARGET_ID) {
+    await setLastTestTargetId(server, process.env.TESTTARGET_ID);
+  }
   // Cleanup on exit
   process.on("SIGTERM", async () => {
     await server.close();
