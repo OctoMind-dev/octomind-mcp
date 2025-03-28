@@ -25,6 +25,10 @@ import {
   notificationSchema,
   SearchResult,
   TestTarget,
+  CreateTestTargetOptions,
+  UpdateTestTargetOptions,
+  DeleteTestTargetOptions,
+  CreateTestTargetBody,
 } from "./types";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
@@ -412,4 +416,57 @@ export const listTestTargets = async (apiKey: string): Promise<TestTarget[]> => 
     apiKey,
   );
   return response;
+};
+
+export const createTestTarget = async (
+  options: CreateTestTargetOptions,
+): Promise<TestTarget[]> => {
+  const requestBody: CreateTestTargetBody = {
+    testTarget: {
+      app: options.app,
+      discoveryUrl: options.discoveryUrl,
+      skipAutomaticTestCreation: options.skipAutomaticTestCreation,
+    },
+  };
+
+  const response = await apiCall<TestTarget[]>(
+    "post",
+    "/apiKey/v2/test-targets",
+    options.apiKey,
+    requestBody,
+  );
+
+  return response;
+};
+
+export const updateTestTarget = async (
+  options: UpdateTestTargetOptions,
+): Promise<TestTarget> => {
+  const requestBody = {
+    app: options.app,
+    discoveryUrl: options.discoveryUrl,
+    skipAutomaticTestCreation: options.skipAutomaticTestCreation,
+    testIdAttribute: options.testIdAttribute,
+    testRailIntegration: options.testRailIntegration,
+    timeoutPerStep: options.timeoutPerStep,
+  };
+
+  const response = await apiCall<TestTarget>(
+    "patch",
+    `/apiKey/v2/test-targets/${options.testTargetId}`,
+    options.apiKey,
+    requestBody,
+  );
+
+  return response;
+};
+
+export const deleteTestTarget = async (
+  options: DeleteTestTargetOptions,
+): Promise<void> => {
+  await apiCall<void>(
+    "delete",
+    `/apiKey/v2/test-targets/${options.testTargetId}`,
+    options.apiKey,
+  );
 };

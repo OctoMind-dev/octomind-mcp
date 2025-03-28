@@ -15,6 +15,9 @@ import {
   search,
   trieveConfig,
   updateEnvironment,
+  createTestTarget,
+  updateTestTarget,
+  deleteTestTarget,
 } from "./api";
 
 import { reloadTestReports } from "./resources";
@@ -560,6 +563,123 @@ export const registerTools = async (server: McpServer): Promise<void> => {
             type: "text",
             text: "Retrieved all test targets",
             ...res,
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "createTestTarget",
+    `the createTestTarget tool can create a new test target or project.
+    A test target represents an application or service that can be tested using Octomind.`,
+    {
+      app: z.string().describe("The app name or project name of the test target"),
+      discoveryUrl: z
+        .string()
+        .url()
+        .describe("The discovery URL of the test target"),
+      skipAutomaticTestCreation: z
+        .boolean()
+        .optional()
+        .describe("Skip automatic test creation right after the test target is created"),
+    },
+    async (params) => {
+      const res = await createTestTarget({
+        apiKey: APIKEY,
+        ...params,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Created test target with app name: ${params.app}`,
+            ...res,
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "updateTestTarget",
+    `the updateTestTarget tool can update an existing test target.
+    A test target represents an application or service that can be tested using Octomind.`,
+    {
+      testTargetId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test target to update"),
+      app: z
+        .string()
+        .optional()
+        .describe("The app name or project name of the test target"),
+      discoveryUrl: z
+        .string()
+        .url()
+        .optional()
+        .describe("The discovery URL of the test target"),
+      skipAutomaticTestCreation: z
+        .boolean()
+        .optional()
+        .describe("Skip automatic test creation right after the test target is created"),
+      testIdAttribute: z
+        .string()
+        .optional()
+        .describe("The attribute name of the test ID"),
+      testRailIntegration: z
+        .object({
+          domain: z.string().describe("The domain of the TestRail instance"),
+          username: z.string().describe("The username for the TestRail instance"),
+          projectId: z.string().describe("The project ID for the TestRail instance"),
+          apiKey: z.string().describe("The TestRail API key"),
+        })
+        .optional()
+        .describe("TestRail integration configuration"),
+      timeoutPerStep: z
+        .number()
+        .min(5000)
+        .max(30000)
+        .optional()
+        .describe("The timeout per step in milliseconds"),
+    },
+    async (params) => {
+      const res = await updateTestTarget({
+        apiKey: APIKEY,
+        ...params,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Updated test target: ${params.testTargetId}`,
+            ...res,
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "deleteTestTarget",
+    `the deleteTestTarget tool can delete an existing test target.
+    This operation cannot be undone.`,
+    {
+      testTargetId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test target to delete"),
+    },
+    async (params) => {
+      await deleteTestTarget({
+        apiKey: APIKEY,
+        ...params,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Deleted test target: ${params.testTargetId}`,
           },
         ],
       };
