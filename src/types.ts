@@ -263,3 +263,49 @@ export interface TestReportsResponse {
   };
   hasNextPage: boolean;
 }
+
+export interface TestTarget {
+  id: string;
+  app: string;
+  environments: Environment[];
+  skipAutomaticTestCreation: boolean;
+}
+
+export interface CreateTestTargetBody {
+  testTarget: {
+    app: string;
+    discoveryUrl: string;
+    skipAutomaticTestCreation?: boolean;
+  };
+}
+
+export interface CreateTestTargetOptions {
+  apiKey: string;
+  app: string;
+  discoveryUrl: string;
+  skipAutomaticTestCreation?: boolean;
+  json?: boolean;
+}
+
+export interface UpdateTestTargetOptions {
+  apiKey: string;
+  testTargetId: string;
+  app?: string;
+  discoveryUrl?: string;
+  skipAutomaticTestCreation?: boolean;
+  testIdAttribute?: string;
+  testRailIntegration?: {
+    domain: string;
+    username: string;
+    projectId: string;
+    apiKey: string;
+  };
+  timeoutPerStep?: number;
+  json?: boolean;
+}
+
+export interface DeleteTestTargetOptions {
+  apiKey: string;
+  testTargetId: string;
+  json?: boolean;
+}

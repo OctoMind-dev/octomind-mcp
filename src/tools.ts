@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { optional, z } from "zod";
 import { uuidValidation } from "./types";
 import { version } from "./version";
 import {
@@ -11,9 +11,13 @@ import {
   getTestReport,
   getTestReports,
   listEnvironments,
+  listTestTargets,
   search,
   trieveConfig,
   updateEnvironment,
+  createTestTarget,
+  updateTestTarget,
+  deleteTestTarget,
 } from "./api";
 
 import { reloadTestReports } from "./resources";
@@ -231,7 +235,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe(
           "Optional basic authentication credentials, if discovery needs authentication",
         ),
-      privateLocationName: z.string().optional().describe(
+      privateLocationName: z.string().default("US Proxy").optional().describe(
         "Optional name of the private location, if discovery \
         needs to discover in a private location e.g. behind a firewall or VPN",
       ),
@@ -503,17 +507,21 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe(
           "Optional external identifier. E.g. a ticket number or test rail id",
         ),
-      assignedTagIds: z
-        .array(uuidValidation())
+      assignedTagNames: z
+        .array(z.string())
         .optional()
-        .describe("Optional list of tag IDs to assign"),
+        .describe(
+          "Optional list of tag names to assign to the newly discovered test case",
+        ),
       prompt: z
         .string()
         .describe("Description or prompt used for test case generation"),
-      folderId: z
+      folderName: z
         .string()
         .optional()
-        .describe("Optional folder ID for organizing test cases"),
+        .describe(
+          "Optional folder name  that the newly discovered test case will be added to",
+        ),
     },
     async (params) => {
       const res = await discovery({ apiKey: APIKEY, json: true, ...params });
@@ -540,6 +548,152 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           {
             type: "text",
             text: "Retrieved all private locations",
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "getTestTargets",
+    `the getTestTargets tool can retrieve all test targets or projects.
+    Test targets represent applications or services that can be tested using Octomind.`,
+    {},
+    async () => {
+      const res = await listTestTargets(APIKEY);
+      return {
+        content: [
+          {
+            type: "text",
+            text: "Retrieved all test targets",
+            ...res,
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "createTestTarget",
+    `the createTestTarget tool can create a new test target or project.
+    A test target represents an application or service that can be tested using Octomind.`,
+    {
+      app: z
+        .string()
+        .describe("The app name or project name of the test target"),
+      discoveryUrl: z
+        .string()
+        .url()
+        .describe("The discovery URL of the test target"),
+      skipAutomaticTestCreation: z
+        .boolean()
+        .optional()
+        .describe(
+          "Skip automatic test creation right after the test target is created",
+        ),
+    },
+    async (params) => {
+      const res = await createTestTarget({
+        apiKey: APIKEY,
+        ...params,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Created test target with app name: ${params.app}`,
+            ...res,
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "updateTestTarget",
+    `the updateTestTarget tool can update an existing test target.
+    A test target represents an application or service that can be tested using Octomind.`,
+    {
+      testTargetId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test target to update"),
+      app: z
+        .string()
+        .optional()
+        .describe("The app name or project name of the test target"),
+      discoveryUrl: z
+        .string()
+        .url()
+        .optional()
+        .describe("The discovery URL of the test target"),
+      skipAutomaticTestCreation: z
+        .boolean()
+        .optional()
+        .describe(
+          "Skip automatic test creation right after the test target is created",
+        ),
+      testIdAttribute: z
+        .string()
+        .optional()
+        .describe("The attribute name of the test ID"),
+      testRailIntegration: z
+        .object({
+          domain: z.string().describe("The domain of the TestRail instance"),
+          username: z
+            .string()
+            .describe("The username for the TestRail instance"),
+          projectId: z
+            .string()
+            .describe("The project ID for the TestRail instance"),
+          apiKey: z.string().describe("The TestRail API key"),
+        })
+        .optional()
+        .describe("TestRail integration configuration"),
+      timeoutPerStep: z
+        .number()
+        .min(5000)
+        .max(30000)
+        .optional()
+        .describe("The timeout per step in milliseconds"),
+    },
+    async (params) => {
+      const res = await updateTestTarget({
+        apiKey: APIKEY,
+        ...params,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Updated test target: ${params.testTargetId}`,
+            ...res,
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "deleteTestTarget",
+    `the deleteTestTarget tool can delete an existing test target.
+    This operation cannot be undone.`,
+    {
+      testTargetId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test target to delete"),
+    },
+    async (params) => {
+      await deleteTestTarget({
+        apiKey: APIKEY,
+        ...params,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Deleted test target: ${params.testTargetId}`,
           },
         ],
       };
