@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { optional, z } from "zod";
 import { uuidValidation } from "./types";
 import { version } from "./version";
 import {
@@ -235,7 +235,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe(
           "Optional basic authentication credentials, if discovery needs authentication",
         ),
-      privateLocationName: z.string().optional().describe(
+      privateLocationName: z.string().default("US Proxy").optional().describe(
         "Optional name of the private location, if discovery \
         needs to discover in a private location e.g. behind a firewall or VPN",
       ),
