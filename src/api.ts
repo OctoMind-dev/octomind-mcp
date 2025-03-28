@@ -465,10 +465,12 @@ export const updateTestTarget = async (
 
 export const deleteTestTarget = async (
   options: DeleteTestTargetOptions,
-): Promise<void> => {
-  await apiCall<void>(
+): Promise<SuccessResponse> => {
+  const res = await apiCall<SuccessResponse>(
     "delete",
     `/apiKey/v2/test-targets/${options.testTargetId}`,
     options.apiKey,
   );
+
+  return res;
 };
