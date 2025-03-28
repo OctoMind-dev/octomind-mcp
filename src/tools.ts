@@ -510,14 +510,18 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       assignedTagNames: z
         .array(z.string())
         .optional()
-        .describe("Optional list of tag names to assign to the newly discovered test case"),
+        .describe(
+          "Optional list of tag names to assign to the newly discovered test case",
+        ),
       prompt: z
         .string()
         .describe("Description or prompt used for test case generation"),
       folderName: z
         .string()
         .optional()
-        .describe("Optional folder name  that the newly discovered test case will be added to"),
+        .describe(
+          "Optional folder name  that the newly discovered test case will be added to",
+        ),
     },
     async (params) => {
       const res = await discovery({ apiKey: APIKEY, json: true, ...params });
@@ -574,7 +578,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     `the createTestTarget tool can create a new test target or project.
     A test target represents an application or service that can be tested using Octomind.`,
     {
-      app: z.string().describe("The app name or project name of the test target"),
+      app: z
+        .string()
+        .describe("The app name or project name of the test target"),
       discoveryUrl: z
         .string()
         .url()
@@ -582,7 +588,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       skipAutomaticTestCreation: z
         .boolean()
         .optional()
-        .describe("Skip automatic test creation right after the test target is created"),
+        .describe(
+          "Skip automatic test creation right after the test target is created",
+        ),
     },
     async (params) => {
       const res = await createTestTarget({
@@ -622,7 +630,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       skipAutomaticTestCreation: z
         .boolean()
         .optional()
-        .describe("Skip automatic test creation right after the test target is created"),
+        .describe(
+          "Skip automatic test creation right after the test target is created",
+        ),
       testIdAttribute: z
         .string()
         .optional()
@@ -630,8 +640,12 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       testRailIntegration: z
         .object({
           domain: z.string().describe("The domain of the TestRail instance"),
-          username: z.string().describe("The username for the TestRail instance"),
-          projectId: z.string().describe("The project ID for the TestRail instance"),
+          username: z
+            .string()
+            .describe("The username for the TestRail instance"),
+          projectId: z
+            .string()
+            .describe("The project ID for the TestRail instance"),
           apiKey: z.string().describe("The TestRail API key"),
         })
         .optional()

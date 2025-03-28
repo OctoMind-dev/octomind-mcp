@@ -409,7 +409,9 @@ export const getTestReports = async (
   return response;
 };
 
-export const listTestTargets = async (apiKey: string): Promise<TestTarget[]> => {
+export const listTestTargets = async (
+  apiKey: string,
+): Promise<TestTarget[]> => {
   const response = await apiCall<TestTarget[]>(
     "get",
     "/apiKey/v2/test-targets",
