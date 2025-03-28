@@ -503,17 +503,17 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe(
           "Optional external identifier. E.g. a ticket number or test rail id",
         ),
-      assignedTagIds: z
-        .array(uuidValidation())
+      assignedTagNames: z
+        .array(z.string())
         .optional()
-        .describe("Optional list of tag IDs to assign"),
+        .describe("Optional list of tag names to assign to the newly discovered test case"),
       prompt: z
         .string()
         .describe("Description or prompt used for test case generation"),
-      folderId: z
+      folderName: z
         .string()
         .optional()
-        .describe("Optional folder ID for organizing test cases"),
+        .describe("Optional folder name  that the newly discovered test case will be added to"),
     },
     async (params) => {
       const res = await discovery({ apiKey: APIKEY, json: true, ...params });
