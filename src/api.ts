@@ -24,6 +24,7 @@ import {
   Notification,
   notificationSchema,
   SearchResult,
+  TestTarget,
 } from "./types";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
@@ -401,5 +402,14 @@ export const getTestReports = async (
     options.apiKey,
   );
 
+  return response;
+};
+
+export const listTestTargets = async (apiKey: string): Promise<TestTarget[]> => {
+  const response = await apiCall<TestTarget[]>(
+    "get",
+    "/apiKey/v2/test-targets",
+    apiKey,
+  );
   return response;
 };

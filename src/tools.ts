@@ -11,6 +11,7 @@ import {
   getTestReport,
   getTestReports,
   listEnvironments,
+  listTestTargets,
   search,
   trieveConfig,
   updateEnvironment,
@@ -540,6 +541,25 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           {
             type: "text",
             text: "Retrieved all private locations",
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "getTestTargets",
+    `the getTestTargets tool can retrieve all test targets or projects.
+    Test targets represent applications or services that can be tested using Octomind.`,
+    {},
+    async () => {
+      const res = await listTestTargets(APIKEY);
+      return {
+        content: [
+          {
+            type: "text",
+            text: "Retrieved all test targets",
+            ...res,
           },
         ],
       };

@@ -263,3 +263,10 @@ export interface TestReportsResponse {
   };
   hasNextPage: boolean;
 }
+
+export interface TestTarget {
+  id: string;
+  app: string;
+  environments: Environment[];
+  skipAutomaticTestCreation: boolean;
+}
