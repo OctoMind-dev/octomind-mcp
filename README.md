@@ -50,7 +50,7 @@ This will output configuration examples for Claude Desktop, Cursor, and Windsurf
       "command": "npx",
       "args": [
         "-y",
-        "@octomind/octomind-mcp"
+        "@octomind/octomind-mcp@latest"
       ],
       "env": {
         "APIKEY": "your-api-key-here"
@@ -69,7 +69,7 @@ This will output configuration examples for Claude Desktop, Cursor, and Windsurf
       "command": "npx",
       "args": [
         "-y",
-        "@octomind/octomind-mcp"
+        "@octomind/octomind-mcp@latest"
       ],
       "env": {
         "APIKEY": "your-api-key-here"
@@ -88,7 +88,7 @@ This will output configuration examples for Claude Desktop, Cursor, and Windsurf
       "command": "npx",
       "args": [
         "-y",
-        "@octomind/octomind-mcp"
+        "@octomind/octomind-mcp@latest"
       ],
       "environment": {
         "APIKEY": "your-api-key-here"
