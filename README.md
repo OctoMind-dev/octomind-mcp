@@ -15,6 +15,8 @@ The server uses 2 environment variables:
 
 - APIKEY the apikey for octomind api
 - OCTOMIND_API_URL  base url for the api endpoint to use. defaults to https://app.octomind.dev/api
+- LOG_FILENAME the file to write logs to (only for debugging). If not set, logging is disabled
+- LOG_LEVEL the log level to use. defaults to info
 
 ## Tools
 
