@@ -1,7 +1,8 @@
 # octomind mcp server: let agents create and manage e2e tests
 
-[![smithery badge](https://smithery.ai/badge/@OctoMind-dev/octomind-mcp)](https://smithery.ai/server/@OctoMind-dev/octomind-mcp)
 <img src="images/light.svg" alt="Octomind Logo" width="150">
+
+[![smithery badge](https://smithery.ai/badge/@OctoMind-dev/octomind-mcp)](https://smithery.ai/server/@OctoMind-dev/octomind-mcp)
 
 Octomind provides a whole e2e platform for test creation, execution and management including auto-fix.
 With this MCP server you can use Octomind tools and resources in your local development environment and 
