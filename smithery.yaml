@@ -1,0 +1,31 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - apikey
+    properties:
+      apikey:
+        type: string
+        description: The API key used to authenticate with Octomind API.
+      octomindApiUrl:
+        type: string
+        default: https://app.octomind.dev/api
+        description: The base URL for the Octomind API.
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({
+      command: 'node',
+      args: ['dist/index.js'],
+      env: {
+        APIKEY: config.apikey,
+        OCTOMIND_API_URL: config.octomindApiUrl || 'https://app.octomind.dev/api'
+      }
+    })
+  exampleConfig:
+    apikey: your-octomind-api-key
+    octomindApiUrl: https://app.octomind.dev/api
