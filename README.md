@@ -15,6 +15,8 @@ The server uses 2 environment variables:
 
 - APIKEY the apikey for octomind api
 - OCTOMIND_API_URL  base url for the api endpoint to use. defaults to https://app.octomind.dev/api
+- LOG_FILENAME the file to write logs to (only for debugging). If not set, logging is disabled
+- LOG_LEVEL the log level to use. defaults to info
 
 ## Tools
 
@@ -41,7 +43,7 @@ You can get configuration snippets for different clients by running:
 npx @octomind/octomind-mcp --clients
 ```
 
-This will output configuration examples for Claude Desktop, Cursor, and Windsurf. Here are the configuration files for each client:
+This will output configuration examples for Claude Desktop, Cursor, and Windsurf. Here are the configuration files for most clients:
 
 ### Installing via Smithery
 
@@ -59,7 +61,8 @@ npx -y @smithery/cli install @OctoMind-dev/octomind-mcp --client claude
       "name": "Octomind MCP Server",
       "command": "npx",
       "args": [
-        "@octomind/octomind-mcp"
+        "-y",
+        "@octomind/octomind-mcp@latest"
       ],
       "env": {
         "APIKEY": "your-api-key-here"
@@ -77,7 +80,8 @@ npx -y @smithery/cli install @OctoMind-dev/octomind-mcp --client claude
       "name": "Octomind MCP Server",
       "command": "npx",
       "args": [
-        "@octomind/octomind-mcp"
+        "-y",
+        "@octomind/octomind-mcp@latest"
       ],
       "env": {
         "APIKEY": "your-api-key-here"
@@ -87,7 +91,7 @@ npx -y @smithery/cli install @OctoMind-dev/octomind-mcp --client claude
 }
 ```
 
-### Windsurf (config.json)
+### Windsurf (mcp_config.json)
 ```json
 {
   "mcpServers": {
@@ -95,7 +99,8 @@ npx -y @smithery/cli install @OctoMind-dev/octomind-mcp --client claude
       "name": "Octomind MCP Server",
       "command": "npx",
       "args": [
-        "@octomind/octomind-mcp"
+        "-y",
+        "@octomind/octomind-mcp@latest"
       ],
       "environment": {
         "APIKEY": "your-api-key-here"

@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { optional, z } from "zod";
 import { uuidValidation } from "./types";
 import { version } from "./version";
 import {
@@ -11,12 +11,18 @@ import {
   getTestReport,
   getTestReports,
   listEnvironments,
+  listTestTargets,
   search,
   trieveConfig,
   updateEnvironment,
+  createTestTarget,
+  updateTestTarget,
+  deleteTestTarget,
+  listPrivateLocations,
 } from "./api";
 
 import { reloadTestReports } from "./resources";
+import { logger } from "./logger";
 
 export const APIKEY = process.env.APIKEY ?? "";
 
@@ -47,7 +53,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       query: z.string().describe("Search query"),
     },
     async (params) => {
+      logger.debug("Search query", params.query);
       const results = await search(params.query, trieve);
+      logger.debug("Search results", results);
       const c = results.map((result) => {
         const { title, content, link } = result;
         const text = `Title: ${title}\nContent: ${content}\nLink: ${link}`;
@@ -87,12 +95,16 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         params.testCaseId,
         params.testTargetId,
       );
+      logger.debug("Retrieved test case", res);
       return {
         content: [
           {
             text: `Retrieved test case: ${params.testCaseId} for test target: ${params.testTargetId}`,
-            ...res,
             type: "text",
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
           },
         ],
       };
@@ -130,18 +142,23 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
+      logger.debug({ params }, "Executing tests");
       const res = await executeTests({
         apiKey: APIKEY,
         json: true,
         description: params.description || "triggered by MCP Tool",
         ...params,
       });
+      logger.debug({ res }, "Executed tests");
       return {
         content: [
           {
             type: "text",
             text: `Executing tests for target: ${params.testTargetId} on URL: ${params.url}`,
-            ...res,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
           },
         ],
       };
@@ -162,16 +179,21 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
+      logger.debug({ params }, "Retrieving environments");
       const res = await listEnvironments({
         apiKey: APIKEY,
         testTargetId: params.testTargetId,
       });
+      logger.debug({ res }, "Retrieved environments");
       return {
         content: [
           {
             type: "text",
             text: `Retrieved environments for test target: ${params.testTargetId}`,
-            ...res,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
           },
         ],
       };
@@ -231,7 +253,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe(
           "Optional basic authentication credentials, if discovery needs authentication",
         ),
-      privateLocationName: z.string().optional().describe(
+      privateLocationName: z.string().default("US Proxy").optional().describe(
         "Optional name of the private location, if discovery \
         needs to discover in a private location e.g. behind a firewall or VPN",
       ),
@@ -242,16 +264,21 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
+      logger.debug({ params }, "Creating environment");
       const res = await createEnvironment({
         apiKey: APIKEY,
         ...params,
       });
+      logger.debug({ res }, "Created environment");
       return {
         content: [
           {
             text: `Created environment: ${params.name} for test target: ${params.testTargetId}`,
-            ...res,
             type: "text",
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
           },
         ],
       };
@@ -336,16 +363,21 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
+      logger.debug({ params }, "Updating environment");
       const res = await updateEnvironment({
         apiKey: APIKEY,
         ...params,
       });
+      logger.debug({ res }, "Updated environment");
       return {
         content: [
           {
             text: `Updated environment: ${params.environmentId} for test target: ${params.testTargetId}`,
-            ...res,
             type: "text",
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
           },
         ],
       };
@@ -370,16 +402,21 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
+      logger.debug({ params }, "Deleting environment");
       const res = await deleteEnvironment({
         apiKey: APIKEY,
         ...params,
       });
+      logger.debug({ res }, "Deleted environment");
       return {
         content: [
           {
             type: "text",
             text: `Deleted environment: ${params.environmentId} for test target: ${params.testTargetId}`,
-            ...res,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
           },
         ],
       };
@@ -419,6 +456,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("Optional filters for test reports"),
     },
     async (params) => {
+      logger.debug({ params }, "Retrieving test reports");
       const res = await getTestReports({
         apiKey: APIKEY,
         json: true,
@@ -426,13 +464,17 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         key: params.key,
         filter: params.filter,
       });
+      logger.debug({ res }, "Retrieved test reports");
       await setLastTestTargetId(server, params.testTargetId);
       return {
         content: [
           {
             type: "text",
             text: `Retrieved test reports for test target: ${params.testTargetId}`,
-            ...res,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
           },
         ],
       };
@@ -455,19 +497,24 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("Unique identifier of the test report"),
     },
     async (params) => {
+      logger.debug({ params }, "Retrieving test report");
       const res = await getTestReport({
         apiKey: APIKEY,
         json: true,
         reportId: params.testReportId,
         testTargetId: params.testTargetId,
       });
+      logger.debug({ res }, "Retrieved test report");
       await setLastTestTargetId(server, params.testTargetId);
       return {
         content: [
           {
             type: "text",
             text: `Retrieved test report: ${params.testReportId} for test target: ${params.testTargetId}`,
-            ...res,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
           },
         ],
       };
@@ -503,26 +550,35 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe(
           "Optional external identifier. E.g. a ticket number or test rail id",
         ),
-      assignedTagIds: z
-        .array(uuidValidation())
+      assignedTagNames: z
+        .array(z.string())
         .optional()
-        .describe("Optional list of tag IDs to assign"),
+        .describe(
+          "Optional list of tag names to assign to the newly discovered test case",
+        ),
       prompt: z
         .string()
         .describe("Description or prompt used for test case generation"),
-      folderId: z
+      folderName: z
         .string()
         .optional()
-        .describe("Optional folder ID for organizing test cases"),
+        .describe(
+          "Optional folder name  that the newly discovered test case will be added to",
+        ),
     },
     async (params) => {
+      logger.debug({ params }, "Discovering test case");
       const res = await discovery({ apiKey: APIKEY, json: true, ...params });
+      logger.debug({ res }, "Retrieved discovery for: ${params.name}");
       return {
         content: [
           {
             type: "text",
             text: `Retrieved discovery for: ${params.name}`,
-            ...res,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
           },
         ],
       };
@@ -535,11 +591,178 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     A private location is a server that can be used to access a test target behind a firewall or VPN.`,
     {},
     async () => {
+      const res = await listPrivateLocations({ apiKey: APIKEY });
+      logger.debug({ res }, "Retrieved all private locations");
       return {
         content: [
           {
             type: "text",
             text: "Retrieved all private locations",
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "getTestTargets",
+    `the getTestTargets tool can retrieve all test targets or projects.
+    Test targets represent applications or services that can be tested using Octomind.`,
+    {},
+    async () => {
+      const res = await listTestTargets(APIKEY);
+      logger.debug({ res }, "Retrieved all test targets");
+      return {
+        content: [
+          {
+            type: "text",
+            text: "Retrieved all test targets",
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "createTestTarget",
+    `the createTestTarget tool can create a new test target or project.
+    A test target represents an application or service that can be tested using Octomind.`,
+    {
+      app: z
+        .string()
+        .describe("The app name or project name of the test target"),
+      discoveryUrl: z
+        .string()
+        .url()
+        .describe("The discovery URL of the test target"),
+      skipAutomaticTestCreation: z
+        .boolean()
+        .optional()
+        .describe(
+          "Skip automatic test creation right after the test target is created",
+        ),
+    },
+    async (params) => {
+      logger.debug({ params }, "Creating test target");
+      const res = await createTestTarget({
+        apiKey: APIKEY,
+        ...params,
+      });
+      logger.debug({ res }, "Created test target");
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Created test target with app name: ${params.app}`,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "updateTestTarget",
+    `the updateTestTarget tool can update an existing test target.
+    A test target represents an application or service that can be tested using Octomind.`,
+    {
+      testTargetId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test target to update"),
+      app: z
+        .string()
+        .optional()
+        .describe("The app name or project name of the test target"),
+      discoveryUrl: z
+        .string()
+        .url()
+        .optional()
+        .describe("The discovery URL of the test target"),
+      skipAutomaticTestCreation: z
+        .boolean()
+        .optional()
+        .describe(
+          "Skip automatic test creation right after the test target is created",
+        ),
+      testIdAttribute: z
+        .string()
+        .optional()
+        .describe("The attribute name of the test ID"),
+      testRailIntegration: z
+        .object({
+          domain: z.string().describe("The domain of the TestRail instance"),
+          username: z
+            .string()
+            .describe("The username for the TestRail instance"),
+          projectId: z
+            .string()
+            .describe("The project ID for the TestRail instance"),
+          apiKey: z.string().describe("The TestRail API key"),
+        })
+        .optional()
+        .describe("TestRail integration configuration"),
+      timeoutPerStep: z
+        .number()
+        .min(5000)
+        .max(30000)
+        .optional()
+        .describe("The timeout per step in milliseconds"),
+    },
+    async (params) => {
+      logger.debug({ params }, "Updating test target");
+      const res = await updateTestTarget({
+        apiKey: APIKEY,
+        ...params,
+      });
+      logger.debug({ res }, "Updated test target");
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Updated test target: ${params.testTargetId}`,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res),
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "deleteTestTarget",
+    `the deleteTestTarget tool can delete an existing test target.
+    This operation cannot be undone.`,
+    {
+      testTargetId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test target to delete"),
+    },
+    async (params) => {
+      logger.debug({ params }, "Deleting test target");
+      await deleteTestTarget({
+        apiKey: APIKEY,
+        ...params,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Deleted test target: ${params.testTargetId}`,
           },
         ],
       };
@@ -552,6 +775,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     "Returns the current version of the Octomind MCP server",
     {},
     async () => {
+      logger.debug(`Retrieving version -> ${version}`);
       return {
         content: [
           {

@@ -11,10 +11,7 @@ startCommand:
       apikey:
         type: string
         description: The API key used to authenticate with Octomind API.
-      octomindApiUrl:
-        type: string
-        default: https://app.octomind.dev/api
-        description: The base URL for the Octomind API.
+
   commandFunction:
     # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
     |-
