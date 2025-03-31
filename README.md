@@ -1,5 +1,6 @@
 # octomind mcp server: let agents create and manage e2e tests
 
+[![smithery badge](https://smithery.ai/badge/@OctoMind-dev/octomind-mcp)](https://smithery.ai/server/@OctoMind-dev/octomind-mcp)
 <img src="images/light.svg" alt="Octomind Logo" width="150">
 
 Octomind provides a whole e2e platform for test creation, execution and management including auto-fix.
@@ -40,6 +41,14 @@ npx @octomind/octomind-mcp --clients
 ```
 
 This will output configuration examples for Claude Desktop, Cursor, and Windsurf. Here are the configuration files for each client:
+
+### Installing via Smithery
+
+To install octomind-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@OctoMind-dev/octomind-mcp):
+
+```bash
+npx -y @smithery/cli install @OctoMind-dev/octomind-mcp --client claude
+```
 
 ### Claude Desktop (.claude-config.json)
 ```json
