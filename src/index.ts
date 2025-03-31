@@ -25,7 +25,7 @@ const helpInstall = () => {
         "octomind-mcp": {
           name: "Octomind MCP Server",
           command: "npx",
-          args: ["@octomind/octomind-mcp"],
+          args: ["-y", "@octomind/octomind-mcp"],
           env: {
             APIKEY: "your-api-key-here",
           },
@@ -37,7 +37,7 @@ const helpInstall = () => {
         "octomind-mcp": {
           name: "Octomind MCP Server",
           command: "npx",
-          args: ["@octomind/octomind-mcp"],
+          args: ["-y", "@octomind/octomind-mcp"],
           env: {
             APIKEY: "your-api-key-here",
           },
@@ -49,7 +49,7 @@ const helpInstall = () => {
         "octomind-mcp": {
           name: "Octomind MCP Server",
           command: "npx",
-          args: ["@octomind/octomind-mcp"],
+          args: ["-y", "@octomind/octomind-mcp"],
           environment: {
             APIKEY: "your-api-key-here",
           },

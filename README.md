@@ -39,7 +39,7 @@ You can get configuration snippets for different clients by running:
 npx @octomind/octomind-mcp --clients
 ```
 
-This will output configuration examples for Claude Desktop, Cursor, and Windsurf. Here are the configuration files for each client:
+This will output configuration examples for Claude Desktop, Cursor, and Windsurf. Here are the configuration files for most clients:
 
 ### Claude Desktop (.claude-config.json)
 ```json
@@ -49,6 +49,7 @@ This will output configuration examples for Claude Desktop, Cursor, and Windsurf
       "name": "Octomind MCP Server",
       "command": "npx",
       "args": [
+        "-y",
         "@octomind/octomind-mcp"
       ],
       "env": {
@@ -67,6 +68,7 @@ This will output configuration examples for Claude Desktop, Cursor, and Windsurf
       "name": "Octomind MCP Server",
       "command": "npx",
       "args": [
+        "-y",
         "@octomind/octomind-mcp"
       ],
       "env": {
@@ -77,7 +79,7 @@ This will output configuration examples for Claude Desktop, Cursor, and Windsurf
 }
 ```
 
-### Windsurf (config.json)
+### Windsurf (mcp_config.json)
 ```json
 {
   "mcpServers": {
@@ -85,6 +87,7 @@ This will output configuration examples for Claude Desktop, Cursor, and Windsurf
       "name": "Octomind MCP Server",
       "command": "npx",
       "args": [
+        "-y",
         "@octomind/octomind-mcp"
       ],
       "environment": {
