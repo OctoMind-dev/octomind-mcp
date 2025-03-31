@@ -6,6 +6,7 @@ import { version } from "./version";
 
 import { checkNotifications, registerResources } from "./resources";
 import { registerPrompts } from "./prompts";
+import { logger } from "./logger";
 
 const buildServer = async (): Promise<McpServer> => {
   const server = new McpServer({
@@ -87,15 +88,18 @@ const start = async () => {
   console.error("Connecting server to transport...");
   const server = await buildServer();
   await server.connect(transport);
+  logger.info(`Octomind MCP Server version ${version} started`);
   setInterval(async () => {
     await checkNotifications(server);
   }, 20_000);
   // Cleanup on exit
   process.on("SIGTERM", async () => {
+    logger.info(`Octomind MCP Server version ${version} closing`);
     await server.close();
     process.exit(0);
   });
   process.on("SIGINT", async () => {
+    logger.info(`Octomind MCP Server version ${version} closing`);
     await server.close();
     process.exit(0);
   });
