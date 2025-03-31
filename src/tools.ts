@@ -142,14 +142,14 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
-      logger.debug({params}, "Executing tests");
+      logger.debug({ params }, "Executing tests");
       const res = await executeTests({
         apiKey: APIKEY,
         json: true,
         description: params.description || "triggered by MCP Tool",
         ...params,
       });
-      logger.debug({res}, "Executed tests");
+      logger.debug({ res }, "Executed tests");
       return {
         content: [
           {
@@ -179,12 +179,12 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
-      logger.debug({params}, "Retrieving environments");
+      logger.debug({ params }, "Retrieving environments");
       const res = await listEnvironments({
         apiKey: APIKEY,
         testTargetId: params.testTargetId,
       });
-      logger.debug({res}, "Retrieved environments");
+      logger.debug({ res }, "Retrieved environments");
       return {
         content: [
           {
@@ -264,12 +264,12 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
-      logger.debug({params}, "Creating environment");
+      logger.debug({ params }, "Creating environment");
       const res = await createEnvironment({
         apiKey: APIKEY,
         ...params,
       });
-      logger.debug({res}, "Created environment");
+      logger.debug({ res }, "Created environment");
       return {
         content: [
           {
@@ -363,12 +363,12 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
-      logger.debug({params}, "Updating environment");
+      logger.debug({ params }, "Updating environment");
       const res = await updateEnvironment({
         apiKey: APIKEY,
         ...params,
       });
-      logger.debug({res}, "Updated environment");
+      logger.debug({ res }, "Updated environment");
       return {
         content: [
           {
@@ -402,12 +402,12 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
-      logger.debug({params}, "Deleting environment");
+      logger.debug({ params }, "Deleting environment");
       const res = await deleteEnvironment({
         apiKey: APIKEY,
         ...params,
       });
-      logger.debug({res}, "Deleted environment");
+      logger.debug({ res }, "Deleted environment");
       return {
         content: [
           {
@@ -456,7 +456,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("Optional filters for test reports"),
     },
     async (params) => {
-      logger.debug({params}, "Retrieving test reports");
+      logger.debug({ params }, "Retrieving test reports");
       const res = await getTestReports({
         apiKey: APIKEY,
         json: true,
@@ -464,7 +464,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         key: params.key,
         filter: params.filter,
       });
-      logger.debug({res}, "Retrieved test reports");
+      logger.debug({ res }, "Retrieved test reports");
       await setLastTestTargetId(server, params.testTargetId);
       return {
         content: [
@@ -497,14 +497,14 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("Unique identifier of the test report"),
     },
     async (params) => {
-      logger.debug({params}, "Retrieving test report"); 
+      logger.debug({ params }, "Retrieving test report");
       const res = await getTestReport({
         apiKey: APIKEY,
         json: true,
         reportId: params.testReportId,
         testTargetId: params.testTargetId,
       });
-      logger.debug({res}, "Retrieved test report");
+      logger.debug({ res }, "Retrieved test report");
       await setLastTestTargetId(server, params.testTargetId);
       return {
         content: [
@@ -567,9 +567,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         ),
     },
     async (params) => {
-      logger.debug({params}, "Discovering test case");
+      logger.debug({ params }, "Discovering test case");
       const res = await discovery({ apiKey: APIKEY, json: true, ...params });
-      logger.debug({res}, "Retrieved discovery for: ${params.name}");
+      logger.debug({ res }, "Retrieved discovery for: ${params.name}");
       return {
         content: [
           {
@@ -592,7 +592,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     {},
     async () => {
       const res = await listPrivateLocations({ apiKey: APIKEY });
-      logger.debug({res}, "Retrieved all private locations");
+      logger.debug({ res }, "Retrieved all private locations");
       return {
         content: [
           {
@@ -615,7 +615,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     {},
     async () => {
       const res = await listTestTargets(APIKEY);
-      logger.debug({res}, "Retrieved all test targets");
+      logger.debug({ res }, "Retrieved all test targets");
       return {
         content: [
           {
@@ -651,12 +651,12 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         ),
     },
     async (params) => {
-      logger.debug({params}, "Creating test target");
+      logger.debug({ params }, "Creating test target");
       const res = await createTestTarget({
         apiKey: APIKEY,
         ...params,
       });
-      logger.debug({res}, "Created test target");
+      logger.debug({ res }, "Created test target");
       return {
         content: [
           {
@@ -721,12 +721,12 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("The timeout per step in milliseconds"),
     },
     async (params) => {
-      logger.debug({params}, "Updating test target");
+      logger.debug({ params }, "Updating test target");
       const res = await updateTestTarget({
         apiKey: APIKEY,
         ...params,
       });
-      logger.debug({res}, "Updated test target");
+      logger.debug({ res }, "Updated test target");
       return {
         content: [
           {
@@ -753,7 +753,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("Unique identifier of the test target to delete"),
     },
     async (params) => {
-      logger.debug({params}, "Deleting test target");
+      logger.debug({ params }, "Deleting test target");
       await deleteTestTarget({
         apiKey: APIKEY,
         ...params,
