@@ -14,9 +14,6 @@ importers:
       axios:
         specifier: ^1.8.4
         version: 1.8.4
-      express:
-        specifier: ^5.1.0
-        version: 5.1.0
       pino:
         specifier: ^9.6.0
         version: 9.6.0
