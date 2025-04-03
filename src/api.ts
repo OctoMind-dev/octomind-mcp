@@ -30,7 +30,7 @@ import {
   DeleteTestTargetOptions,
   CreateTestTargetBody,
 } from "./types";
-import { version } from "os";
+import { version } from "./version";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
 
