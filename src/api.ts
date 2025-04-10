@@ -78,14 +78,16 @@ const trieveFetcher = async (trieve: TrieveData, query: string) => {
 
 export const trieveConfig = async (): Promise<TrieveData> => {
   try {
+    // https://leaves.mintlify.com/api/mcp/config/octomind
     const { data } = await axios.get(
-      `${MINT_SERVER_URL}/api/mcp/cli/${MINT_SUBDOMAIN}`,
+      `${MINT_SERVER_URL}/api/mcp/config/${MINT_SUBDOMAIN}`,
       {
         headers: {
           "X-API-Key": `${mintlifyToken}`,
         },
       },
     );
+    //console.error("Trieve config:", data);
     return data;
   } catch (error) {
     console.error("Error fetching trieve result data:", error);
