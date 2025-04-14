@@ -244,7 +244,7 @@ export const executeTests = async (
         userId: "cli-user",
       },
     },
-    environmentName: options.environment,
+    environmentName: options.environmentName,
     tags: options.tags,
     variablesToOverwrite: options.variablesToOverwrite,
   };

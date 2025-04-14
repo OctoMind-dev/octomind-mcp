@@ -123,7 +123,7 @@ export interface ExecuteTestsOptions {
   apiKey: string;
   testTargetId: string;
   url: string;
-  environment?: string;
+  environmentName?: string;
   description?: string;
   json?: boolean;
   tags?: string[];
