@@ -26,6 +26,7 @@ describe("Resources module", () => {
   describe("checkNotifications", () => {
     beforeEach(() => {
       resetRefreshTimes(new Date(baseTime));
+      console.error = jest.fn();
     });
 
     it("should do nothing when no test target is set", async () => {

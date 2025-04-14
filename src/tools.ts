@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { optional, z } from "zod";
+import { z } from "zod";
 import { uuidValidation } from "./types";
 import { version } from "./version";
 import {

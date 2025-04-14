@@ -38,7 +38,7 @@ describe("API calls", () => {
       apiKey,
       testTargetId: "test-target-id",
       url: "https://example.com",
-      environment: "default",
+      environmentName: "default",
       description: "Test description",
       json: true,
     };
