@@ -188,9 +188,9 @@ export const discovery = async (
     name: options.name,
     prompt: options.prompt,
     entryPointUrlPath: options.entryPointUrlPath,
-    prerequisiteId: options.prerequisiteId,
+    prerequisiteName: options.prerequisiteName,
     externalId: options.externalId,
-    assignedTagIds: options.assignedTagIds,
+    tagNames: options.tagNames,
     folderId: options.folderId,
   };
 

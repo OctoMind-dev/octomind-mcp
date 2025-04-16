@@ -37,9 +37,9 @@ export interface DiscoveryOptions {
   prompt: string;
   testTargetId: string;
   entryPointUrlPath?: string;
-  prerequisiteId?: string;
+  prerequisiteName?: string;
   externalId?: string;
-  assignedTagIds?: string[];
+  tagNames?: string[];
   folderId?: string;
   json?: boolean;
 }
