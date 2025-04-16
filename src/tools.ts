@@ -23,7 +23,7 @@ import {
 
 import { reloadTestReports } from "./resources";
 import { logger } from "./logger";
-import { DiscoveryHandler, registerDiscoveryTool } from "./toolHandlers";
+import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
 
 export const APIKEY = process.env.APIKEY ?? "";
 

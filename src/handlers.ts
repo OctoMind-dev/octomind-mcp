@@ -35,29 +35,36 @@ export interface DiscoveryParams {
  */
 export interface ToolResponse {
   [key: string]: unknown;
-  content: Array<{
-    type: "text";
-    text: string;
-  } | {
-    type: "image";
-    data: string;
-    mimeType: string;
-  } | {
-    type: "audio";
-    data: string;
-    mimeType: string;
-  } | {
-    type: "resource";
-    resource: {
-      text: string;
-      uri: string;
-      mimeType?: string;
-    } | {
-      uri: string;
-      blob: string;
-      mimeType?: string;
-    };
-  }>;
+  content: Array<
+    | {
+        type: "text";
+        text: string;
+      }
+    | {
+        type: "image";
+        data: string;
+        mimeType: string;
+      }
+    | {
+        type: "audio";
+        data: string;
+        mimeType: string;
+      }
+    | {
+        type: "resource";
+        resource:
+          | {
+              text: string;
+              uri: string;
+              mimeType?: string;
+            }
+          | {
+              uri: string;
+              blob: string;
+              mimeType?: string;
+            };
+      }
+  >;
   _meta?: Record<string, unknown>;
   isError?: boolean;
 }
@@ -65,7 +72,9 @@ export interface ToolResponse {
 /**
  * Handler for the discovery tool
  */
-export class DiscoveryHandler implements ToolHandler<DiscoveryParams, ToolResponse> {
+export class DiscoveryHandler
+  implements ToolHandler<DiscoveryParams, ToolResponse>
+{
   /**
    * Create a new discovery handler
    * @param apiKey API key for the Octomind API
@@ -79,7 +88,7 @@ export class DiscoveryHandler implements ToolHandler<DiscoveryParams, ToolRespon
    */
   async execute(params: DiscoveryParams): Promise<ToolResponse> {
     logger.debug({ params }, "Discovering test case");
-    
+
     // Map folder name to folder ID if provided
     const discoveryOptions: DiscoveryOptions = {
       apiKey: this.apiKey,
@@ -94,10 +103,10 @@ export class DiscoveryHandler implements ToolHandler<DiscoveryParams, ToolRespon
       // Map folderName to folderId if needed in the future
       folderId: params.folderName,
     };
-    
+
     const res = await discovery(discoveryOptions);
     logger.debug({ res }, `Retrieved discovery for: ${params.name}`);
-    
+
     return {
       content: [
         {
@@ -126,7 +135,10 @@ export class DiscoveryHandler implements ToolHandler<DiscoveryParams, ToolRespon
  * @param server MCP server instance
  * @param handler Discovery handler instance
  */
-export function registerDiscoveryTool(server: McpServer, handler: DiscoveryHandler): void {
+export function registerDiscoveryTool(
+  server: McpServer,
+  handler: DiscoveryHandler,
+): void {
   server.tool(
     "discovery",
     `the discovery tool can create a test case on a given test target with a test case description or prompt.
