@@ -13,6 +13,10 @@ With this MCP server you can use Octomind tools and resources in your local deve
 enable it to create new e2e tests, execute them and more. see https://octomind.dev/ and 
 https://octomind.dev/docs/mcp/install-octomind-mcp for more details.
 
+## See it in action together with testrail mcp
+
+[![Video Title](https://img.youtube.com/vi/I7lc9I0S62Y/0.jpg)](https://www.youtube.com/watch?v=I7lc9I0S62Y)
+
 ## config
 
 The server uses 2 environment variables:
