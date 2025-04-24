@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { optional, z } from "zod";
+import { z } from "zod";
 import { uuidValidation } from "./types";
 import { version } from "./version";
 import {
@@ -23,6 +23,7 @@ import {
 
 import { reloadTestReports } from "./resources";
 import { logger } from "./logger";
+import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
 
 export const APIKEY = process.env.APIKEY ?? "";
 
@@ -525,69 +526,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
   );
 
-  server.tool(
-    "discovery",
-    `the discovery tool can create a test case on a giver test target with a test case description or prompt.
-    one can either start from the predefined url for that test case or provide a new entry point url.`,
-    {
-      name: z.string().describe("Name of the test case to create"),
-      testTargetId: z
-        .string()
-        .uuid()
-        .describe("Unique identifier of the test target"),
-      entryPointUrlPath: z
-        .string()
-        .optional()
-        .describe(
-          "Optional entry point URL path, if not provided the predefined url of the test target will be used",
-        ),
-      prerequisiteId: uuidValidation(
-        "expected prerequisiteId to be a valid uuid",
-      )
-        .optional()
-        .describe(
-          "Optional prerequisite test case ID. If set all steps of the prerequisite will be executed before the test case discovery starts",
-        ),
-      externalId: z
-        .string()
-        .optional()
-        .describe(
-          "Optional external identifier. E.g. a ticket number or test rail id",
-        ),
-      assignedTagNames: z
-        .array(z.string())
-        .optional()
-        .describe(
-          "Optional list of tag names to assign to the newly discovered test case",
-        ),
-      prompt: z
-        .string()
-        .describe("Description or prompt used for test case generation"),
-      folderName: z
-        .string()
-        .optional()
-        .describe(
-          "Optional folder name  that the newly discovered test case will be added to",
-        ),
-    },
-    async (params) => {
-      logger.debug({ params }, "Discovering test case");
-      const res = await discovery({ apiKey: APIKEY, json: true, ...params });
-      logger.debug({ res }, "Retrieved discovery for: ${params.name}");
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Retrieved discovery for: ${params.name}`,
-          },
-          {
-            type: "text",
-            text: JSON.stringify(res),
-          },
-        ],
-      };
-    },
-  );
+  const discoveryHandler = new DiscoveryHandler(APIKEY);
+  registerDiscoveryTool(server, discoveryHandler);
+
   // Private location endpoints
   server.tool(
     "getPrivateLocations",

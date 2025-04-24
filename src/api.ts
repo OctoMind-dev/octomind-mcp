@@ -188,9 +188,9 @@ export const discovery = async (
     name: options.name,
     prompt: options.prompt,
     entryPointUrlPath: options.entryPointUrlPath,
-    prerequisiteId: options.prerequisiteId,
+    prerequisiteName: options.prerequisiteName,
     externalId: options.externalId,
-    assignedTagIds: options.assignedTagIds,
+    tagNames: options.tagNames,
     folderId: options.folderId,
   };
 
@@ -244,7 +244,7 @@ export const executeTests = async (
         userId: "cli-user",
       },
     },
-    environmentName: options.environment,
+    environmentName: options.environmentName,
     tags: options.tags,
     variablesToOverwrite: options.variablesToOverwrite,
   };

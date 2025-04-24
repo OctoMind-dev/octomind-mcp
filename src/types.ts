@@ -37,9 +37,9 @@ export interface DiscoveryOptions {
   prompt: string;
   testTargetId: string;
   entryPointUrlPath?: string;
-  prerequisiteId?: string;
+  prerequisiteName?: string;
   externalId?: string;
-  assignedTagIds?: string[];
+  tagNames?: string[];
   folderId?: string;
   json?: boolean;
 }
@@ -123,7 +123,7 @@ export interface ExecuteTestsOptions {
   apiKey: string;
   testTargetId: string;
   url: string;
-  environment?: string;
+  environmentName?: string;
   description?: string;
   json?: boolean;
   tags?: string[];

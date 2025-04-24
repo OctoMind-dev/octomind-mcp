@@ -2,6 +2,10 @@
 
 <img src="images/light.svg" alt="Octomind Logo" width="150">
 
+<a href="https://glama.ai/mcp/servers/@OctoMind-dev/octomind-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@OctoMind-dev/octomind-mcp/badge" alt="octomind-mcp MCP server" />
+</a>
+
 [![smithery badge](https://smithery.ai/badge/@OctoMind-dev/octomind-mcp)](https://smithery.ai/server/@OctoMind-dev/octomind-mcp)
 
 Octomind provides a whole e2e platform for test creation, execution and management including auto-fix.
