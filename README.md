@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/octomind-dev-octomind-mcp-badge.png)](https://mseep.ai/app/octomind-dev-octomind-mcp)
+
 # octomind mcp server: let agents create and manage e2e tests
 
 <img src="images/light.svg" alt="Octomind Logo" width="150">
