@@ -1,5 +1,3 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/octomind-dev-octomind-mcp-badge.png)](https://mseep.ai/app/octomind-dev-octomind-mcp)
-
 # octomind mcp server: let agents create and manage e2e tests
 
 <img src="images/light.svg" alt="Octomind Logo" width="150">
@@ -7,6 +5,8 @@
 <a href="https://glama.ai/mcp/servers/@OctoMind-dev/octomind-mcp">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@OctoMind-dev/octomind-mcp/badge" alt="octomind-mcp MCP server" />
 </a>
+
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/octomind-dev-octomind-mcp-badge.png)](https://mseep.ai/app/octomind-dev-octomind-mcp)
 
 [![smithery badge](https://smithery.ai/badge/@OctoMind-dev/octomind-mcp)](https://smithery.ai/server/@OctoMind-dev/octomind-mcp)
 
