@@ -57,7 +57,7 @@ describe("DiscoveryHandler", () => {
         prompt: mockParams.prompt,
         testTargetId: mockParams.testTargetId,
         tagNames: mockParams.tagNames,
-        folderId: mockParams.folderName,
+        folderName: mockParams.folderName,
         entryPointUrlPath: undefined,
         prerequisiteName: undefined,
         externalId: undefined,

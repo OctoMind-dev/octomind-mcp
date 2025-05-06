@@ -181,6 +181,13 @@ export function registerDiscoveryTool(
           "Optional folder name that the newly discovered test case will be added to",
         ),
     },
+    {
+      title: "Discover a test case",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (params) => {
       return await handler.execute(params);
     },
