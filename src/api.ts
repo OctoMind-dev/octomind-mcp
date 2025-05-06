@@ -191,7 +191,7 @@ export const discovery = async (
     prerequisiteName: options.prerequisiteName,
     externalId: options.externalId,
     tagNames: options.tagNames,
-    folderId: options.folderId,
+    folderName: options.folderName,
   };
 
   const response = await apiCall<DiscoveryResponse>(
@@ -204,7 +204,7 @@ export const discovery = async (
   return response;
 };
 
-/* example notificytion
+/* example notification
     {
         "id": "ee8ffcdf-1df8-4b37-b789-9694dd37e6b3",
         "testTargetId": "edea1e1a-5152-4c1a-ac11-8b7d0cff9a6b",
