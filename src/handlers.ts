@@ -89,7 +89,6 @@ export class DiscoveryHandler
   async execute(params: DiscoveryParams): Promise<ToolResponse> {
     logger.debug({ params }, "Discovering test case");
 
-    // Map folder name to folder ID if provided
     const discoveryOptions: DiscoveryOptions = {
       apiKey: this.apiKey,
       json: true,
@@ -100,8 +99,7 @@ export class DiscoveryHandler
       prerequisiteName: params.prerequisiteName,
       externalId: params.externalId,
       tagNames: params.tagNames,
-      // Map folderName to folderId if needed in the future
-      folderId: params.folderName,
+      folderName: params.folderName,
     };
 
     const res = await discovery(discoveryOptions);
@@ -182,6 +180,13 @@ export function registerDiscoveryTool(
         .describe(
           "Optional folder name that the newly discovered test case will be added to",
         ),
+    },
+    {
+      title: "Discover a test case",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async (params) => {
       return await handler.execute(params);

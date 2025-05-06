@@ -15,7 +15,7 @@ export const discoveryBody = z.object({
   externalId: z.string().optional(),
   assignedTagIds: z.array(uuidValidation()).optional(),
   prompt: z.string(),
-  folderId: z.string().optional(),
+  folderName: z.string().optional(),
 });
 
 export type SearchResult = {
@@ -40,7 +40,7 @@ export interface DiscoveryOptions {
   prerequisiteName?: string;
   externalId?: string;
   tagNames?: string[];
-  folderId?: string;
+  folderName?: string;
   json?: boolean;
 }
 
