@@ -54,13 +54,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       {
         query: z.string().describe("Search query"),
       },
-      {
-        title: "Search",
-        readOnlyHint: true,
-        destructiveHint: false,
-        idempotentHint: true,
-        openWorldHint: true,
-      },
       async (params) => {
         logger.debug("Search query", params.query);
         const results = await search(params.query, trieve);
@@ -99,13 +92,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .string()
         .uuid()
         .describe("Unique identifier of the test target"),
-    },
-    {
-      title: "Get Test Case",
-      readOnlyHint: true,
-      destructiveHint: false,
-      idempotentHint: true,
-      openWorldHint: false,
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
@@ -159,13 +145,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .default([])
         .describe("List of tags used for filtering the tests to execute"),
     },
-    {
-      title: "Execute Tests",
-      readOnlyHint: false,
-      destructiveHint: false,
-      idempotentHint: false,
-      openWorldHint: false,
-    },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
       logger.debug({ params }, "Executing tests");
@@ -202,13 +181,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .string()
         .uuid()
         .describe("Unique identifier of the test target"),
-    },
-    {
-      title: "Get Environments",
-      readOnlyHint: true,
-      destructiveHint: false,
-      idempotentHint: true,
-      openWorldHint: false,
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
@@ -293,13 +265,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         "Optional additional HTTP header fields, \
         if discovery needs additional headers to be set",
       ),
-    },
-    {
-      title: "Create Environment",
-      readOnlyHint: false,
-      destructiveHint: false,
-      idempotentHint: false,
-      openWorldHint: false,
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
@@ -400,13 +365,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           "Optional additional HTTP header fields, if discovery needs additional headers to be set",
         ),
     },
-    {
-      title: "Update Environment",
-      readOnlyHint: false,
-      destructiveHint: false,
-      idempotentHint: true,
-      openWorldHint: false,
-    },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
       logger.debug({ params }, "Updating environment");
@@ -445,13 +403,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .string()
         .uuid()
         .describe("Unique identifier of the environment to delete"),
-    },
-    {
-      title: "Delete Environment",
-      readOnlyHint: false,
-      destructiveHint: true,
-      idempotentHint: false,
-      openWorldHint: false,
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
@@ -508,13 +459,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .optional()
         .describe("Optional filters for test reports"),
     },
-    {
-      title: "Get Test Reports",
-      readOnlyHint: true,
-      destructiveHint: false,
-      idempotentHint: true,
-      openWorldHint: false,
-    },
     async (params) => {
       logger.debug({ params }, "Retrieving test reports");
       const res = await getTestReports({
@@ -556,13 +500,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test report"),
     },
-    {
-      title: "Get Test Report",
-      readOnlyHint: true,
-      destructiveHint: false,
-      idempotentHint: true,
-      openWorldHint: false,
-    },
     async (params) => {
       logger.debug({ params }, "Retrieving test report");
       const res = await getTestReport({
@@ -597,13 +534,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     `the getPrivateLocations tool can retrieve all private locations configured for that org. 
     A private location is a server that can be used to access a test target behind a firewall or VPN.`,
     {},
-    {
-      title: "Get Private Locations",
-      readOnlyHint: true,
-      destructiveHint: false,
-      idempotentHint: true,
-      openWorldHint: false,
-    },
     async () => {
       const res = await listPrivateLocations({ apiKey: APIKEY });
       logger.debug({ res }, "Retrieved all private locations");
@@ -627,13 +557,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     `the getTestTargets tool can retrieve all test targets or projects.
     Test targets represent applications or services that can be tested using Octomind.`,
     {},
-    {
-      title: "Get Test Targets",
-      readOnlyHint: true,
-      destructiveHint: false,
-      idempotentHint: true,
-      openWorldHint: false,
-    },
     async () => {
       const res = await listTestTargets(APIKEY);
       logger.debug({ res }, "Retrieved all test targets");
@@ -670,13 +593,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe(
           "Skip automatic test creation right after the test target is created",
         ),
-    },
-    {
-      title: "Create Test Target",
-      readOnlyHint: false,
-      destructiveHint: false,
-      idempotentHint: false,
-      openWorldHint: false,
     },
     async (params) => {
       logger.debug({ params }, "Creating test target");
@@ -748,13 +664,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .optional()
         .describe("The timeout per step in milliseconds"),
     },
-    {
-      title: "Update Test Target",
-      readOnlyHint: false,
-      destructiveHint: false,
-      idempotentHint: false,
-      openWorldHint: false,
-    },
     async (params) => {
       logger.debug({ params }, "Updating test target");
       const res = await updateTestTarget({
@@ -787,13 +696,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test target to delete"),
     },
-    {
-      title: "Delete Test Target",
-      readOnlyHint: false,
-      destructiveHint: true,
-      idempotentHint: false,
-      openWorldHint: false,
-    },
     async (params) => {
       logger.debug({ params }, "Deleting test target");
       await deleteTestTarget({
@@ -816,13 +718,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     "getVersion",
     "Returns the current version of the Octomind MCP server",
     {},
-    {
-      title: "Get Version of the mcp server",
-      readOnlyHint: true,
-      destructiveHint: false,
-      idempotentHint: true,
-      openWorldHint: false,
-    },
     async () => {
       logger.debug(`Retrieving version -> ${version}`);
       return {
