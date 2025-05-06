@@ -99,9 +99,7 @@ export const checkNotifications = async (server: McpServer): Promise<void> => {
   }
 };
 
-export const listTestReports = (
-  _extra: RequestHandlerExtra,
-): ListResourcesResult => {
+export const listTestReports = (): ListResourcesResult => {
   return {
     resources:
       reports?.map((report) => ({
@@ -115,7 +113,6 @@ export const listTestReports = (
 export const readTestReport = (
   uri: URL,
   vars: Variables,
-  _extra: RequestHandlerExtra,
 ): ReadResourceResult => {
   console.error("Reading test report:", uri, vars);
   const reportId = vars.id;
@@ -138,9 +135,7 @@ export const readTestReport = (
   }
 };
 
-const listTestResultTraces = (
-  _extra: RequestHandlerExtra,
-): ListResourcesResult => {
+const listTestResultTraces = (): ListResourcesResult => {
   return {
     resources: Object.entries(tracesForTestReport).map(([id, traceUrl]) => ({
       uri: `testresulttrace://${id}`,
@@ -154,7 +149,6 @@ const listTestResultTraces = (
 const readTestResultTrace = async (
   uri: URL,
   vars: Variables,
-  _extra: RequestHandlerExtra,
 ): Promise<ReadResourceResult> => {
   const id: string = vars.id as string;
   const traceUrl = tracesForTestReport[id];
