@@ -8,10 +8,12 @@ import {
   discovery,
   executeTests,
   getTestCase,
+  getTestCases,
   getTestReport,
   getTestReports,
   listEnvironments,
   listTestTargets,
+  patchTestCase,
   search,
   trieveConfig,
   updateEnvironment,
@@ -725,6 +727,129 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           {
             type: "text",
             text: `Octomind MCP Server version: ${version}`,
+          },
+        ],
+      };
+    },
+  );
+
+  // Get Test Cases with filter
+  server.tool(
+    "getTestCases",
+    `the getTestCases tool can retrieve test cases for a given test target with optional filtering.
+    Test cases can be filtered by various criteria such as status, description, or tags.`,
+    {
+      testTargetId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test target"),
+      filter: z
+        .string()
+        .optional()
+        .describe(
+          'Optional JSON string containing filter criteria for test cases. Supports fields: id, testTargetId, description, status (ENABLED, DISABLED, DRAFT, OUTDATED, PROVISIONAL), runStatus (ON, OFF), folderId, externalId. Logical operators: AND, OR, NOT. Example: \'{"status":"ENABLED","folderId":"some-folder-id","OR":[{"description":"Login Test"},{"externalId":"TEST-123"}]}\'',
+        ),
+    },
+    async (params) => {
+      await setLastTestTargetId(server, params.testTargetId);
+      if (!params.filter) {
+        params.filter = JSON.stringify({ status: "ENABLED" });
+      }
+      const res = await getTestCases({
+        apiKey: APIKEY,
+        testTargetId: params.testTargetId,
+        filter: params.filter,
+      });
+      logger.debug("Retrieved test cases", res);
+      return {
+        content: [
+          {
+            text: `Retrieved ${res.length} test cases for test target: ${params.testTargetId}${params.filter ? ` with filter: ${params.filter}` : ""}`,
+            type: "text",
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res, null, 2),
+          },
+        ],
+      };
+    },
+  );
+
+  // Update Test Case
+  server.tool(
+    "updateTestCase",
+    `the updateTestCase tool can update specific properties of a test case.
+    This allows modifying test case details such as description, status, or test elements.`,
+    {
+      testTargetId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test target"),
+      testCaseId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test case to update"),
+      description: z
+        .string()
+        .optional()
+        .describe("Optional new description for the test case"),
+      entryPointUrlPath: z
+        .string()
+        .optional()
+        .describe("Optional new entry point URL path"),
+      status: z
+        .enum(["ENABLED", "DISABLED", "DRAFT", "OUTDATED", "PROVISIONAL"])
+        .optional()
+        .describe("Optional new status for the test case"),
+      runStatus: z
+        .enum(["ON", "OFF"])
+        .optional()
+        .describe("Optional new run status for the test case"),
+      folderName: z
+        .string()
+        .optional()
+        .describe("Optional folder name to organize the test case"),
+      interactionStatus: z
+        .enum(["NEW", "EDITED", "APPROVED", "REJECTED"])
+        .optional()
+        .describe("Optional new interaction status"),
+      assignedTagNames: z
+        .array(z.string())
+        .optional()
+        .describe("Optional list of tag names to assign to the test case"),
+      externalId: z
+        .string()
+        .optional()
+        .describe(
+          "Optional external identifier for integration with external systems",
+        ),
+    },
+    async (params) => {
+      await setLastTestTargetId(server, params.testTargetId);
+      const res = await patchTestCase({
+        apiKey: APIKEY,
+        testTargetId: params.testTargetId,
+        testCaseId: params.testCaseId,
+        description: params.description,
+        entryPointUrlPath: params.entryPointUrlPath,
+        status: params.status,
+        runStatus: params.runStatus,
+        folderName: params.folderName,
+        interactionStatus: params.interactionStatus,
+        assignedTagNames: params.assignedTagNames,
+        externalId: params.externalId,
+      });
+      logger.debug("Updated test case", res);
+      return {
+        content: [
+          {
+            text: `Updated test case: ${params.testCaseId} for test target: ${params.testTargetId}`,
+            type: "text",
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res, null, 2),
           },
         ],
       };

@@ -309,3 +309,50 @@ export interface DeleteTestTargetOptions {
   testTargetId: string;
   json?: boolean;
 }
+
+export interface GetTestCasesOptions {
+  apiKey: string;
+  testTargetId: string;
+  filter?: string;
+  json?: boolean;
+}
+
+export interface TestCaseListItem {
+  id: string;
+  testTargetId: string;
+  description: string;
+  status: "ENABLED" | "DISABLED" | "DRAFT" | "OUTDATED" | "PROVISIONAL";
+  runStatus: "ON" | "OFF";
+  createdAt: string;
+  updatedAt: string;
+  entryPointUrlPath?: string;
+  folderId?: string;
+  externalId?: string;
+  tags: string[];
+}
+
+export interface TestCaseElement {
+  id: string;
+  index: number;
+  ignoreFailure: boolean;
+  interaction: any;
+  assertion: any;
+  selectors: any[];
+}
+
+export interface PatchTestCaseOptions {
+  apiKey: string;
+  testTargetId: string;
+  testCaseId: string;
+  elements?: TestCaseElement[];
+  description?: string;
+  entryPointUrlPath?: string;
+  status?: "ENABLED" | "DISABLED" | "DRAFT" | "OUTDATED" | "PROVISIONAL";
+  runStatus?: "ON" | "OFF";
+  folderName?: string;
+  interactionStatus?: "NEW" | "EDITED" | "APPROVED" | "REJECTED";
+  createBackendDiscoveryPrompt?: string;
+  assignedTagNames?: string[];
+  externalId?: string;
+  json?: boolean;
+}

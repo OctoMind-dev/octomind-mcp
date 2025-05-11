@@ -29,6 +29,9 @@ import {
   UpdateTestTargetOptions,
   DeleteTestTargetOptions,
   CreateTestTargetBody,
+  GetTestCasesOptions,
+  TestCaseListItem,
+  PatchTestCaseOptions,
 } from "./types";
 import { version } from "./version";
 
@@ -477,4 +480,45 @@ export const deleteTestTarget = async (
   );
 
   return res;
+};
+
+export const getTestCases = async (
+  options: GetTestCasesOptions,
+): Promise<TestCaseListItem[]> => {
+  const queryParams = options.filter
+    ? `?filter=${encodeURIComponent(options.filter)}`
+    : "";
+  const response = await apiCall<TestCaseListItem[]>(
+    "get",
+    `/apiKey/v2/test-targets/${options.testTargetId}/test-cases${queryParams}`,
+    options.apiKey,
+  );
+
+  return response;
+};
+
+export const patchTestCase = async (
+  options: PatchTestCaseOptions,
+): Promise<TestCase> => {
+  const requestBody = {
+    elements: options.elements,
+    description: options.description,
+    entryPointUrlPath: options.entryPointUrlPath,
+    status: options.status,
+    runStatus: options.runStatus,
+    folderName: options.folderName,
+    interactionStatus: options.interactionStatus,
+    createBackendDiscoveryPrompt: options.createBackendDiscoveryPrompt,
+    assignedTagNames: options.assignedTagNames,
+    externalId: options.externalId,
+  };
+
+  const response = await apiCall<TestCase>(
+    "patch",
+    `/apiKey/v2/test-targets/${options.testTargetId}/test-cases/${options.testCaseId}`,
+    options.apiKey,
+    requestBody,
+  );
+
+  return response;
 };
