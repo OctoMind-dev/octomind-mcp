@@ -747,12 +747,12 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .string()
         .optional()
         .describe(
-          "Optional JSON string containing filter criteria for test cases. Supports fields: id, testTargetId, description, status (ENABLED, DISABLED, DRAFT, OUTDATED, PROVISIONAL), runStatus (ON, OFF), folderId, externalId. Logical operators: AND, OR, NOT. Example: '{\"status\":\"ENABLED\",\"folderId\":\"some-folder-id\",\"OR\":[{\"description\":\"Login Test\"},{\"externalId\":\"TEST-123\"}]}'"
-        )
+          'Optional JSON string containing filter criteria for test cases. Supports fields: id, testTargetId, description, status (ENABLED, DISABLED, DRAFT, OUTDATED, PROVISIONAL), runStatus (ON, OFF), folderId, externalId. Logical operators: AND, OR, NOT. Example: \'{"status":"ENABLED","folderId":"some-folder-id","OR":[{"description":"Login Test"},{"externalId":"TEST-123"}]}\'',
+        ),
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);
-      if(!params.filter) {
+      if (!params.filter) {
         params.filter = JSON.stringify({ status: "ENABLED" });
       }
       const res = await getTestCases({
@@ -764,7 +764,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       return {
         content: [
           {
-            text: `Retrieved ${res.length} test cases for test target: ${params.testTargetId}${params.filter ? ` with filter: ${params.filter}` : ''}`,
+            text: `Retrieved ${res.length} test cases for test target: ${params.testTargetId}${params.filter ? ` with filter: ${params.filter}` : ""}`,
             type: "text",
           },
           {
@@ -821,7 +821,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       externalId: z
         .string()
         .optional()
-        .describe("Optional external identifier for integration with external systems"),
+        .describe(
+          "Optional external identifier for integration with external systems",
+        ),
     },
     async (params) => {
       await setLastTestTargetId(server, params.testTargetId);

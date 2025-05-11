@@ -485,7 +485,9 @@ export const deleteTestTarget = async (
 export const getTestCases = async (
   options: GetTestCasesOptions,
 ): Promise<TestCaseListItem[]> => {
-  const queryParams = options.filter ? `?filter=${encodeURIComponent(options.filter)}` : '';
+  const queryParams = options.filter
+    ? `?filter=${encodeURIComponent(options.filter)}`
+    : "";
   const response = await apiCall<TestCaseListItem[]>(
     "get",
     `/apiKey/v2/test-targets/${options.testTargetId}/test-cases${queryParams}`,
