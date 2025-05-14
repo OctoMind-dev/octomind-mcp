@@ -35,11 +35,14 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",
     "axios": "^1.8.4",
+    "commander": "^13.1.0",
+    "express": "^5.1.0",
     "pino": "^9.6.0",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/express": "^5.0.1",
     "@types/jest": "^29.5.1",
     "@types/node": "^22.13.5",
     "@typescript-eslint/parser": "^8.25.0",

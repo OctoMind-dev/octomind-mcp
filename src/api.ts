@@ -79,7 +79,7 @@ const trieveFetcher = async (trieve: TrieveData, query: string) => {
   }
 };
 
-export const trieveConfig = async (): Promise<TrieveData> => {
+export const trieveConfig = async (): Promise<TrieveData | null> => {
   try {
     // https://leaves.mintlify.com/api/mcp/config/octomind
     const { data } = await axios.get(
@@ -94,7 +94,7 @@ export const trieveConfig = async (): Promise<TrieveData> => {
     return data;
   } catch (error) {
     console.error("Error fetching trieve result data:", error);
-    throw new Error("Error fetching trieve data");
+    return null;
   }
 };
 

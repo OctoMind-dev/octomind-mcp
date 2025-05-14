@@ -26,6 +26,7 @@ import {
 import { reloadTestReports } from "./resources";
 import { logger } from "./logger";
 import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
+import { transports } from "./index";
 
 export const APIKEY = process.env.APIKEY ?? "";
 
@@ -46,9 +47,10 @@ export const setLastTestTargetId = async (
 };
 
 export const registerTools = async (server: McpServer): Promise<void> => {
-  try {
-    const trieve = await trieveConfig();
-
+  
+  // trieve config is currently disabled due to a gateway timeout
+  const trieve = null;//await trieveConfig();
+  if (trieve) {
     server.tool(
       "search",
       `the search tool can be used to search the octomind documentation for a given query.
@@ -56,9 +58,13 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       {
         query: z.string().describe("Search query"),
       },
-      async (params) => {
-        logger.debug("Search query", params.query);
-        const results = await search(params.query, trieve);
+      async ({query},{sessionId}) => {
+        const apiKey = transports[sessionId!].apiKey;
+        if (!apiKey) {
+          throw new Error("Unauthorized");
+        }
+        logger.debug("Search query", query, apiKey);
+        const results = await search(query, trieve);
         logger.debug("Search results", results);
         const c = results.map((result) => {
           const { title, content, link } = result;
@@ -76,8 +82,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         };
       },
     );
-  } catch (error) {
-    logger.error("Failed to register search tool", error);
   }
 
   server.tool(
