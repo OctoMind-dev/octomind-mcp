@@ -14,6 +14,7 @@ import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { randomUUID } from "crypto";
+import { getSession, removeSession, sessionExists, setSession, initializeSessionStore } from "./session";
 
 const buildServer = async (): Promise<McpServer> => {
   const server = new McpServer({
@@ -80,7 +81,7 @@ const helpInstall = () => {
   process.exit(0);
 };
 
-const getApiKey = (req: Request): string | undefined => {
+const getApiKeyFromRequest = (req: Request): string | undefined => {
   const authHeader = req.headers["authorization"];
   if (!authHeader) {
     return undefined;
@@ -89,8 +90,9 @@ const getApiKey = (req: Request): string | undefined => {
   return apiKey;
 }
 
+
+
 export const serverStartupTime = Date.now();
-export const sessions: Record<string, { transport: SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport; apiKey: string }> = {};
 
 const start = async () => {
   program
@@ -99,12 +101,30 @@ const start = async () => {
     .option("-t, --stream", "Enable Streamable HTTP")
     .option("-c, --clients", "Show clients")
     .option("-p, --port <port>", "Port to listen on", "3000")
+    .option("-r, --redis-url <url>", "Redis URL for session storage", process.env.REDIS_URL)
     .parse(process.argv);
 
   const opts = program.opts();
   const PORT = parseInt(opts.port);
   if (opts.clients) {
     helpInstall();
+  }
+  
+  // Initialize the appropriate session store based on transport type
+  if (opts.sse || opts.stream) {
+    // For SSE and HTTP transport, use Redis if URL is provided
+    const redisUrl = opts.redisUrl || process.env.REDIS_URL;
+    if (redisUrl) {
+      logger.info(`Initializing Redis session store with URL: ${redisUrl.replace(/:[^:]*@/, ':***@')}`);
+      initializeSessionStore('redis', redisUrl);
+    } else {
+      logger.info('Redis URL not provided, using in-memory session store');
+      initializeSessionStore('memory');
+    }
+  } else {
+    // For stdio transport, use in-memory store
+    logger.info('Using in-memory session store for stdio transport');
+    initializeSessionStore('memory');
   }
 
   const server = await buildServer();
@@ -117,7 +137,7 @@ const start = async () => {
         throw new Error("APIKEY environment variable is required");
       }
       const sessionId = randomUUID();
-      sessions[sessionId] = { transport, apiKey };
+      await setSession({ transport, apiKey, sessionId });
     }
 
     // Call original connect
@@ -128,29 +148,29 @@ const start = async () => {
   if (opts.stream) {
     const app = express();
     app.use(express.json());
-    app.post('/mcp', async (req, res) => {
+    app.post('/mcp', async (req: Request, res: Response) => {
       // Check for existing session ID
       const sessionId = req.headers['mcp-session-id'] as string | undefined;
       let transport: StreamableHTTPServerTransport;
 
-      if (sessionId && sessions[sessionId]) {
+      if (sessionId && await sessionExists(sessionId)) {
         // Reuse existing transport
-        const session = sessions[sessionId];
+        const session = await getSession(sessionId);
         transport = session.transport as StreamableHTTPServerTransport;
       } else if (!sessionId && isInitializeRequest(req.body)) {
         // New initialization request
         transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
-          onsessioninitialized: (sessionId) => {
+          onsessioninitialized: async (sessionId) => {
             // Store the transport by session ID
-            sessions[sessionId] = { transport, apiKey: getApiKey(req) ?? "" };
+            await setSession({ transport, apiKey: getApiKeyFromRequest(req)!, sessionId });
           }
         });
 
         // Clean up transport when closed
-        transport.onclose = () => {
+        transport.onclose = async () => {
           if (transport.sessionId) {
-            delete sessions[transport.sessionId];
+            await removeSession(transport.sessionId);
           }
         };
 
@@ -175,16 +195,16 @@ const start = async () => {
     // Reusable handler for GET and DELETE requests
     const handleSessionRequest = async (req: Request, res: Response) => {
       const sessionId = req.headers['mcp-session-id'] as string | undefined;
-      if (!sessionId || !sessions[sessionId]) {
+      if (!sessionId || !sessionExists(sessionId)) {
         res.status(400).send('Invalid or missing session ID');
         return;
       }
 
-      const session = sessions[sessionId];
+      const session = await getSession(sessionId);
       const transport = session.transport as StreamableHTTPServerTransport;
       await transport.handleRequest(req, res);
       if( req.method === "DELETE") {
-        delete sessions[sessionId];
+        await removeSession(sessionId);
       }
     };
 
@@ -204,14 +224,14 @@ const start = async () => {
 
     app.get('/sse', async (req: Request, res: Response) => {
       const transport = new SSEServerTransport('/messages', res);
-      const apiKey = getApiKey(req);
+      const apiKey = getApiKeyFromRequest(req);
       if (!apiKey) {
         res.status(401).send('Unauthorized, authorization header is required');
         return;
       }
-      sessions[transport.sessionId] = { transport, apiKey };
-      res.on('close', () => {
-        delete sessions[transport.sessionId];
+      await setSession({ transport, apiKey, sessionId: transport.sessionId });
+      res.on('close', async () => {
+        await removeSession(transport.sessionId);
       });
 
       await server.connect(transport);
@@ -219,13 +239,15 @@ const start = async () => {
     });
     app.post('/messages', async (req: Request, res: Response) => {
       const sessionId = req.query.sessionId as string;
-      const sessionData = sessions[sessionId];
-      if (!sessionData) {
+      let session;
+      try {
+        session = await getSession(sessionId);
+      } catch (error) {
         res.status(400).send('No transport found for sessionId');
         return;
       }
-      const transport = sessionData.transport as SSEServerTransport;
-      const apiKey = sessionData.apiKey;
+      const transport = session.transport as SSEServerTransport;
+      const apiKey = session.apiKey;
       if (!apiKey) {
         res.status(401).send('Unauthorized, authorization header is required');
         return;
@@ -281,7 +303,7 @@ const start = async () => {
   }
   setInterval(async () => {
     await checkNotifications(server);
-  }, 20_000);
+  }, 60_000);
   // Cleanup on exit
   process.on("SIGTERM", async () => {
     logger.info(`Octomind MCP Server version ${version} closing`);
