@@ -1,6 +1,6 @@
 {
   "name": "@octomind/octomind-mcp",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "an mcp server for the octomind platform",
   "main": "./dist/index.js",
   "packageManager": "pnpm@10.7.1+sha512.2d92c86b7928dc8284f53494fb4201f983da65f0fb4f0d40baafa5cf628fa31dae3e5968f12466f17df7e97310e30f343a648baea1b9b350685dafafffdf5808",
@@ -11,12 +11,12 @@
     "octomind": "./dist/index.js"
   },
   "scripts": {
-    "version": "npx genversion -des src/version.ts",
-    "lint": "npx genversion -des src/version.ts && eslint src/**/*.ts tests/**/*.ts --max-warnings=0",
-    "build": "npx genversion -des src/version.ts && tsc --project tsconfig.build.json",
+    "version": "pnpm genversion -des src/version.ts",
+    "lint": "pnpm genversion -des src/version.ts && eslint src/**/*.ts tests/**/*.ts --max-warnings=0",
+    "build": "pnpm genversion -des src/version.ts && tsc --project tsconfig.build.json",
     "octomind-mcp": "tsx src/index.ts",
-    "test": "npx genversion -des src/version.ts && jest",
-    "test:watch": "npx genversion -e src/version.ts && jest --watch"
+    "test": "pnpm genversion -des src/version.ts && jest",
+    "test:watch": "pnpm genversion -e src/version.ts && jest --watch"
   },
   "repository": {
     "type": "git",
@@ -43,6 +43,7 @@
     "@types/jest": "^29.5.1",
     "@types/node": "^22.13.5",
     "@typescript-eslint/parser": "^8.25.0",
+    "genversion": "^3.2.0",
     "eslint": "8.57.1",
     "eslint-config-prettier": "^10.0.1",
     "eslint-import-resolver-typescript": "^4.0.0",
