@@ -15,8 +15,8 @@
     "lint": "pnpm genversion -des src/version.ts && eslint src/**/*.ts tests/**/*.ts --max-warnings=0",
     "build": "pnpm genversion -des src/version.ts && tsc --project tsconfig.build.json",
     "octomind-mcp": "tsx src/index.ts",
-    "test": "pnpm genversion -des src/version.ts && jest",
-    "test:watch": "pnpm genversion -e src/version.ts && jest --watch"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "repository": {
     "type": "git",
