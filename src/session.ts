@@ -88,15 +88,19 @@ export class RedisSessionStore implements SessionStore {
   private clientInitialized: boolean = false;
   private clientInitPromise: Promise<void> | null = null;
   private redisUrl: string;
+  private expirationSeconds: number | null;
 
   /**
    * Create a new RedisSessionStore
    * @param redisUrl Redis connection URL (e.g., redis://localhost:6379)
-   * @param prefix Key prefix for Redis storage (default: 'octomind:session:')
+   * @param options Configuration options
+   * @param options.prefix Key prefix for Redis storage (default: 'octomind:session:')
+   * @param options.expirationSeconds Time in seconds after which sessions expire (default: null, no expiration)
    */
-  constructor(redisUrl: string, prefix: string = 'octomind:session:') {
+  constructor(redisUrl: string, options?: { prefix?: string; expirationSeconds?: number }) {
     this.redisUrl = redisUrl;
-    this.prefix = prefix;
+    this.prefix = options?.prefix || 'octomind:session:';
+    this.expirationSeconds = options?.expirationSeconds || null;
   }
 
   /**
@@ -173,7 +177,16 @@ export class RedisSessionStore implements SessionStore {
   async setSession(session: Session): Promise<void> {
     await this.ensureClient();
     const key = this.prefix + session.sessionId;
-    await this.client.set(key, JSON.stringify(session));
+    
+    if (this.expirationSeconds) {
+      // Set with expiration
+      await this.client.set(key, JSON.stringify(session), {
+        EX: this.expirationSeconds
+      });
+    } else {
+      // Set without expiration
+      await this.client.set(key, JSON.stringify(session));
+    }
   }
 
   async sessionExists(sessionId: string): Promise<boolean> {
@@ -190,14 +203,27 @@ let sessionStore: SessionStore | null = null;
 /**
  * Initialize the session store
  * @param storeType Type of store to initialize ('memory' or 'redis')
- * @param redisUrl Redis URL if using Redis store
+ * @param options Configuration options
+ * @param options.redisUrl Redis URL if using Redis store
+ * @param options.sessionExpirationSeconds Time in seconds after which sessions expire (Redis only)
+ * @param options.redisKeyPrefix Key prefix for Redis storage (default: 'octomind:session:')
  */
-export const initializeSessionStore = (storeType: 'memory' | 'redis', redisUrl?: string): SessionStore => {
+export const initializeSessionStore = (
+  storeType: 'memory' | 'redis', 
+  options?: { 
+    redisUrl?: string; 
+    sessionExpirationSeconds?: number; 
+    redisKeyPrefix?: string 
+  }
+): SessionStore => {
   if (storeType === 'redis') {
-    if (!redisUrl) {
+    if (!options?.redisUrl) {
       throw new Error('Redis URL is required for Redis session store');
     }
-    sessionStore = new RedisSessionStore(redisUrl);
+    sessionStore = new RedisSessionStore(options.redisUrl, {
+      prefix: options.redisKeyPrefix,
+      expirationSeconds: options.sessionExpirationSeconds
+    });
   } else {
     sessionStore = new InMemorySessionStore();
   }

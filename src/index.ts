@@ -102,6 +102,7 @@ const start = async () => {
     .option("-c, --clients", "Show clients")
     .option("-p, --port <port>", "Port to listen on", "3000")
     .option("-r, --redis-url <url>", "Redis URL for session storage", process.env.REDIS_URL)
+    .option("-e, --session-expiration <seconds>", "Session expiration time in seconds", process.env.SESSION_EXPIRATION_SECONDS)
     .parse(process.argv);
 
   const opts = program.opts();
@@ -114,9 +115,19 @@ const start = async () => {
   if (opts.sse || opts.stream) {
     // For SSE and HTTP transport, use Redis if URL is provided
     const redisUrl = opts.redisUrl || process.env.REDIS_URL;
+    const sessionExpirationSeconds = opts.sessionExpiration ? parseInt(opts.sessionExpiration) : undefined;
+    
     if (redisUrl) {
       logger.info(`Initializing Redis session store with URL: ${redisUrl.replace(/:[^:]*@/, ':***@')}`);
-      initializeSessionStore('redis', redisUrl);
+      if (sessionExpirationSeconds) {
+        logger.info(`Session expiration set to ${sessionExpirationSeconds} seconds`);
+      }
+      
+      initializeSessionStore('redis', {
+        redisUrl,
+        sessionExpirationSeconds,
+        redisKeyPrefix: 'octomind:session:'
+      });
     } else {
       logger.info('Redis URL not provided, using in-memory session store');
       initializeSessionStore('memory');
