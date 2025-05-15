@@ -58,11 +58,13 @@ export class InMemorySessionStore implements SessionStore {
     if (!session) {
       throw new Error("Session not found");
     }
+    console.error("Getting session", {sessionId, session});
     return session;
   }
 
   async removeSession(sessionId: string): Promise<void> {
     delete this.sessions[sessionId];
+    console.error("Removing session", {sessionId});
   }
 
   async getAllSessions(): Promise<Session[]> {
@@ -70,6 +72,7 @@ export class InMemorySessionStore implements SessionStore {
   }
 
   async setSession(session: Session): Promise<void> {
+    console.error("Setting session", {session});
     this.sessions[session.sessionId] = session;
   }
 

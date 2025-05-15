@@ -15,6 +15,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { randomUUID } from "crypto";
 import { getSession, removeSession, sessionExists, setSession, initializeSessionStore } from "./session";
+import { helpInstall } from "./help";
 
 const buildServer = async (): Promise<McpServer> => {
   const server = new McpServer({
@@ -27,72 +28,25 @@ const buildServer = async (): Promise<McpServer> => {
   return server;
 };
 
-const helpInstall = () => {
-  const configs = {
-    claude: {
-      mcpServers: {
-        "octomind-mcp": {
-          name: "Octomind MCP Server",
-          command: "npx",
-          args: ["-y", "@octomind/octomind-mcp@latest"],
-          env: {
-            APIKEY: "your-api-key-here",
-          },
-        },
-      },
-    },
-    cursor: {
-      mcpServers: {
-        "octomind-mcp": {
-          name: "Octomind MCP Server",
-          command: "npx",
-          args: ["-y", "@octomind/octomind-mcp@latest"],
-          env: {
-            APIKEY: "your-api-key-here",
-          },
-        },
-      },
-    },
-    windsurf: {
-      mcpServers: {
-        "octomind-mcp": {
-          name: "Octomind MCP Server",
-          command: "npx",
-          args: ["-y", "@octomind/octomind-mcp@latest"],
-          environment: {
-            APIKEY: "your-api-key-here",
-          },
-        },
-      },
-    },
-  };
-
-  console.error("Configuration snippets for different clients:\n");
-  console.error("Claude Desktop (.claude-config.json):");
-  console.error(`${JSON.stringify(configs.claude, null, 2)}\n`);
-
-  console.error("Cursor (cursor.json):");
-  console.error(`${JSON.stringify(configs.cursor, null, 2)}\n`);
-
-  console.error("Windsurf (config.json):");
-  console.error(`${JSON.stringify(configs.windsurf, null, 2)}\n`);
-
-  console.error("Note: Replace 'your-api-key-here' with your actual API key");
-  process.exit(0);
-};
-
 const getApiKeyFromRequest = (req: Request): string | undefined => {
   const authHeader = req.headers["authorization"];
   if (!authHeader) {
-    return undefined;
+    const apiKeyHeader = req.headers["x-api-key"];
+    if (!apiKeyHeader) {
+      return undefined;
+    }
+    if (Array.isArray(apiKeyHeader)) {
+      return apiKeyHeader[0];
+    }
+    return apiKeyHeader;
+  } else if (authHeader.startsWith("Bearer ")) {
+    return authHeader.substring(7);
   }
-  const apiKey = authHeader.split(" ")[1];
-  return apiKey;
 }
 
 
-
 export const serverStartupTime = Date.now();
+export const theStdioSessionId = randomUUID();
 
 const start = async () => {
   program
@@ -147,8 +101,7 @@ const start = async () => {
       if (!apiKey) {
         throw new Error("APIKEY environment variable is required");
       }
-      const sessionId = randomUUID();
-      await setSession({ transport, apiKey, sessionId });
+      await setSession({ transport, apiKey, sessionId: theStdioSessionId });
     }
 
     // Call original connect
@@ -177,7 +130,11 @@ const start = async () => {
           sessionIdGenerator: () => randomUUID(),
           onsessioninitialized: async (sessionId) => {
             // Store the transport by session ID
-            await setSession({ transport, apiKey: getApiKeyFromRequest(req)!, sessionId });
+            const apiKey = getApiKeyFromRequest(req);
+            if (!apiKey) {
+              throw new Error("Unauthorized");
+            }
+            await setSession({ transport, apiKey, sessionId });
           }
         });
 

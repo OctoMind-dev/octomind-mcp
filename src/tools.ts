@@ -24,6 +24,7 @@ import { logger } from "./logger";
 import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
 import { getSession } from "./session";
 import { search, trieveConfig } from "./search";
+import { theStdioSessionId } from ".";
 
 export const getLastTestTargetId = async (sessionId: string): Promise<string | undefined> => {
   const session = await getSession(sessionId);
@@ -48,17 +49,23 @@ export const setLastTestTargetId = async (
   }
 };
 
+/**
+ * for StdioServerTransport the sessionId undefined so we check if there is
+ * only one session with StdioServerTransport and return it
+ * @param sessionId 
+ * @returns 
+ */
 const getApiKey = async (sessionId?: string): Promise<string> => {
   if (!sessionId) {
-    throw new Error("Unauthorized");
+    sessionId = theStdioSessionId;
   }
   const session = await getSession(sessionId);
   if (!session) {
-    throw new Error("Unauthorized");
+    throw new Error("Unauthorized, no session found");
   }
   const apiKey = session.apiKey;
   if(!apiKey) {
-    throw new Error("Unauthorized");
+    throw new Error("Unauthorized, no apiKey found for session");
   }
   return apiKey;
 };

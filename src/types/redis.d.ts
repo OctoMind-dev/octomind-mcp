@@ -1,6 +1,6 @@
-declare module 'redis' {
+declare module "redis" {
   export function createClient(options: { url: string }): RedisClient;
-  
+
   export interface RedisClient {
     connect(): Promise<void>;
     get(key: string): Promise<string | null>;
@@ -12,10 +12,10 @@ declare module 'redis' {
   }
 
   export interface SetOptions {
-    EX?: number;    // Expiration time in seconds
-    PX?: number;    // Expiration time in milliseconds
-    NX?: boolean;   // Only set the key if it does not already exist
-    XX?: boolean;   // Only set the key if it already exists
+    EX?: number; // Expiration time in seconds
+    PX?: number; // Expiration time in milliseconds
+    NX?: boolean; // Only set the key if it does not already exist
+    XX?: boolean; // Only set the key if it already exists
     KEEPTTL?: boolean; // Retain the time to live associated with the key
   }
 }
