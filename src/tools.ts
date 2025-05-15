@@ -12,7 +12,6 @@ import {
   listEnvironments,
   listTestTargets,
   patchTestCase,
-  search,
   updateEnvironment,
   createTestTarget,
   updateTestTarget,
@@ -24,6 +23,7 @@ import { reloadTestReports } from "./resources";
 import { logger } from "./logger";
 import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
 import { getSession } from "./session";
+import { search, trieveConfig } from "./search";
 
 export const getLastTestTargetId = async (sessionId: string): Promise<string | undefined> => {
   const session = await getSession(sessionId);
@@ -64,9 +64,7 @@ const getApiKey = async (sessionId?: string): Promise<string> => {
 };
 
 export const registerTools = async (server: McpServer): Promise<void> => {
-  
-  // trieve config is currently disabled due to a gateway timeout
-  const trieve = null;//await trieveConfig();
+  const trieve = await trieveConfig();
   if (trieve) {
     server.tool(
       "search",
