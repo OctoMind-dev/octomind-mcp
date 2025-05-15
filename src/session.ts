@@ -1,12 +1,32 @@
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { logger } from "./logger";
 
+/**
+ * Session status enum to track the state of the session
+ */
+export enum SessionStatus {
+  /** Session is active with a valid transport */
+  ACTIVE = 'active',
+  /** Session exists but transport is missing (e.g., after server restart) */
+  TRANSPORT_MISSING = 'transport_missing'
+}
+
+/**
+ * Session interface representing a client session
+ */
 export type Session = {
-  transport: SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport;
+  /** Transport for communication with the client */
+  transport?: SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport;
+  /** Unique session identifier */
   sessionId: string;
+  /** API key for authentication */
   apiKey: string;
+  /** Optional current test target ID */
   currentTestTargetId?: string;
+  /** Session status (defaults to ACTIVE when not specified) */
+  status?: SessionStatus;
 }
 
 /**
@@ -53,18 +73,20 @@ export interface SessionStore {
 export class InMemorySessionStore implements SessionStore {
   private sessions: Record<string, Session> = {};
 
+  constructor() {
+    logger.info("InMemorySessionStore created");
+  }
+
   async getSession(sessionId: string): Promise<Session> {
     const session = this.sessions[sessionId];
     if (!session) {
       throw new Error("Session not found");
     }
-    console.error("Getting session", {sessionId, session});
     return session;
   }
 
   async removeSession(sessionId: string): Promise<void> {
     delete this.sessions[sessionId];
-    console.error("Removing session", {sessionId});
   }
 
   async getAllSessions(): Promise<Session[]> {
@@ -72,7 +94,6 @@ export class InMemorySessionStore implements SessionStore {
   }
 
   async setSession(session: Session): Promise<void> {
-    console.error("Setting session", {session});
     this.sessions[session.sessionId] = session;
   }
 
@@ -92,6 +113,7 @@ export class RedisSessionStore implements SessionStore {
   private clientInitPromise: Promise<void> | null = null;
   private redisUrl: string;
   private expirationSeconds: number | null;
+  private transportCache: Record<string, SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport> = {};
 
   /**
    * Create a new RedisSessionStore
@@ -104,6 +126,7 @@ export class RedisSessionStore implements SessionStore {
     this.redisUrl = redisUrl;
     this.prefix = options?.prefix || 'octomind:session:';
     this.expirationSeconds = options?.expirationSeconds || null;
+    logger.info("RedisSessionStore created", {redisUrl, prefix: this.prefix, expirationSeconds: this.expirationSeconds});
   }
 
   /**
@@ -133,15 +156,85 @@ export class RedisSessionStore implements SessionStore {
       
       // Set up error handler
       this.client.on('error', (err: Error) => {
-        console.error('Redis client error:', err);
+        logger.error('Redis client error:', err);
       });
       
       await this.client.connect();
       this.clientInitialized = true;
     } catch (error) {
-      console.error('Failed to initialize Redis client:', error);
+      logger.error('Failed to initialize Redis client:', error);
       throw error;
     }
+  }
+
+  /**
+   * Extracts the session ID from a Redis key
+   * @param key Redis key with prefix
+   * @returns Session ID without prefix
+   */
+  private extractSessionId(key: string): string {
+    return key.substring(this.prefix.length);
+  }
+
+  /**
+   * Prepares a session for storage by removing the transport object
+   * @param session The complete session object
+   * @returns A session object without the transport property
+   */
+  private prepareSessionForStorage(session: Session): Omit<Session, 'transport'> {
+    // Only store the transport if it exists
+    if (session.transport) {
+      this.transportCache[session.sessionId] = session.transport;
+    }
+    
+    // Create a new object without the transport property
+    const { transport, ...sessionWithoutTransport } = session;
+    
+    // Determine the appropriate status for this process
+    // Note: This status will be overridden when the session is restored
+    // based on whether the transport is available in that process
+    let status = session.status || SessionStatus.ACTIVE;
+    
+    // If transport is missing, override status regardless of what was provided
+    if (!session.transport) {
+      status = SessionStatus.TRANSPORT_MISSING;
+    }
+    
+    // Return session data without transport (for Redis storage)
+    return { 
+      ...sessionWithoutTransport, 
+      status
+    };
+  }
+
+  /**
+   * Restores a session by adding back the transport object from memory if available
+   * @param sessionData The session data from Redis
+   * @param sessionId The session ID
+   * @returns The complete session with transport if available
+   */
+  private restoreSession(sessionData: any, sessionId: string): Session {
+    // Parse the session data
+    const parsedData = typeof sessionData === 'string' ? JSON.parse(sessionData) : sessionData;
+    
+    // Always try to get the transport from memory cache
+    const transport = this.transportCache[sessionId];
+    
+    // Create a copy of the session data
+    const sessionCopy = { ...parsedData };
+    
+    if (transport) {
+      // Transport found in memory cache, add it to the session
+      sessionCopy.transport = transport;
+      sessionCopy.status = SessionStatus.ACTIVE;
+      logger.debug(`Restored transport from memory cache for session ${sessionId}`);
+    } else {
+      // No transport in memory cache, mark as missing
+      sessionCopy.status = SessionStatus.TRANSPORT_MISSING;
+      logger.debug(`No transport found in memory cache for session ${sessionId}`);
+    }
+    
+    return sessionCopy;
   }
 
   async getSession(sessionId: string): Promise<Session> {
@@ -153,13 +246,16 @@ export class RedisSessionStore implements SessionStore {
       throw new Error("Session not found");
     }
     
-    return JSON.parse(sessionData);
+    return this.restoreSession(sessionData, sessionId);
   }
 
   async removeSession(sessionId: string): Promise<void> {
     await this.ensureClient();
     const key = this.prefix + sessionId;
     await this.client.del(key);
+    
+    // Also remove from transport cache
+    delete this.transportCache[sessionId];
   }
 
   async getAllSessions(): Promise<Session[]> {
@@ -169,8 +265,9 @@ export class RedisSessionStore implements SessionStore {
     
     const sessions = await Promise.all(
       keys.map(async (key: string) => {
+        const sessionId = this.extractSessionId(key);
         const data = await this.client.get(key);
-        return data ? JSON.parse(data) : null;
+        return data ? this.restoreSession(data, sessionId) : null;
       })
     );
     
@@ -181,14 +278,17 @@ export class RedisSessionStore implements SessionStore {
     await this.ensureClient();
     const key = this.prefix + session.sessionId;
     
+    // Prepare session for storage (remove transport and store it in memory)
+    const storableSession = this.prepareSessionForStorage(session);
+    
     if (this.expirationSeconds) {
       // Set with expiration
-      await this.client.set(key, JSON.stringify(session), {
+      await this.client.set(key, JSON.stringify(storableSession), {
         EX: this.expirationSeconds
       });
     } else {
       // Set without expiration
-      await this.client.set(key, JSON.stringify(session));
+      await this.client.set(key, JSON.stringify(storableSession));
     }
   }
 
@@ -219,6 +319,7 @@ export const initializeSessionStore = (
     redisKeyPrefix?: string 
   }
 ): SessionStore => {
+  logger.info("Initializing session store", {storeType, options});
   if (storeType === 'redis') {
     if (!options?.redisUrl) {
       throw new Error('Redis URL is required for Redis session store');
