@@ -148,6 +148,9 @@ const start = async () => {
   if (opts.stream) {
     const app = express();
     app.use(express.json());
+    app.get('/', (_req: Request, res: Response) => { // health check
+      res.send('OK');
+    });
     app.post('/mcp', async (req: Request, res: Response) => {
       // Check for existing session ID
       const sessionId = req.headers['mcp-session-id'] as string | undefined;
@@ -221,7 +224,9 @@ const start = async () => {
     logger.info("Starting server in SSE mode");
     const app = express();
     app.use(express.json());
-
+    app.get('/', (_req: Request, res: Response) => { // health check
+      res.send('OK');
+    });
     app.get('/sse', async (req: Request, res: Response) => {
       const transport = new SSEServerTransport('/messages', res);
       const apiKey = getApiKeyFromRequest(req);
