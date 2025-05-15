@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@modelcontextprotocol/sdk':
         specifier: ^1.7.0
-        version: 1.11.2
+        version: 1.11.3
       axios:
         specifier: ^1.8.4
         version: 1.9.0
@@ -552,8 +552,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@modelcontextprotocol/sdk@1.11.2':
-    resolution: {integrity: sha512-H9vwztj5OAqHg9GockCQC06k1natgcxWQSRpQcPJf6i5+MWBzfKkRtxGbjQf0X2ihii0ffLZCRGbYV2f2bjNCQ==}
+  '@modelcontextprotocol/sdk@1.11.3':
+    resolution: {integrity: sha512-rmOWVRUbUJD7iSvJugjUbFZshTAuJ48MXoZ80Osx1GM0K/H1w7rSEvmw8m6vdWxNASgtaHIhAgre4H/E9GJiYQ==}
     engines: {node: '>=18'}
 
   '@napi-rs/wasm-runtime@0.2.9':
@@ -1108,6 +1108,15 @@ packages:
       supports-color:
         optional: true
 
+  debug@4.4.1:
+    resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
+    engines: {node: '>=6.0'}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+
   dedent@1.5.3:
     resolution: {integrity: sha512-NHQtfOOW68WD8lgypbLA5oT+Bt0xXJhiYvoR6SmmNXZfpzOGXwdKWmcwG8N7PwVVWV3eF/68nmD9BaJSsTBhyQ==}
     peerDependencies:
@@ -1415,8 +1424,8 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
-  eventsource-parser@3.0.1:
-    resolution: {integrity: sha512-VARTJ9CYeuQYb0pZEPbzi740OWFgpHe7AYJ2WFZVnUDUQp5Dk2yJUgF36YsZ81cOyxT0QxmXD2EQpapAouzWVA==}
+  eventsource-parser@3.0.2:
+    resolution: {integrity: sha512-6RxOBZ/cYgd8usLwsEl+EC09Au/9BcmCKYF2/xbml6DNczf7nv0MQb+7BA2F+li6//I+28VNlQR37XfQtcAJuA==}
     engines: {node: '>=18.0.0'}
 
   eventsource@3.0.7:
@@ -2891,7 +2900,7 @@ snapshots:
       '@babel/traverse': 7.26.10
       '@babel/types': 7.26.10
       convert-source-map: 2.0.0
-      debug: 4.4.0
+      debug: 4.4.1
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -3045,7 +3054,7 @@ snapshots:
       '@babel/parser': 7.26.10
       '@babel/template': 7.26.9
       '@babel/types': 7.26.10
-      debug: 4.4.0
+      debug: 4.4.1
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -3403,7 +3412,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@modelcontextprotocol/sdk@1.11.2':
+  '@modelcontextprotocol/sdk@1.11.3':
     dependencies:
       content-type: 1.0.5
       cors: 2.8.5
@@ -3558,7 +3567,7 @@ snapshots:
       '@typescript-eslint/types': 8.27.0
       '@typescript-eslint/typescript-estree': 8.27.0(typescript@5.8.3)
       '@typescript-eslint/visitor-keys': 8.27.0
-      debug: 4.4.0
+      debug: 4.4.1
       eslint: 8.57.1
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -3590,7 +3599,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 8.27.0(typescript@5.8.3)
       '@typescript-eslint/utils': 8.27.0(eslint@8.57.1)(typescript@5.8.3)
-      debug: 4.4.0
+      debug: 4.4.1
       eslint: 8.57.1
       ts-api-utils: 2.1.0(typescript@5.8.3)
       typescript: 5.8.3
@@ -3605,7 +3614,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.27.0
       '@typescript-eslint/visitor-keys': 8.27.0
-      debug: 4.4.0
+      debug: 4.4.1
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
@@ -3886,7 +3895,7 @@ snapshots:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
-      debug: 4.4.0
+      debug: 4.4.1
       http-errors: 2.0.0
       iconv-lite: 0.6.3
       on-finished: 2.4.1
@@ -4053,6 +4062,10 @@ snapshots:
       ms: 2.1.3
 
   debug@4.4.0:
+    dependencies:
+      ms: 2.1.3
+
+  debug@4.4.1:
     dependencies:
       ms: 2.1.3
 
@@ -4479,11 +4492,11 @@ snapshots:
 
   etag@1.8.1: {}
 
-  eventsource-parser@3.0.1: {}
+  eventsource-parser@3.0.2: {}
 
   eventsource@3.0.7:
     dependencies:
-      eventsource-parser: 3.0.1
+      eventsource-parser: 3.0.2
 
   execa@5.1.1:
     dependencies:
@@ -4519,7 +4532,7 @@ snapshots:
       content-type: 1.0.5
       cookie: 0.7.2
       cookie-signature: 1.2.2
-      debug: 4.4.0
+      debug: 4.4.1
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
@@ -4587,7 +4600,7 @@ snapshots:
 
   finalhandler@2.1.0:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.1
       encodeurl: 2.0.0
       escape-html: 1.0.3
       on-finished: 2.4.1
@@ -4955,7 +4968,7 @@ snapshots:
 
   istanbul-lib-source-maps@4.0.1:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.1
       istanbul-lib-coverage: 3.2.2
       source-map: 0.6.1
     transitivePeerDependencies:
@@ -5680,7 +5693,7 @@ snapshots:
 
   router@2.2.0:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.1
       depd: 2.0.0
       is-promise: 4.0.0
       parseurl: 1.3.3
@@ -5723,7 +5736,7 @@ snapshots:
 
   send@1.2.0:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.1
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
