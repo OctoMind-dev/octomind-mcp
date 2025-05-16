@@ -1,4 +1,5 @@
-FROM node:lts-alpine
+# Build stage
+FROM node:lts-alpine AS builder
 
 # Create app directory
 WORKDIR /app
@@ -17,6 +18,27 @@ COPY . .
 
 # Build the project
 RUN pnpm run build
+
+# Production stage
+FROM node:lts-alpine AS production
+
+# Create app directory
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
+# Copy package manifest files
+COPY package.json pnpm-lock.yaml ./
+
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --ignore-scripts --prod
+
+# Copy built files from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Set NODE_ENV to production
+ENV NODE_ENV=production
 
 # Command to run the MCP server
 CMD ["node", "dist/index.js", "--stream"]
