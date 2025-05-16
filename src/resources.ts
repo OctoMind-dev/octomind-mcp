@@ -2,26 +2,16 @@ import {
   McpServer,
   ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
+
 import { Variables } from "@modelcontextprotocol/sdk/shared/uriTemplate.js";
 import {
   ListResourcesResult,
   ReadResourceResult,
 } from "@modelcontextprotocol/sdk/types.js";
 import { getNotifications, getTestReports, TestCase } from "./api";
-import { APIKEY, getLastTestTargetId } from "./tools";
 import { TestReport } from "./types";
-
-// examples
-/*server.resource("private-location", "plw://foo", (_uri: URL, _extra: RequestHandlerExtra): ReadResourceResult => {
-    return { contents: [{ uri: "foo", mimeType: "application/json", name: "location", text: "http://localhost:3000" }] };
-  });
-  server.resource("private-location", "plw://foo2", { description: "test" }, (_uri: URL, _extra: RequestHandlerExtra): ReadResourceResult => {
-    return { contents: [{ uri: "foo", mimeType: "application/json", name: "location", text: "http://localhost:3000" }] };
-  });
-  server.resource("private-location", "plw://foo2", { description: "test" }, (_uri: URL, _extra: RequestHandlerExtra): ReadResourceResult => {
-    return { contents: [{ uri: "foo", mimeType: "application/json", name: "location", text: "http://localhost:3000" }] };
-  });*/
+import { getAllSessions } from "./session";
+import { logger } from "./logger";
 
 let reports: TestReport[] | undefined;
 let lastReportRefreshTime = Date.now();
@@ -38,9 +28,10 @@ let tracesForTestReport: Record<string, string> = {};
 export const reloadTestReports = async (
   testTargetId: string,
   server: McpServer,
+  apiKey: string,
 ) => {
-  const result = await getTestReports({ apiKey: APIKEY, testTargetId });
-  console.error("Reloaded reports for test target:", testTargetId);
+  const result = await getTestReports({ apiKey, testTargetId });
+  logger.info("Reloaded reports for test target:", testTargetId);
   reports = result.data;
   tracesForTestReport = {};
   reports.forEach((r) => {
@@ -60,8 +51,9 @@ export const reloadTestReports = async (
 export const reloadTestCases = async (
   _testTargetId: string,
   server: McpServer,
+  apiKey: string,
 ) => {
-  const result = { data: [] }; //await getTestCases({ apiKey: APIKEY, testTargetId });
+  const result = { data: [] }; //await getTestCases({ apiKey, testTargetId });
   testCases = result.data;
   await server.server.notification({
     method: "notifications/resources/list_changed",
@@ -70,12 +62,20 @@ export const reloadTestCases = async (
 };
 
 export const checkNotifications = async (server: McpServer): Promise<void> => {
-  const testTargetId = getLastTestTargetId();
+  for (const session of await getAllSessions()) {
+    if (!session.currentTestTargetId) {
+      continue;
+    }
+    await checkNotificationsForSession(server, session.apiKey, session.currentTestTargetId);
+  }
+}
+
+const checkNotificationsForSession = async (server: McpServer, apiKey: string, testTargetId: string): Promise<void> => {
   let forceReloadReports = false;
   let forceReloadTestCases = false;
   if (testTargetId) {
-    console.error("Checking notifications for test target:", testTargetId);
-    const notifications = await getNotifications(APIKEY, testTargetId);
+    logger.info("Checking notifications for test target:", testTargetId);
+    const notifications = await getNotifications(apiKey, testTargetId);
     notifications.forEach(async (n) => {
       if (
         n.type === "REPORT_EXECUTION_FINISHED" &&
@@ -91,10 +91,10 @@ export const checkNotifications = async (server: McpServer): Promise<void> => {
       }
     });
     if (forceReloadReports) {
-      await reloadTestReports(testTargetId, server);
+      await reloadTestReports(testTargetId, server, apiKey);
     }
     if (forceReloadTestCases) {
-      await reloadTestCases(testTargetId, server);
+      await reloadTestCases(testTargetId, server, apiKey);
     }
   }
 };
@@ -114,7 +114,7 @@ export const readTestReport = (
   uri: URL,
   vars: Variables,
 ): ReadResourceResult => {
-  console.error("Reading test report:", uri, vars);
+  logger.info("Reading test report:", uri, vars);
   const reportId = vars.id;
   const report = reports?.find((r) => r.id === reportId);
   if (report) {

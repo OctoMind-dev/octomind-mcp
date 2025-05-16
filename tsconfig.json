@@ -4,6 +4,9 @@
       "jest",
       "node"
     ],
+    "paths": {
+      "@/*": ["./src/*"],
+    },
     "target": "ESNext",
     "module": "NodeNext",
     "outDir": "./dist",
@@ -11,7 +14,8 @@
     "strict": true,
     "noImplicitAny": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
   "exclude": [
     "node_modules",

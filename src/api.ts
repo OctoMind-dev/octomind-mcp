@@ -34,6 +34,7 @@ import {
   PatchTestCaseOptions,
 } from "./types";
 import { version } from "./version";
+import { logger } from "./logger";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
 
@@ -45,7 +46,7 @@ const apiCall = async <T>(
   data?: unknown,
 ): Promise<T> => {
   if (!apiKey) {
-    console.error("API key is required");
+    logger.error("API key is required");
     throw new Error("API key is required");
   }
 
@@ -63,9 +64,9 @@ const apiCall = async <T>(
     return response.data as T;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error("API Error:", error.response?.data || error.message);
+      logger.error("API Error:", error.response?.data || error.message);
     } else {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     throw new Error(`API request failed. ${JSON.stringify(error, null, 2)}`);
   }

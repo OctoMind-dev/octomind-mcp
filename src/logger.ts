@@ -5,6 +5,8 @@ const buildLogger = (): Logger => {
     // Create a logger that writes to the specified file
     return pino(
       {
+        timestamp: () => `,"time":"${new Date().toISOString()}"`,
+        base: null,
         level: process.env.LOG_LEVEL || "info",
       },
       pino.destination({
