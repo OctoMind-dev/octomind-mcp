@@ -107,7 +107,9 @@ describe("DiscoveryHandler", () => {
       (discovery as jest.Mock).mockRejectedValue(mockError);
 
       // Act & Assert
-      await expect(handler.execute(mockParams, sessionId)).rejects.toThrow("API error");
+      await expect(handler.execute(mockParams, sessionId)).rejects.toThrow(
+        "API error",
+      );
     });
 
     it("should handle optional parameters correctly", async () => {

@@ -49,7 +49,6 @@ describe("Resources module", () => {
 
     const apiKey = "test-api-key";
     it("should do nothing when no test target is set", async () => {
-      
       mockgetAllSessions.mockResolvedValue([
         {
           apiKey: "test-api-key",
@@ -80,7 +79,10 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(apiKey, mockTestTargetId);
+      expect(mockGetNotifications).toHaveBeenCalledWith(
+        apiKey,
+        mockTestTargetId,
+      );
       expect(mockGetTestReports).toHaveBeenCalledWith({
         apiKey,
         testTargetId: mockTestTargetId,
@@ -105,7 +107,10 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(apiKey, mockTestTargetId);
+      expect(mockGetNotifications).toHaveBeenCalledWith(
+        apiKey,
+        mockTestTargetId,
+      );
       expect(server.server.notification).toHaveBeenCalledWith({
         method: "notifications/resources/list_changed",
       });
@@ -135,7 +140,10 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(apiKey, mockTestTargetId);
+      expect(mockGetNotifications).toHaveBeenCalledWith(
+        apiKey,
+        mockTestTargetId,
+      );
       expect(mockGetTestReports).toHaveBeenCalledWith({
         apiKey,
         testTargetId: mockTestTargetId,
@@ -158,7 +166,10 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(apiKey, mockTestTargetId);
+      expect(mockGetNotifications).toHaveBeenCalledWith(
+        apiKey,
+        mockTestTargetId,
+      );
       expect(mockGetTestReports).not.toHaveBeenCalled();
       expect(server.server.notification).not.toHaveBeenCalled();
     });

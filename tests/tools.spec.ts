@@ -35,7 +35,6 @@ describe("Tools module", () => {
   });
 
   describe("getLastTestTargetId and setLastTestTargetId", () => {
-
     const sessionId = "123e4567-e89b-12d3-a456-426614174000";
     const mockSession: Session = {
       apiKey: "test-api-key",
@@ -44,9 +43,7 @@ describe("Tools module", () => {
     };
     it("should initially return undefined", () => {
       mockGetSession.mockResolvedValue(mockSession);
-      expect(getLastTestTargetId(sessionId))
-        .resolves
-        .toBeUndefined();
+      expect(getLastTestTargetId(sessionId)).resolves.toBeUndefined();
     });
 
     it("should update lastTestTargetId and reload test reports when setting a new target", async () => {
@@ -59,13 +56,17 @@ describe("Tools module", () => {
         ...mockSession,
         currentTestTargetId: testTargetId,
       });
-      expect(reloadTestReports).toHaveBeenCalledWith(testTargetId, server, "test-api-key");
+      expect(reloadTestReports).toHaveBeenCalledWith(
+        testTargetId,
+        server,
+        "test-api-key",
+      );
     });
 
     it("should not reload test reports when setting the same target", async () => {
       const testTargetId = "123e4567-e89b-12d3-a456-426614174000";
       mockSession.currentTestTargetId = testTargetId;
-mockGetSession.mockResolvedValue(mockSession);
+      mockGetSession.mockResolvedValue(mockSession);
       await setLastTestTargetId(server, testTargetId, sessionId);
       await setLastTestTargetId(server, testTargetId, sessionId);
 
