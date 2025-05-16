@@ -34,7 +34,7 @@ describe("Tools module", () => {
     } as unknown as McpServer;
   });
 
-  describe("getLastTestTargetId and setLastTestTargetId", async () => {
+  describe("getLastTestTargetId and setLastTestTargetId", () => {
     const sessionId = "123e4567-e89b-12d3-a456-426614174000";
     const mockSession: Session = {
       apiKey: "test-api-key",
