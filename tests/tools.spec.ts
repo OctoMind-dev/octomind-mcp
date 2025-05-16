@@ -34,16 +34,16 @@ describe("Tools module", () => {
     } as unknown as McpServer;
   });
 
-  describe("getLastTestTargetId and setLastTestTargetId", () => {
+  describe("getLastTestTargetId and setLastTestTargetId", async () => {
     const sessionId = "123e4567-e89b-12d3-a456-426614174000";
     const mockSession: Session = {
       apiKey: "test-api-key",
       currentTestTargetId: undefined,
       sessionId,
     };
-    it("should initially return undefined", () => {
+    it("should initially return undefined", async () => {
       mockGetSession.mockResolvedValue(mockSession);
-      expect(getLastTestTargetId(sessionId)).resolves.toBeUndefined();
+      expect(await getLastTestTargetId(sessionId)).toBeUndefined();
     });
 
     it("should update lastTestTargetId and reload test reports when setting a new target", async () => {
