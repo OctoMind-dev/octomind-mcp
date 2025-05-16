@@ -2,17 +2,16 @@ import {
   McpServer,
   ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
+
 import { Variables } from "@modelcontextprotocol/sdk/shared/uriTemplate.js";
 import {
   ListResourcesResult,
   ReadResourceResult,
-  ServerNotification,
-  ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
 import { getNotifications, getTestReports, TestCase } from "./api";
 import { TestReport } from "./types";
 import { getAllSessions } from "./session";
+import { logger } from "./logger";
 
 let reports: TestReport[] | undefined;
 let lastReportRefreshTime = Date.now();
@@ -32,7 +31,7 @@ export const reloadTestReports = async (
   apiKey: string,
 ) => {
   const result = await getTestReports({ apiKey, testTargetId });
-  console.error("Reloaded reports for test target:", testTargetId);
+  logger.info("Reloaded reports for test target:", testTargetId);
   reports = result.data;
   tracesForTestReport = {};
   reports.forEach((r) => {
@@ -75,7 +74,7 @@ const checkNotificationsForSession = async (server: McpServer, apiKey: string, t
   let forceReloadReports = false;
   let forceReloadTestCases = false;
   if (testTargetId) {
-    console.error("Checking notifications for test target:", testTargetId);
+    logger.info("Checking notifications for test target:", testTargetId);
     const notifications = await getNotifications(apiKey, testTargetId);
     notifications.forEach(async (n) => {
       if (
@@ -115,7 +114,7 @@ export const readTestReport = (
   uri: URL,
   vars: Variables,
 ): ReadResourceResult => {
-  console.error("Reading test report:", uri, vars);
+  logger.info("Reading test report:", uri, vars);
   const reportId = vars.id;
   const report = reports?.find((r) => r.id === reportId);
   if (report) {

@@ -10,9 +10,9 @@ import { setSession, initializeSessionStore } from "./session";
 import { helpInstall } from "./help";
 import { buildServer, startSSEServer, startStreamingServer } from "./server";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+import { theStdioSessionId } from "./tools";
 
 export const serverStartupTime = Date.now();
-export const theStdioSessionId = randomUUID();
 
 const start = async () => {
   program

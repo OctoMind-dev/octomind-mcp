@@ -39,13 +39,31 @@ export const buildServer = async (): Promise<McpServer> => {
   return server;
 };
 
+const buildApp = () => {
+  const app = express();
+  app.use(express.json());
+  app.get('/', (_req: Request, res: Response) => { // health check
+    res.send('OK');
+  });
+  return app;
+}
+
+const sendError = (res: Response, code: number, message: string) => {
+  logger.error("Error handling request", message);
+  res.status(code).json({
+    jsonrpc: '2.0',
+    error: {
+      code: -32000,
+      message,
+    },
+    id: null,
+  });
+}
+
 export const startSSEServer = async(server: McpServer, port: number) => {
      logger.info("Starting server in SSE mode");
-     const app = express();
-     app.use(express.json());
-     app.get('/', (_req: Request, res: Response) => { // health check
-       res.send('OK');
-     });
+     const app = buildApp();
+
      app.get('/sse', async (req: Request, res: Response) => {
        const transport = new SSEServerTransport('/messages', res);
        const apiKey = getApiKeyFromRequest(req);
@@ -77,53 +95,36 @@ export const startSSEServer = async(server: McpServer, port: number) => {
          return;
        }
        if (transport) {
-         // Check if transport is in a good state
          if (!transport.sessionId) {
-           logger.error('Transport missing sessionId');
-           res.status(500).send('Transport in invalid state: missing sessionId');
+           sendError(res, 400, 'Transport in invalid state: missing sessionId');
            return;
          }
  
-         // Check if the response object is still writable
          if (res.writableEnded) {
-           logger.error('Response is already ended');
+           sendError(res, 500, 'Response is already ended');
            return;
          }
  
          try {
-           logger.debug(`Handling post message for session ${sessionId}`);
-           // Add more debugging about the transport state
-           logger.info(`Transport state: sessionId=${transport.sessionId}`);
-           // Log request details to help diagnose the issue
-           logger.debug(`Request body:`, JSON.stringify(req.body));
-           logger.debug(`Request headers:`, JSON.stringify(req.headers));
- 
            await transport.handlePostMessage(req, res);
-           logger.debug(`Successfully handled post message for session ${sessionId}`);
          } catch (error: any) {
-           logger.error('Error handling post message:', error);
-           if (!res.headersSent) {
-             res.status(500).send(`Error handling message: ${error.message || 'Unknown error'}`);
-           }
+           sendError(res, 500, `Error handling message: ${error.message || 'Unknown error'}`);
          }
        } else {
-         res.status(400).send('No transport found for sessionId');
+         sendError(res, 400, 'No transport found for sessionId');
        }
      });
      app.listen(port, () => {
        logger.info(`Server started on port ${port}`);
      });
      logger.info(`Octomind MCP Server version ${version} started`);
-    
 }
 
 export const startStreamingServer = async (server: McpServer, port: number) => {
-    const app = express();
-    app.use(express.json());
-    app.get('/', (_req: Request, res: Response) => { // health check
-      res.send('OK');
-    });
+    const app = buildApp();
     app.post('/mcp', async (req: Request, res: Response) => {
+      const xsessionId = req.headers["x-session-id"];
+      logger.info(`Received POST /mcp request for session ${req.headers['mcp-session-id']}, x-session-id: ${xsessionId}`);
       // Check for existing session ID
       const sessionId = req.headers['mcp-session-id'] as string | undefined;
       let transport: StreamableHTTPServerTransport;
@@ -132,7 +133,7 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
         // Reuse existing transport
         const session = await getSession(sessionId);
         if (session.status === SessionStatus.TRANSPORT_MISSING) {
-          res.status(404).send('Transport missing for sessionId');
+          sendError(res, 404, 'Transport missing for sessionId');
           logger.warn(`Transport missing for session ${sessionId}, connection closed`);
           return;
         }
@@ -145,14 +146,17 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
             // Store the transport by session ID
             const apiKey = getApiKeyFromRequest(req);
             if (!apiKey) {
-              throw new Error("Unauthorized");
+              res.status(401).send('Unauthorized');
+              return;
             }
             await setSession({ transport, apiKey, sessionId });
+            logger.info(`Transport initialized for session ${sessionId}`);
           }
         });
 
         // Clean up transport when closed
         transport.onclose = async () => {
+          logger.info(`Transport closed for session ${transport.sessionId}`);
           if (transport.sessionId) {
             await removeSession(transport.sessionId);
           }
@@ -161,47 +165,57 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
         // Connect to the MCP server
         await server.connect(transport);
       } else {
-        // Invalid request
-        res.status(400).json({
-          jsonrpc: '2.0',
-          error: {
-            code: -32000,
-            message: 'Bad Request: No valid session ID provided',
-          },
-          id: null,
-        });
+        sendError(res, 400, 'Bad Request: No valid session ID provided');
         return;
       }
-      // Handle the request
-      await transport.handleRequest(req, res, req.body);
+      try {
+        await transport.handleRequest(req, res, req.body);
+      } catch (error) {
+        logger.error("Error handling request", error);
+      }
     });
 
     // Reusable handler for GET and DELETE requests
     const handleSessionRequest = async (req: Request, res: Response) => {
+      const xsessionId = req.headers["x-session-id"];
+      logger.info(`Received ${req.method} /mcp request for session ${req.headers['mcp-session-id']}, x-session-id: ${xsessionId}`);
       const sessionId = req.headers['mcp-session-id'] as string | undefined;
       if (!sessionId || !sessionExists(sessionId)) {
-        res.status(400).send('Invalid or missing session ID');
+        sendError(res, 400, 'Invalid or missing session ID');
         return;
       }
 
       const session = await getSession(sessionId);
       if (session.status === SessionStatus.TRANSPORT_MISSING) {
-        res.status(404).send('Transport missing for sessionId');
+        res.writeHead(404).end(JSON.stringify({
+          jsonrpc: "2.0",
+          error: {
+            code: -32001,
+            message: "Session not found"
+          },
+          id: null
+        }));
         logger.warn(`Transport missing for session ${sessionId}, connection closed`);
         return;
       }
       const transport = session.transport as StreamableHTTPServerTransport;
-      await transport.handleRequest(req, res);
+      try {
+        await transport.handleRequest(req, res);
+      } catch (error) {
+        logger.error("Error handling request", error);
+      }
       if( req.method === "DELETE") {
         await removeSession(sessionId);
+        logger.info(`Session ${sessionId} removed`);
       }
     };
+
+    // Handle DELETE requests for session termination
+    app.delete('/mcp', handleSessionRequest);
 
     // Handle GET requests for server-to-client notifications via SSE
     app.get('/mcp', handleSessionRequest);
 
-    // Handle DELETE requests for session termination
-    app.delete('/mcp', handleSessionRequest);
     app.listen(port, () => {
       logger.info(`Streamable HTTP server started on port ${port}`);
     });

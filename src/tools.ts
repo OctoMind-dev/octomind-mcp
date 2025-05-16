@@ -24,7 +24,9 @@ import { logger } from "./logger";
 import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
 import { getSession } from "./session";
 import { search, trieveConfig } from "./search";
-import { theStdioSessionId } from ".";
+import { randomUUID } from "crypto";
+
+export const theStdioSessionId = randomUUID();
 
 export const getLastTestTargetId = async (sessionId: string): Promise<string | undefined> => {
   const session = await getSession(sessionId);
@@ -55,7 +57,7 @@ export const setLastTestTargetId = async (
  * @param sessionId 
  * @returns 
  */
-const getApiKey = async (sessionId?: string): Promise<string> => {
+export const getApiKey = async (sessionId?: string): Promise<string> => {
   if (!sessionId) {
     sessionId = theStdioSessionId;
   }

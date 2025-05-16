@@ -2,9 +2,11 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { checkNotifications, resetRefreshTimes } from "../src/resources";
 import { getLastTestTargetId } from "../src/tools";
 import { getNotifications, getTestReports } from "../src/api";
+import { getAllSessions } from "../src/session";
 
 jest.mock("../src/tools");
 jest.mock("../src/api");
+jest.mock("../src/session");
 
 describe("Resources module", () => {
   let server: McpServer;
@@ -21,16 +23,24 @@ describe("Resources module", () => {
         notification: jest.fn(),
       },
     } as unknown as McpServer;
+
+    jest.mocked(getAllSessions).mockResolvedValue([
+      {
+        apiKey: "test-api-key",
+        currentTestTargetId: mockTestTargetId,
+        sessionId: "test-session-id",
+      },
+    ]);
   });
 
   describe("checkNotifications", () => {
     beforeEach(() => {
       resetRefreshTimes(new Date(baseTime));
-      console.error = jest.fn();
     });
 
+    const apiKey = "test-api-key";
     it("should do nothing when no test target is set", async () => {
-      mockGetLastTestTargetId.mockReturnValue(undefined);
+      mockGetLastTestTargetId.mockResolvedValue(undefined);
 
       await checkNotifications(server);
 
@@ -40,7 +50,7 @@ describe("Resources module", () => {
     });
 
     it("should reload reports when REPORT_EXECUTION_FINISHED notification is received", async () => {
-      mockGetLastTestTargetId.mockReturnValue(mockTestTargetId);
+      mockGetLastTestTargetId.mockResolvedValue(mockTestTargetId);
       mockGetNotifications.mockResolvedValue([
         {
           id: "1",
@@ -55,9 +65,9 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith("", mockTestTargetId);
+      expect(mockGetNotifications).toHaveBeenCalledWith(apiKey, mockTestTargetId);
       expect(mockGetTestReports).toHaveBeenCalledWith({
-        apiKey: "",
+        apiKey,
         testTargetId: mockTestTargetId,
       });
       expect(server.server.notification).toHaveBeenCalledWith({
@@ -66,7 +76,7 @@ describe("Resources module", () => {
     });
 
     it("should reload test cases when DISCOVERY_FINISHED notification is received", async () => {
-      mockGetLastTestTargetId.mockReturnValue(mockTestTargetId);
+      mockGetLastTestTargetId.mockResolvedValue(mockTestTargetId);
       mockGetNotifications.mockResolvedValue([
         {
           id: "1",
@@ -80,14 +90,14 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith("", mockTestTargetId);
+      expect(mockGetNotifications).toHaveBeenCalledWith(apiKey, mockTestTargetId);
       expect(server.server.notification).toHaveBeenCalledWith({
         method: "notifications/resources/list_changed",
       });
     });
 
     it("should reload both when both types of notifications are received", async () => {
-      mockGetLastTestTargetId.mockReturnValue(mockTestTargetId);
+      mockGetLastTestTargetId.mockResolvedValue(mockTestTargetId);
       mockGetNotifications.mockResolvedValue([
         {
           id: "1",
@@ -110,16 +120,16 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith("", mockTestTargetId);
+      expect(mockGetNotifications).toHaveBeenCalledWith(apiKey, mockTestTargetId);
       expect(mockGetTestReports).toHaveBeenCalledWith({
-        apiKey: "",
+        apiKey,
         testTargetId: mockTestTargetId,
       });
       expect(server.server.notification).toHaveBeenCalledTimes(2);
     });
 
     it("should not reload when notifications are older than last refresh", async () => {
-      mockGetLastTestTargetId.mockReturnValue(mockTestTargetId);
+      mockGetLastTestTargetId.mockResolvedValue(mockTestTargetId);
       mockGetNotifications.mockResolvedValue([
         {
           id: "1",
@@ -133,7 +143,7 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith("", mockTestTargetId);
+      expect(mockGetNotifications).toHaveBeenCalledWith(apiKey, mockTestTargetId);
       expect(mockGetTestReports).not.toHaveBeenCalled();
       expect(server.server.notification).not.toHaveBeenCalled();
     });
