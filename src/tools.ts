@@ -22,7 +22,7 @@ import {
 import { reloadTestReports } from "./resources";
 import { logger } from "./logger";
 import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
-import { getSession } from "./session";
+import { getSession, setSession } from "./session";
 import { search, trieveConfig } from "./search";
 import { randomUUID } from "crypto";
 
@@ -48,6 +48,7 @@ export const setLastTestTargetId = async (
   if (session.currentTestTargetId !== testTargetId) {
     await reloadTestReports(testTargetId, server, session.apiKey);
     session.currentTestTargetId = testTargetId;
+    await setSession(session);
   }
 };
 

@@ -1,15 +1,27 @@
-import { DiscoveryHandler, DiscoveryParams } from "../src/handlers";
-import { discovery } from "../src/api";
-import { getApiKey } from "../src/tools";
-
+import { DiscoveryHandler, DiscoveryParams } from "@/handlers";
+import { discovery } from "@/api";
+import { getApiKey } from "@/tools";
+import { logger } from "@/logger";
+jest.mock("@/tools", () => ({
+  getApiKey: jest.fn(() => "test-api-key"),
+}));
+jest.mock("@/logger", () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+  },
+}));
 // Mock the discovery function from the API
-jest.mock("../src/api", () => ({
+jest.mock("@/api", () => ({
   discovery: jest.fn(),
   getApiKey: jest.fn(() => "test-api-key"),
 }));
 
 // Mock the logger to avoid logging during tests
-jest.mock("../src/logger", () => ({
+jest.mock("@/logger", () => ({
   logger: {
     debug: jest.fn(),
   },
@@ -49,7 +61,7 @@ describe("DiscoveryHandler", () => {
       (discovery as jest.Mock).mockResolvedValue(mockResponse);
 
       // Act
-      const result = await handler.execute(mockParams, sessionId);
+      const result = await handler.execute(mockParams, "test-api-key");
 
       // Assert
       // Check that discovery was called with the correct parameters
@@ -119,7 +131,7 @@ describe("DiscoveryHandler", () => {
       (discovery as jest.Mock).mockResolvedValue(mockResponse);
 
       // Act
-      await handler.execute(mockParams, sessionId);
+      await handler.execute(mockParams, "test-api-key");
 
       // Assert
       // Check that discovery was called with all the optional parameters
@@ -133,7 +145,7 @@ describe("DiscoveryHandler", () => {
         prerequisiteName: mockParams.prerequisiteName,
         externalId: mockParams.externalId,
         tagNames: undefined,
-        folderId: undefined,
+        folderName: undefined,
       });
     });
   });

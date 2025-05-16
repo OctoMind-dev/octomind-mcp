@@ -1,4 +1,4 @@
-import axios, { get } from "axios";
+import axios from "axios";
 import {
   createEnvironment,
   deleteEnvironment,
@@ -22,8 +22,17 @@ import {
   UnregisterLocationOptions,
   UpdateEnvironmentOptions,
 } from "../src/types";
-
+import { logger } from "@/logger";
 jest.mock("axios");
+jest.mock("@/logger", () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+  },
+}));
 const mockedAxios = jest.mocked(axios);
 
 describe("API calls", () => {

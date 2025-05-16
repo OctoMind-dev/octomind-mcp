@@ -1,13 +1,21 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { checkNotifications, resetRefreshTimes } from "../src/resources";
-import { getLastTestTargetId } from "../src/tools";
-import { getNotifications, getTestReports } from "../src/api";
-import { getAllSessions } from "../src/session";
-
-jest.mock("../src/tools");
-jest.mock("../src/api");
-jest.mock("../src/session");
-
+import { checkNotifications, resetRefreshTimes } from "@/resources";
+import { getLastTestTargetId } from "@/tools";
+import { getNotifications, getTestReports } from "@/api";
+import { getAllSessions } from "@/session";
+import { logger } from "@/logger";
+jest.mock("@/tools");
+jest.mock("@/api");
+jest.mock("@/session");
+jest.mock("@/logger", () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+  },
+}));
 describe("Resources module", () => {
   let server: McpServer;
   const mockTestTargetId = "123e4567-e89b-12d3-a456-426614174000";
@@ -15,6 +23,7 @@ describe("Resources module", () => {
   const mockGetLastTestTargetId = jest.mocked(getLastTestTargetId);
   const mockGetNotifications = jest.mocked(getNotifications);
   const mockGetTestReports = jest.mocked(getTestReports);
+  const mockgetAllSessions = jest.mocked(getAllSessions);
   //const mockGetTestCases = jest.mocked(getTestCases);
   beforeEach(() => {
     jest.clearAllMocks();
@@ -24,7 +33,7 @@ describe("Resources module", () => {
       },
     } as unknown as McpServer;
 
-    jest.mocked(getAllSessions).mockResolvedValue([
+    mockgetAllSessions.mockResolvedValue([
       {
         apiKey: "test-api-key",
         currentTestTargetId: mockTestTargetId,
@@ -40,8 +49,14 @@ describe("Resources module", () => {
 
     const apiKey = "test-api-key";
     it("should do nothing when no test target is set", async () => {
-      mockGetLastTestTargetId.mockResolvedValue(undefined);
-
+      
+      mockgetAllSessions.mockResolvedValue([
+        {
+          apiKey: "test-api-key",
+          currentTestTargetId: undefined,
+          sessionId: "test-session-id",
+        },
+      ]);
       await checkNotifications(server);
 
       expect(mockGetNotifications).not.toHaveBeenCalled();
