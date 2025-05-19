@@ -1,13 +1,27 @@
-import { DiscoveryHandler, DiscoveryParams } from "../src/handlers";
-import { discovery } from "../src/api";
-
+import { DiscoveryHandler, DiscoveryParams } from "@/handlers";
+import { discovery } from "@/api";
+import { getApiKey } from "@/tools";
+import { logger } from "@/logger";
+jest.mock("@/tools", () => ({
+  getApiKey: jest.fn(() => "test-api-key"),
+}));
+jest.mock("@/logger", () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+  },
+}));
 // Mock the discovery function from the API
-jest.mock("../src/api", () => ({
+jest.mock("@/api", () => ({
   discovery: jest.fn(),
+  getApiKey: jest.fn(() => "test-api-key"),
 }));
 
 // Mock the logger to avoid logging during tests
-jest.mock("../src/logger", () => ({
+jest.mock("@/logger", () => ({
   logger: {
     debug: jest.fn(),
   },
@@ -15,15 +29,16 @@ jest.mock("../src/logger", () => ({
 
 describe("DiscoveryHandler", () => {
   let handler: DiscoveryHandler;
-  const mockApiKey = "test-api-key";
 
   beforeEach(() => {
     // Create a new handler instance before each test
-    handler = new DiscoveryHandler(mockApiKey);
+    handler = new DiscoveryHandler();
 
     // Clear all mocks before each test
     jest.clearAllMocks();
   });
+
+  const sessionId = "123e4567-e89b-12d3-a456-426614174000";
 
   describe("execute", () => {
     it("should call discovery API with correct parameters", async () => {
@@ -46,12 +61,12 @@ describe("DiscoveryHandler", () => {
       (discovery as jest.Mock).mockResolvedValue(mockResponse);
 
       // Act
-      const result = await handler.execute(mockParams);
+      const result = await handler.execute(mockParams, "test-api-key");
 
       // Assert
       // Check that discovery was called with the correct parameters
       expect(discovery).toHaveBeenCalledWith({
-        apiKey: mockApiKey,
+        apiKey: "test-api-key",
         json: true,
         name: mockParams.name,
         prompt: mockParams.prompt,
@@ -92,7 +107,9 @@ describe("DiscoveryHandler", () => {
       (discovery as jest.Mock).mockRejectedValue(mockError);
 
       // Act & Assert
-      await expect(handler.execute(mockParams)).rejects.toThrow("API error");
+      await expect(handler.execute(mockParams, sessionId)).rejects.toThrow(
+        "API error",
+      );
     });
 
     it("should handle optional parameters correctly", async () => {
@@ -116,12 +133,12 @@ describe("DiscoveryHandler", () => {
       (discovery as jest.Mock).mockResolvedValue(mockResponse);
 
       // Act
-      await handler.execute(mockParams);
+      await handler.execute(mockParams, "test-api-key");
 
       // Assert
       // Check that discovery was called with all the optional parameters
       expect(discovery).toHaveBeenCalledWith({
-        apiKey: mockApiKey,
+        apiKey: "test-api-key",
         json: true,
         name: mockParams.name,
         prompt: mockParams.prompt,
@@ -130,7 +147,7 @@ describe("DiscoveryHandler", () => {
         prerequisiteName: mockParams.prerequisiteName,
         externalId: mockParams.externalId,
         tagNames: undefined,
-        folderId: undefined,
+        folderName: undefined,
       });
     });
   });
@@ -138,10 +155,10 @@ describe("DiscoveryHandler", () => {
   describe("getApiKey", () => {
     it("should return the API key", () => {
       // Act
-      const apiKey = handler.getApiKey();
+      const apiKey = getApiKey(sessionId);
 
       // Assert
-      expect(apiKey).toBe(mockApiKey);
+      expect(apiKey).toBe("test-api-key");
     });
   });
 });

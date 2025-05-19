@@ -3,6 +3,7 @@ import { z } from "zod";
 import { logger } from "./logger";
 import { discovery } from "./api";
 import { DiscoveryOptions } from "./types";
+import { getSession } from "./session";
 
 /**
  * Interface for tool handler functions
@@ -13,7 +14,7 @@ export interface ToolHandler<T, R> {
    * @param params Parameters for the tool
    * @returns Response from the tool execution
    */
-  execute(params: T): Promise<R>;
+  execute(params: T, apiKey: string): Promise<R>;
 }
 
 /**
@@ -76,21 +77,15 @@ export class DiscoveryHandler
   implements ToolHandler<DiscoveryParams, ToolResponse>
 {
   /**
-   * Create a new discovery handler
-   * @param apiKey API key for the Octomind API
-   */
-  constructor(private readonly apiKey: string) {}
-
-  /**
    * Execute the discovery tool with the given parameters
    * @param params Parameters for the discovery tool
    * @returns Response from the discovery tool execution
    */
-  async execute(params: DiscoveryParams): Promise<ToolResponse> {
+  async execute(params: DiscoveryParams, apiKey: string): Promise<ToolResponse> {
     logger.debug({ params }, "Discovering test case");
 
     const discoveryOptions: DiscoveryOptions = {
-      apiKey: this.apiKey,
+      apiKey,
       json: true,
       name: params.name,
       prompt: params.prompt,
@@ -119,13 +114,7 @@ export class DiscoveryHandler
     };
   }
 
-  /**
-   * Get the API key
-   * @returns The API key
-   */
-  getApiKey(): string {
-    return this.apiKey;
-  }
+
 }
 
 /**
@@ -181,8 +170,15 @@ export function registerDiscoveryTool(
           "Optional folder name that the newly discovered test case will be added to",
         ),
     },
-    async (params) => {
-      return await handler.execute(params);
+    async (params, {sessionId}) => {
+      if (!sessionId) {
+        throw new Error("Unauthorized");
+      }
+      const session = await getSession(sessionId);
+      if (!session) {
+        throw new Error("Unauthorized");
+      }
+      return await handler.execute(params, session.apiKey);
     },
   );
 }

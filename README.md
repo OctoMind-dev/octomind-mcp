@@ -1,12 +1,6 @@
 # octomind mcp server: let agents create and manage e2e tests
 
-<img src="images/light.svg" alt="Octomind Logo" width="150">
-
-<a href="https://glama.ai/mcp/servers/@OctoMind-dev/octomind-mcp">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@OctoMind-dev/octomind-mcp/badge" alt="octomind-mcp MCP server" />
-</a>
-
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/octomind-dev-octomind-mcp-badge.png)](https://mseep.ai/app/octomind-dev-octomind-mcp)
+<img src="images/light.png" alt="Octomind Logo" width="250">
 
 [![smithery badge](https://smithery.ai/badge/@OctoMind-dev/octomind-mcp)](https://smithery.ai/server/@OctoMind-dev/octomind-mcp)
 
@@ -19,14 +13,41 @@ https://octomind.dev/docs/mcp/install-octomind-mcp for more details.
 
 [![Video Title](https://img.youtube.com/vi/I7lc9I0S62Y/0.jpg)](https://www.youtube.com/watch?v=I7lc9I0S62Y)
 
-## config
+## Configuration
 
-The server uses 2 environment variables:
+### Environment Variables
 
-- APIKEY the apikey for octomind api
-- OCTOMIND_API_URL  base url for the api endpoint to use. defaults to https://app.octomind.dev/api
-- LOG_FILENAME the file to write logs to (only for debugging). If not set, logging is disabled
-- LOG_LEVEL the log level to use. defaults to info
+The server uses the following environment variables:
+
+- `APIKEY` - The API key for Octomind API (required)
+- `OCTOMIND_API_URL` - Base URL for the API endpoint to use (defaults to https://app.octomind.dev/api)
+- `REDIS_URL` - Redis connection URL for session storage (optional, format: redis://host:port)
+- `SESSION_EXPIRATION_SECONDS` - Time in seconds after which sessions expire (optional, Redis only)
+
+### Command Line Options
+
+The server supports the following command line options:
+
+- `-s, --sse` - Enable SSE transport mode
+- `-t, --stream` - Enable Streamable HTTP transport mode
+- `-c, --clients` - Show client configuration examples
+- `-p, --port <port>` - Port to listen on (default: 3000)
+- `-r, --redis-url <url>` - Redis URL for session storage
+- `-e, --session-expiration <seconds>` - Session expiration time in seconds
+
+### Session Storage
+
+The server supports two types of session storage:
+
+1. **In-memory storage** (default) - Sessions are stored in memory and will be lost when the server restarts
+2. **Redis storage** - Sessions are stored in Redis and can persist across server restarts
+
+For production deployments, it's recommended to use Redis storage with an appropriate session expiration time. The Redis storage option also enables horizontal scaling with multiple server instances.
+
+### Logging Configuration
+
+- `LOG_FILENAME` - The file to write logs to (only for debugging). If not set, logging is disabled
+- `LOG_LEVEL` - The log level to use (defaults to info)
 
 ## Tools
 
@@ -123,3 +144,12 @@ npx -y @smithery/cli install @OctoMind-dev/octomind-mcp --client claude
 Note: Replace `your-api-key-here` with your actual API key.
 
 To get an APIKEY see here https://octomind.dev/docs/get-started/execution-without-ci#create-an-api-key
+
+# Listings / Integrations
+
+<a href="https://glama.ai/mcp/servers/@OctoMind-dev/octomind-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@OctoMind-dev/octomind-mcp/badge" alt="octomind-mcp MCP server" />
+</a>
+
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/octomind-dev-octomind-mcp-badge.png)](https://mseep.ai/app/octomind-dev-octomind-mcp)
+

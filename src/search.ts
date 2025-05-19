@@ -1,5 +1,6 @@
 import axios from "axios";
 import { SearchResult } from "./types";
+import { logger } from "./logger";
 
 const mintlifyToken = "mint_dsc_3ZNWe13kDZKPFdidzxsnQFyU";
 const MINT_SUBDOMAIN = "octomind";
@@ -39,7 +40,7 @@ const trieveFetcher = async (trieve: TrieveData, query: string) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching trieve data:", error);
+    logger.error("Error fetching trieve data:", error);
     throw new Error("Error fetching trieve data");
   }
 };
@@ -56,10 +57,10 @@ export const trieveConfig = async (): Promise<TrieveData | null> => {
         },
       },
     );
-    //console.error("Trieve config:", data);
+    //logger.debug("Trieve config:", data);
     return data;
   } catch (error) {
-    console.error("Error fetching trieve result data:", error);
+    logger.error("Error fetching trieve result data:", error);
     return null;
   }
 };

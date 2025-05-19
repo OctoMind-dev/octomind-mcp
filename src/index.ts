@@ -1,97 +1,72 @@
 #!/usr/bin/env node
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { registerTools } from "./tools";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { version } from "./version";
 
-import { checkNotifications, registerResources } from "./resources";
-import { registerPrompts } from "./prompts";
+import { checkNotifications } from "./resources";
 import { logger } from "./logger";
-
-const buildServer = async (): Promise<McpServer> => {
-  const server = new McpServer({
-    name: "Octomind MCP Server",
-    version,
-  });
-  await registerTools(server);
-  registerResources(server);
-  registerPrompts(server);
-  return server;
-};
-
-const helpInstall = () => {
-  const configs = {
-    claude: {
-      mcpServers: {
-        "octomind-mcp": {
-          name: "Octomind MCP Server",
-          command: "npx",
-          args: ["-y", "@octomind/octomind-mcp@latest"],
-          env: {
-            APIKEY: "your-api-key-here",
-          },
-        },
-      },
-    },
-    cursor: {
-      mcpServers: {
-        "octomind-mcp": {
-          name: "Octomind MCP Server",
-          command: "npx",
-          args: ["-y", "@octomind/octomind-mcp@latest"],
-          env: {
-            APIKEY: "your-api-key-here",
-          },
-        },
-      },
-    },
-    windsurf: {
-      mcpServers: {
-        "octomind-mcp": {
-          name: "Octomind MCP Server",
-          command: "npx",
-          args: ["-y", "@octomind/octomind-mcp@latest"],
-          environment: {
-            APIKEY: "your-api-key-here",
-          },
-        },
-      },
-    },
-  };
-
-  console.error("Configuration snippets for different clients:\n");
-  console.error("Claude Desktop (.claude-config.json):");
-  console.error(`${JSON.stringify(configs.claude, null, 2)}\n`);
-
-  console.error("Cursor (cursor.json):");
-  console.error(`${JSON.stringify(configs.cursor, null, 2)}\n`);
-
-  console.error("Windsurf (config.json):");
-  console.error(`${JSON.stringify(configs.windsurf, null, 2)}\n`);
-
-  console.error("Note: Replace 'your-api-key-here' with your actual API key");
-  process.exit(0);
-};
+import { program } from "commander";
+import { initializeSessionStore } from "./session";
+import { helpInstall } from "./help";
+import { buildServer, startSSEServer, startStreamingServer, startStdioServer } from "./server";
 
 export const serverStartupTime = Date.now();
 
 const start = async () => {
-  const { argv } = process;
-  if (argv[2] === "--clients") {
+  program
+    .version(version)
+    .option("-s, --sse", "Enable SSE")
+    .option("-t, --stream", "Enable Streamable HTTP")
+    .option("-c, --clients", "Show clients")
+    .option("-p, --port <port>", "Port to listen on", "3000")
+    .option("-r, --redis-url <url>", "Redis URL for session storage", process.env.REDIS_URL)
+    .option("-e, --session-expiration <seconds>", "Session expiration time in seconds", process.env.SESSION_EXPIRATION_SECONDS)
+    .parse(process.argv);
+
+  const opts = program.opts();
+  const PORT = parseInt(opts.port);
+  
+  if (opts.clients) {
     helpInstall();
   }
-  if (!process.env.APIKEY) {
-    console.error("APIKEY environment variable is required");
-    process.exit(1);
+  
+  // Initialize the appropriate session store based on transport type
+  if (opts.sse || opts.stream) {
+    // For SSE and HTTP transport, use Redis if URL is provided
+    const redisUrl = opts.redisUrl || process.env.REDIS_URL;
+    const sessionExpirationSeconds = opts.sessionExpiration ? parseInt(opts.sessionExpiration) : undefined;
+    
+    if (redisUrl) {
+      logger.info(`Initializing Redis session store with URL: ${redisUrl.replace(/:[^:]*@/, ':***@')}`);
+      if (sessionExpirationSeconds) {
+        logger.info(`Session expiration set to ${sessionExpirationSeconds} seconds`);
+      }
+      
+      initializeSessionStore('redis', {
+        redisUrl,
+        sessionExpirationSeconds,
+        redisKeyPrefix: 'octomind:session:'
+      });
+    } else {
+      logger.info('Redis URL not provided, using in-memory session store');
+      initializeSessionStore('memory');
+    }
+  } else {
+    // For stdio transport, use in-memory store
+    logger.info('Using in-memory session store for stdio transport');
+    initializeSessionStore('memory');
   }
-  const transport = new StdioServerTransport();
-  console.error("Connecting server to transport...");
+
   const server = await buildServer();
-  await server.connect(transport);
-  logger.info(`Octomind MCP Server version ${version} started`);
+  if (opts.stream) {
+    await startStreamingServer(server, PORT);
+  } else if (opts.sse) {
+    await startSSEServer(server, PORT);
+  } else {
+    await startStdioServer(server);
+  }
   setInterval(async () => {
     await checkNotifications(server);
-  }, 20_000);
+  }, 60_000);
   // Cleanup on exit
   process.on("SIGTERM", async () => {
     logger.info(`Octomind MCP Server version ${version} closing`);
@@ -107,9 +82,9 @@ const start = async () => {
 
 start()
   .then(() => {
-    console.error(`Server version ${version} started`);
+    logger.info(`Server version ${version} started`);
   })
   .catch((error) => {
-    console.error("Error starting server:", error);
+    logger.error("Error starting server:", error);
     process.exit(1);
   });
