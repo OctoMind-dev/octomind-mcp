@@ -1,0 +1,33 @@
+# Source files
+src/
+tests/
+
+# Development files
+.github/
+.vscode/
+.eslintrc.js
+.eslintignore
+.prettierrc
+.prettierignore
+jest.config.ts
+tsconfig.json
+tsconfig.build.json
+
+# Build artifacts
+*.tsbuildinfo
+.nyc_output/
+coverage/
+
+# Git files
+.git/
+.gitignore
+
+# Docker and Kubernetes files
+Dockerfile*
+k8s/
+
+# Misc
+node_modules/
+.env
+.env.*
+*.log

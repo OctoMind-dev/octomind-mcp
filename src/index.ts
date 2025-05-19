@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { version } from "./version";
 
 import { checkNotifications } from "./resources";
 import { logger } from "./logger";
 import { program } from "commander";
-import { initializeSessionStore } from "./session";
 import { helpInstall } from "./help";
+import { initializeSessionStore } from "./session";
 import { buildServer, startSSEServer, startStreamingServer, startStdioServer } from "./server";
+export { initializeSessionStore };
+export { buildServer, startSSEServer, startStreamingServer, startStdioServer };
 
 export const serverStartupTime = Date.now();
 
