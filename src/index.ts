@@ -5,12 +5,9 @@ import { version } from "./version";
 import { checkNotifications } from "./resources";
 import { logger } from "./logger";
 import { program } from "commander";
-import { randomUUID } from "crypto";
-import { setSession, initializeSessionStore } from "./session";
+import { initializeSessionStore } from "./session";
 import { helpInstall } from "./help";
-import { buildServer, startSSEServer, startStreamingServer } from "./server";
-import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
-import { theStdioSessionId } from "./tools";
+import { buildServer, startSSEServer, startStreamingServer, startStdioServer } from "./server";
 
 export const serverStartupTime = Date.now();
 
@@ -60,36 +57,12 @@ const start = async () => {
   }
 
   const server = await buildServer();
-  const originalConnect = server.connect.bind(server);
-  server.connect = async function (transport: Transport) {
-    // For STDIO transport, create session immediately
-    if (transport instanceof StdioServerTransport) {
-      const apiKey = process.env.APIKEY;
-      if (!apiKey) {
-        throw new Error("APIKEY environment variable is required");
-      }
-      await setSession({ transport, apiKey, sessionId: theStdioSessionId });
-    }
-
-    // Call original connect
-    const result = await originalConnect.call(this, transport);
-
-    return result;
-  };
   if (opts.stream) {
     await startStreamingServer(server, PORT);
   } else if (opts.sse) {
     await startSSEServer(server, PORT);
   } else {
-    if (!process.env.APIKEY) {
-      logger.error("APIKEY environment variable is required");
-      process.exit(1);
-    }
-    const transport = new StdioServerTransport();
-    logger.info("Connecting server to transport...");
-    await server.connect(transport);
-    logger.info(`Octomind MCP Server version ${version} started`);
-
+    await startStdioServer(server);
   }
   setInterval(async () => {
     await checkNotifications(server);

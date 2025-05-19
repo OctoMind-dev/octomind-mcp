@@ -9,8 +9,10 @@ import { logger } from "./logger";
 import { version } from "./version";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { registerResources } from "./resources";
-import { registerTools } from "./tools";
+import { registerTools, theStdioSessionId } from "./tools";
 import { registerPrompts } from "./prompts";
+import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 const getApiKeyFromRequest = (req: Request): string | undefined => {
   const authHeader = req.headers["authorization"];
@@ -36,6 +38,23 @@ export const buildServer = async (): Promise<McpServer> => {
   await registerTools(server);
   registerResources(server);
   registerPrompts(server);
+  const originalConnect = server.connect.bind(server);
+  server.connect = async function (transport: Transport) {
+    // For STDIO transport, create session immediately
+    if (transport instanceof StdioServerTransport) {
+      const apiKey = process.env.APIKEY;
+      if (!apiKey) {
+        throw new Error("APIKEY environment variable is required");
+      }
+      await setSession({ transport, apiKey, sessionId: theStdioSessionId });
+    }
+
+    // Call original connect
+    const result = await originalConnect.call(this, transport);
+
+    return result;
+  };
+  
   return server;
 };
 
@@ -118,6 +137,17 @@ export const startSSEServer = async(server: McpServer, port: number) => {
        logger.info(`Server started on port ${port}`);
      });
      logger.info(`Octomind MCP Server version ${version} started`);
+}
+
+export const startStdioServer = async (server: McpServer) => {
+  if (!process.env.APIKEY) {
+    console.error("APIKEY environment variable is required");
+    process.exit(1);
+  }
+  const transport = new StdioServerTransport();
+  console.error("Connecting server to transport...");
+  await server.connect(transport);
+  console.error(`Octomind MCP Server version ${version} started`);
 }
 
 export const startStreamingServer = async (server: McpServer, port: number) => {
