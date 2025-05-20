@@ -81,11 +81,13 @@ const start = async () => {
   });
 };
 
-start()
-  .then(() => {
-    logger.info(`Server version ${version} started`);
-  })
-  .catch((error) => {
+if (require.main === module) {
+  start()
+    .then(() => {
+      logger.info(`Server version ${version} started`);
+    })
+    .catch((error) => {
     logger.error("Error starting server:", error);
     process.exit(1);
   });
+}
