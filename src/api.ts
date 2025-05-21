@@ -378,7 +378,7 @@ export const listTestTargets = async (
 
 export const createTestTarget = async (
   options: CreateTestTargetOptions,
-): Promise<TestTarget[]> => {
+): Promise<TestTarget> => {
   const requestBody: CreateTestTargetBody = {
     testTarget: {
       app: options.app,
@@ -387,7 +387,7 @@ export const createTestTarget = async (
     },
   };
 
-  const response = await apiCall<TestTarget[]>(
+  const response = await apiCall<TestTarget>(
     "post",
     "/apiKey/v2/test-targets",
     options.apiKey,
