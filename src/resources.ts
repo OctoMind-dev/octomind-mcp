@@ -48,6 +48,15 @@ export const reloadTestReports = async (
   lastReportRefreshTime = Date.now();
 };
 
+export const clearTestReports = async (server: McpServer) => {
+  reports = [];
+  tracesForTestReport = {};
+  await server.server.notification({
+    method: "notifications/resources/list_changed",
+  });
+  lastReportRefreshTime = Date.now();
+};
+
 export const reloadTestCases = async (
   _testTargetId: string,
   server: McpServer,

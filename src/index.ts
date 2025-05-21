@@ -18,7 +18,7 @@ const start = async () => {
     .option("-s, --sse", "Enable SSE")
     .option("-t, --stream", "Enable Streamable HTTP")
     .option("-c, --clients", "Show clients")
-    .option("-p, --port <port>", "Port to listen on", "3000")
+    .option("-p, --port <port>", "Port to listen on", process.env.PORT || "3000")
     .option("-r, --redis-url <url>", "Redis URL for session storage", process.env.REDIS_URL)
     .option("-e, --session-expiration <seconds>", "Session expiration time in seconds", process.env.SESSION_EXPIRATION_SECONDS)
     .parse(process.argv);

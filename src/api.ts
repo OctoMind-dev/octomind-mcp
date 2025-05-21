@@ -64,11 +64,38 @@ const apiCall = async <T>(
     return response.data as T;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      logger.error("API Error:", error.response?.data || error.message);
+      const filteredError = {
+        ...error,
+        config: {
+          ...error.config,
+          headers: {
+            ...error.config?.headers,
+            "X-API-Key": "<hidden>",
+          },
+          transformRequest: undefined,
+          transformResponse: undefined,
+          transitional: undefined,
+          adapter: undefined,
+        },
+        request: {
+          host: error.request?.host,
+          method: error.request?.method,
+          path: error.request?.path,
+        },
+        response: {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          headers: error.response?.headers,
+          data: error.response?.data,
+        },
+       
+      };
+      logger.error({error: filteredError}, `API Error: ${filteredError.message}`);
+      throw new Error(`API request failed. ${JSON.stringify(filteredError, null, 2)}`);
     } else {
       logger.error("Error:", error);
+      throw error;
     }
-    throw new Error(`API request failed. ${JSON.stringify(error, null, 2)}`);
   }
 };
 
@@ -351,7 +378,7 @@ export const listTestTargets = async (
 
 export const createTestTarget = async (
   options: CreateTestTargetOptions,
-): Promise<TestTarget[]> => {
+): Promise<TestTarget> => {
   const requestBody: CreateTestTargetBody = {
     testTarget: {
       app: options.app,
@@ -360,7 +387,7 @@ export const createTestTarget = async (
     },
   };
 
-  const response = await apiCall<TestTarget[]>(
+  const response = await apiCall<TestTarget>(
     "post",
     "/apiKey/v2/test-targets",
     options.apiKey,

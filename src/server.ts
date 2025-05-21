@@ -151,6 +151,7 @@ export const startStdioServer = async (server: McpServer) => {
 }
 
 export const startStreamingServer = async (server: McpServer, port: number) => {
+  logger.info(`Starting server in streaming mode on port ${port}`);
     const app = buildApp();
     app.post('/mcp', async (req: Request, res: Response) => {
       const xsessionId = req.headers["x-session-id"];
