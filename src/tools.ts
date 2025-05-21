@@ -42,7 +42,7 @@ export const setLastTestTargetId = async (
     throw new Error("Unauthorized");
   }
   const session = await getSession(sessionId);
-  if (!session) {
+  if (!session || !session.apiKey) {
     throw new Error("Unauthorized");
   }
   if (session.currentTestTargetId !== testTargetId) {
