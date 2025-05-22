@@ -13,6 +13,7 @@ import { registerTools, theStdioSessionId } from "./tools";
 import { registerPrompts } from "./prompts";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { buildSession } from "./session";
 
 const getApiKeyFromRequest = (req: Request): string | undefined => {
   const authHeader = req.headers["authorization"];
@@ -46,7 +47,7 @@ export const buildServer = async (): Promise<McpServer> => {
       if (!apiKey) {
         throw new Error("APIKEY environment variable is required");
       }
-      await setSession({ transport, apiKey, sessionId: theStdioSessionId });
+      await setSession(buildSession({ transport, apiKey, sessionId: theStdioSessionId }));
     }
 
     // Call original connect
@@ -90,7 +91,7 @@ export const startSSEServer = async(server: McpServer, port: number) => {
          res.status(401).send('Unauthorized, authorization header is required');
          return;
        }
-       await setSession({ transport, apiKey, sessionId: transport.sessionId });
+       await setSession(buildSession({ transport, apiKey, sessionId: transport.sessionId }));
        res.on('close', async () => {
          await removeSession(transport.sessionId);
        });
@@ -180,7 +181,7 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
               res.status(401).send('Unauthorized');
               return;
             }
-            await setSession({ transport, apiKey, sessionId });
+            await setSession(buildSession({ transport, apiKey, sessionId }));
             logger.info(`Transport initialized for session ${sessionId}`);
           }
         });
