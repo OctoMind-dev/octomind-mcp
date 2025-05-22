@@ -47,9 +47,9 @@ export const setLastTestTargetId = async (
   }
   if (session.currentTestTargetId !== testTargetId) {
     if (!testTargetId) {
-      await clearTestReports(server);
+      await clearTestReports(session, server);
     } else {
-      await reloadTestReports(testTargetId, server, session.apiKey);
+      await reloadTestReports(session, server);
     }
     session.currentTestTargetId = testTargetId;
     await setSession(session);
