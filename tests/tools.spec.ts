@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getLastTestTargetId, setLastTestTargetId } from "@/tools";
+import { getLastTestTargetId, setLastTestTargetId, theStdioSessionId } from "@/tools";
 import { reloadTestReports } from "@/resources";
 import { getSession, Session, setSession } from "@/session";
 import { logger } from "@/logger";
@@ -72,6 +72,14 @@ describe("Tools module", () => {
 
       expect(mockGetSession).toHaveBeenCalledWith(sessionId);
       expect(reloadTestReports).toHaveBeenCalledTimes(0);
+    });
+
+    it("should use the stdio session id if no session id is provided", async () => {
+      const testTargetId = "123e4567-e89b-12d3-a456-426614174000";
+      mockGetSession.mockResolvedValue(mockSession);
+      await setLastTestTargetId(server, testTargetId);
+
+      expect(mockGetSession).toHaveBeenCalledWith(theStdioSessionId);
     });
   });
 });

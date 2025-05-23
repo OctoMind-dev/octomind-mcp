@@ -46,6 +46,7 @@ export const buildServer = async (): Promise<McpServer> => {
       if (!apiKey) {
         throw new Error("APIKEY environment variable is required");
       }
+      logger.debug("Creating session for STDIO transport, using %s", theStdioSessionId);
       await setSession({ transport, apiKey, sessionId: theStdioSessionId });
     }
 
