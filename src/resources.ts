@@ -30,8 +30,9 @@ export const reloadTestReports = async (
   server: McpServer,
   apiKey: string,
 ) => {
+  logger.debug("Reloading reports for test target: %s", testTargetId);
   const result = await getTestReports({ apiKey, testTargetId });
-  logger.info("Reloaded reports for test target:", testTargetId);
+  logger.info("Reloaded reports for test target: %s", testTargetId);
   reports = result.data;
   tracesForTestReport = {};
   reports.forEach((r) => {
@@ -49,6 +50,7 @@ export const reloadTestReports = async (
 };
 
 export const clearTestReports = async (server: McpServer) => {
+  logger.debug("Clearing test reports" );
   reports = [];
   tracesForTestReport = {};
   await server.server.notification({
@@ -62,6 +64,7 @@ export const reloadTestCases = async (
   server: McpServer,
   apiKey: string,
 ) => {
+  logger.debug("Reloading test cases for test target: %s", _testTargetId);
   const result = { data: [] }; //await getTestCases({ apiKey, testTargetId });
   testCases = result.data;
   await server.server.notification({
@@ -75,6 +78,7 @@ export const checkNotifications = async (server: McpServer): Promise<void> => {
     if (!session.currentTestTargetId) {
       continue;
     }
+    logger.debug("Checking notifications for test target: %s, session: %s", session.currentTestTargetId, session.sessionId);
     await checkNotificationsForSession(server, session.apiKey, session.currentTestTargetId);
   }
 }
@@ -83,7 +87,6 @@ const checkNotificationsForSession = async (server: McpServer, apiKey: string, t
   let forceReloadReports = false;
   let forceReloadTestCases = false;
   if (testTargetId) {
-    logger.info("Checking notifications for test target:", testTargetId);
     const notifications = await getNotifications(apiKey, testTargetId);
     notifications.forEach(async (n) => {
       if (
@@ -100,9 +103,11 @@ const checkNotificationsForSession = async (server: McpServer, apiKey: string, t
       }
     });
     if (forceReloadReports) {
+      logger.info("Force reload reports for test target: %s", testTargetId);
       await reloadTestReports(testTargetId, server, apiKey);
     }
     if (forceReloadTestCases) {
+      logger.info("Force reload test cases for test target: %s", testTargetId);
       await reloadTestCases(testTargetId, server, apiKey);
     }
   }

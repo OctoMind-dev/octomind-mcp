@@ -38,18 +38,14 @@ export const setLastTestTargetId = async (
   testTargetId: string | undefined,
   sessionId?: string,  
 ): Promise<void> => {
-  if (!sessionId) {
-    throw new Error("Unauthorized");
-  }
-  const session = await getSession(sessionId);
-  if (!session || !session.apiKey) {
-    throw new Error("Unauthorized");
-  }
-  if (session.currentTestTargetId !== testTargetId) {
+  const apiKey = await getApiKey(sessionId);
+  const session = await getSession(sessionId || theStdioSessionId);
+  if (testTargetId !== session.currentTestTargetId) {
+    logger.debug("Setting last test target id to %s", testTargetId);
     if (!testTargetId) {
       await clearTestReports(server);
     } else {
-      await reloadTestReports(testTargetId, server, session.apiKey);
+      await reloadTestReports(testTargetId, server, apiKey);
     }
     session.currentTestTargetId = testTargetId;
     await setSession(session);
