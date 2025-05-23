@@ -1,5 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getLastTestTargetId, setLastTestTargetId, theStdioSessionId } from "@/tools";
+import {
+  getLastTestTargetId,
+  setLastTestTargetId,
+  theStdioSessionId,
+} from "@/tools";
 import { reloadTestReports } from "@/resources";
 import { getSession, Session, setSession } from "@/session";
 import { logger } from "@/logger";
