@@ -79,7 +79,11 @@ export const checkNotifications = async (server: McpServer): Promise<void> => {
       continue;
     }
     logger.debug("Checking notifications for test target: %s, session: %s", session.currentTestTargetId, session.sessionId);
-    await checkNotificationsForSession(server, session.apiKey, session.currentTestTargetId);
+    try {
+      await checkNotificationsForSession(server, session.apiKey, session.currentTestTargetId);
+    } catch (e) {
+      logger.error("Failed to check notifications for test target: %s, session: %s", session.currentTestTargetId, session.sessionId, e);
+    }
   }
 }
 

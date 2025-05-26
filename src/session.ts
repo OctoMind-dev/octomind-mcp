@@ -70,11 +70,74 @@ export interface SessionStore {
 /**
  * In-memory implementation of SessionStore
  */
-export class InMemorySessionStore implements SessionStore {
-  private sessions: Record<string, Session> = {};
+/**
+ * Extended session with expiration tracking
+ */
+interface SessionWithExpiry extends Session {
+  /** Timestamp when the session was last accessed */
+  lastAccessedAt: number;
+}
 
-  constructor() {
-    logger.info("InMemorySessionStore created");
+export class InMemorySessionStore implements SessionStore {
+  private sessions: Record<string, SessionWithExpiry> = {};
+  private expirationTimeMs: number;
+  private cleanupIntervalId?: NodeJS.Timeout;
+
+  /**
+   * Creates a new InMemorySessionStore
+   * @param expirationSeconds Time in seconds after which inactive sessions expire (default: 3600 = 1 hour)
+   * @param cleanupIntervalSeconds Interval in seconds to check for and remove expired sessions (default: 300 = 5 minutes)
+   */
+  constructor(expirationSeconds = 3600, cleanupIntervalSeconds = 300) {
+    this.expirationTimeMs = expirationSeconds * 1000;
+    logger.info(`InMemorySessionStore created with expiration time of ${expirationSeconds} seconds`);
+    
+    // Start periodic cleanup of expired sessions
+    this.cleanupIntervalId = setInterval(() => {
+      this.removeExpiredSessions();
+    }, cleanupIntervalSeconds * 1000);
+  }
+
+  /**
+   * Removes all expired sessions from the store
+   * @returns The number of sessions that were removed
+   */
+  private removeExpiredSessions(): number {
+    const now = Date.now();
+    const expiredSessionIds = Object.entries(this.sessions)
+      .filter(([_, session]) => now - session.lastAccessedAt > this.expirationTimeMs)
+      .map(([id, _]) => id);
+    
+    expiredSessionIds.forEach(id => {
+      logger.info(`Removing expired session: ${id}`);
+      delete this.sessions[id];
+    });
+    
+    if (expiredSessionIds.length > 0) {
+      logger.info(`Removed ${expiredSessionIds.length} expired sessions`);
+    }
+    
+    return expiredSessionIds.length;
+  }
+
+  /**
+   * Updates the last accessed timestamp for a session
+   * @param sessionId The ID of the session to update
+   */
+  private updateAccessTime(sessionId: string): void {
+    if (this.sessions[sessionId]) {
+      this.sessions[sessionId].lastAccessedAt = Date.now();
+    }
+  }
+
+  /**
+   * Cleans up resources when the store is no longer needed
+   */
+  public dispose(): void {
+    if (this.cleanupIntervalId) {
+      clearInterval(this.cleanupIntervalId);
+      this.cleanupIntervalId = undefined;
+    }
   }
 
   async getSession(sessionId: string): Promise<Session> {
@@ -82,6 +145,10 @@ export class InMemorySessionStore implements SessionStore {
     if (!session) {
       throw new Error("Session not found");
     }
+    
+    // Update the last accessed time
+    this.updateAccessTime(sessionId);
+    
     return session;
   }
 
@@ -94,11 +161,22 @@ export class InMemorySessionStore implements SessionStore {
   }
 
   async setSession(session: Session): Promise<void> {
-    this.sessions[session.sessionId] = session;
+    // Add the lastAccessedAt property when storing the session
+    this.sessions[session.sessionId] = {
+      ...session,
+      lastAccessedAt: Date.now()
+    };
   }
 
   async sessionExists(sessionId: string): Promise<boolean> {
-    return this.sessions[sessionId] !== undefined;
+    const exists = this.sessions[sessionId] !== undefined;
+    
+    if (exists) {
+      // Update the last accessed time if the session exists
+      this.updateAccessTime(sessionId);
+    }
+    
+    return exists;
   }
 }
 
