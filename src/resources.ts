@@ -10,7 +10,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { getNotifications, getTestReports, TestCase } from "./api";
 import { TestReport } from "./types";
-import { getAllSessions } from "./session";
+import { getAllSessions, setSession } from "./session";
 import { logger } from "./logger";
 
 let reports: TestReport[] | undefined;
@@ -83,6 +83,7 @@ export const checkNotifications = async (server: McpServer): Promise<void> => {
       await checkNotificationsForSession(server, session.apiKey, session.currentTestTargetId);
     } catch (e) {
       logger.error("Failed to check notifications for test target: %s, session: %s", session.currentTestTargetId, session.sessionId, e);
+      await setSession({...session, currentTestTargetId: undefined});
     }
   }
 }
