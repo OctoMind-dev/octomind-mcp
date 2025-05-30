@@ -2,7 +2,8 @@ import axios from "axios";
 import { SearchResult } from "./types";
 import { logger } from "./logger";
 
-const mintlifyToken = "mint_dsc_3ZNWe13kDZKPFdidzxsnQFyU";
+// see https://mintlify.com/docs/api-reference/introduction#assistant-api-key
+const PUBLIC_MINTLIFY_API_KEY = "mint_dsc_3ZNWe13kDZKPFdidzxsnQFyU";
 const MINT_SUBDOMAIN = "octomind";
 const MINT_SERVER_URL = "https://leaves.mintlify.com";
 const DEFAULT_BASE_URL = "https://api.mintlifytrieve.com";
@@ -53,7 +54,7 @@ export const trieveConfig = async (): Promise<TrieveData | null> => {
       {
         timeout: 3000,
         headers: {
-          "X-API-Key": `${mintlifyToken}`,
+          "X-API-Key": `${PUBLIC_MINTLIFY_API_KEY}`,
         },
       },
     );
