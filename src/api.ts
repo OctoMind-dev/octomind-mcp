@@ -39,7 +39,7 @@ import { logger } from "./logger";
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
 
 // Helper function for API calls
-const apiCall = async <T>(
+export const apiCall = async <T>(
   method: "get" | "post" | "put" | "delete" | "patch",
   endpoint: string,
   apiKey: string,

@@ -2,6 +2,7 @@ import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { logger } from "./logger";
+import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
 /**
  * Session status enum to track the state of the session
@@ -18,7 +19,7 @@ export enum SessionStatus {
  */
 export type Session = {
   /** Transport for communication with the client */
-  transport?: SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport;
+  transport?: Transport;
   /** Unique session identifier */
   sessionId: string;
   /** API key for authentication */
