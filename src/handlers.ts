@@ -162,7 +162,13 @@ export function registerDiscoveryTool(
         ),
       prompt: z
         .string()
-        .describe("Description or prompt used for test case generation"),
+        .describe(`Description or prompt that is used for test case generation. Best results are achieved when the prompt is strctured like: "INTENT 
+<describe what you want to test> 
+INSTRUCTIONS
+<everything important you want the agent to take into account> 
+record evidence by checking for relevant UI elements 
+EXPECTED RESULT 
+<describe what the agent should see once the task is done>"`),
       folderName: z
         .string()
         .optional()
