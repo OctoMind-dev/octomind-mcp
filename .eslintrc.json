@@ -24,6 +24,7 @@
     "i18n-text/no-en": "off",
     "github/no-then": "off",
     "camelcase": "off",
+    "import/no-namespace": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": "off"
   },

@@ -68,8 +68,10 @@ describe("Client", () => {
   });
   describe("errors", () => {
     it("should return unauthorized error because apikey missing", async () => {
-      jest.spyOn(tools, "getApiKey").mockImplementation(()=>{throw new Error("Unauthorized, no apiKey found for session")});
-      
+      jest.spyOn(tools, "getApiKey").mockImplementation(() => {
+        throw new Error("Unauthorized, no apiKey found for session");
+      });
+
       const getTestTargetsTool = getTool(clientTools, "getTestTargets");
       const result = await client.callTool({
         name: getTestTargetsTool.name,
@@ -88,8 +90,10 @@ describe("Client", () => {
 `);
     });
     it("should return unauthorized error because session missing", async () => {
-      jest.spyOn(tools, "getApiKey").mockImplementation(()=>{throw new Error("Unauthorized, no session found")});
-      
+      jest.spyOn(tools, "getApiKey").mockImplementation(() => {
+        throw new Error("Unauthorized, no session found");
+      });
+
       const getTestTargetsTool = getTool(clientTools, "getTestTargets");
       const result = await client.callTool({
         name: getTestTargetsTool.name,
@@ -109,8 +113,10 @@ describe("Client", () => {
     });
 
     it("should return because apiCall fails", async () => {
-      jest.spyOn(api, "apiCall").mockImplementation(()=>{throw new AxiosError("unauthorized", "401")});
-      
+      jest.spyOn(api, "apiCall").mockImplementation(() => {
+        throw new AxiosError("unauthorized", "401");
+      });
+
       const getTestTargetsTool = getTool(clientTools, "getTestTargets");
       const result = await client.callTool({
         name: getTestTargetsTool.name,
@@ -147,7 +153,6 @@ describe("Client", () => {
     });
   });
   describe("test targets", () => {
-
     it("should create a test target", async () => {
       const createTestTargetTool = getTool(clientTools, "createTestTarget");
       jest.spyOn(api, "createTestTarget").mockResolvedValue({
@@ -156,7 +161,7 @@ describe("Client", () => {
         skipAutomaticTestCreation: false,
         environments: [],
       });
-    
+
       const result = await client.callTool({
         name: createTestTargetTool.name,
         arguments: {
@@ -165,7 +170,7 @@ describe("Client", () => {
           skipAutomaticTestCreation: false,
         },
       });
-    
+
       expect(result.content).toMatchInlineSnapshot(`
 [
   {
@@ -411,7 +416,7 @@ describe("Client", () => {
 `);
     });
   });
-  describe("test cases", () => { 
+  describe("test cases", () => {
     it("should call get test cases", async () => {
       const getTestCasesTool = getTool(clientTools, "getTestCases");
 
@@ -462,7 +467,10 @@ describe("Client", () => {
   });
   describe("private locations", () => {
     it("should call get private locations", async () => {
-      const getPrivateLocationsTool = getTool(clientTools, "getPrivateLocations");
+      const getPrivateLocationsTool = getTool(
+        clientTools,
+        "getPrivateLocations",
+      );
       jest.spyOn(api, "listPrivateLocations").mockResolvedValue([
         {
           name: "US Proxy",
