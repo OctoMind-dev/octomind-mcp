@@ -199,7 +199,7 @@ export class RedisSessionStore implements SessionStore {
   private clientInitPromise: Promise<void> | null = null;
   private redisUrl: string;
   private expirationSeconds: number | null;
-  private transportCache: Record<string, SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport> = {};
+  private transportCache: Record<string, Transport> = {};
 
   /**
    * Create a new RedisSessionStore
