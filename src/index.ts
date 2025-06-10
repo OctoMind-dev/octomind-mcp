@@ -52,9 +52,9 @@ const start = async () => {
       initializeSessionStore('memory');
     }
   } else {
-    // For stdio transport, use in-memory store
-    logger.info('Using in-memory session store for stdio transport');
-    initializeSessionStore('memory');
+    // For stdio transport, use in-memory store with no expiration
+    logger.info('Using in-memory session store for stdio transport with no expiration');
+    initializeSessionStore('memory', { sessionExpirationSeconds: 0 });
   }
 
   const server = await buildServer();

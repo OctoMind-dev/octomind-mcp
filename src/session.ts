@@ -90,12 +90,14 @@ export class InMemorySessionStore implements SessionStore {
    */
   constructor(expirationSeconds = 3600, cleanupIntervalSeconds = 300) {
     this.expirationTimeMs = expirationSeconds * 1000;
-    logger.info(`InMemorySessionStore created with expiration time of ${expirationSeconds} seconds`);
+    logger.info(`InMemorySessionStore created with ${expirationSeconds === 0 ? 'no expiration' : `expiration time of ${expirationSeconds} seconds`}`);
     
-    // Start periodic cleanup of expired sessions
-    this.cleanupIntervalId = setInterval(() => {
-      this.removeExpiredSessions();
-    }, cleanupIntervalSeconds * 1000);
+    // Only set up cleanup if expiration is enabled (non-zero)
+    if (expirationSeconds > 0) {
+      this.cleanupIntervalId = setInterval(() => {
+        this.removeExpiredSessions();
+      }, cleanupIntervalSeconds * 1000);
+    }
   }
 
   /**
@@ -103,6 +105,11 @@ export class InMemorySessionStore implements SessionStore {
    * @returns The number of sessions that were removed
    */
   private removeExpiredSessions(): number {
+    // If expiration is disabled, no sessions should expire
+    if (this.expirationTimeMs <= 0) {
+      return 0;
+    }
+    
     const now = Date.now();
     const expiredSessionIds = Object.entries(this.sessions)
       .filter(([_, session]) => now - session.lastAccessedAt > this.expirationTimeMs)
@@ -407,7 +414,7 @@ export const initializeSessionStore = (
       expirationSeconds: options.sessionExpirationSeconds
     });
   } else {
-    sessionStore = new InMemorySessionStore();
+    sessionStore = new InMemorySessionStore(options?.sessionExpirationSeconds);
   }
   return sessionStore;
 };
