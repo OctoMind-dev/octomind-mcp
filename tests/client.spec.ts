@@ -35,7 +35,7 @@ describe("Client", () => {
 
   it("should find tools", async () => {
     const tools = await client.listTools();
-    expect(tools.tools.length).toBe(17);
+    expect(tools.tools.length).toBe(18);
 
   });
 
@@ -151,6 +151,68 @@ describe("Client", () => {
   },
   {
     "text": "{"id":"env-id","name":"env-name","testTargetId":"58f57faf-6da0-45be-aa76-a567ffb32e82","updatedAt":"2025-06-10T16:26:49.000Z","type":"DEFAULT","discoveryUrl":"https://example.com"}",
+    "type": "text",
+  },
+]
+`);
+  });
+
+  it("should delete an environment", async () => {
+    const tools = await client.listTools();
+    const deleteEnvironmentTool = tools.tools.find((tool) => tool.name === "deleteEnvironment");
+    expect(deleteEnvironmentTool).toBeDefined();
+
+    jest.spyOn(api, 'deleteEnvironment').mockResolvedValue({ success: true });
+
+    const result = await client.callTool({
+      name: deleteEnvironmentTool!.name,
+      arguments: {
+        testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+        environmentId: "58f57faf-6da0-45be-aa76-a567ffb32e82"
+      }
+    });
+    expect(result.content).toMatchInlineSnapshot(`
+[
+  {
+    "text": "Deleted environment: 58f57faf-6da0-45be-aa76-a567ffb32e82 for test target: 58f57faf-6da0-45be-aa76-a567ffb32e82",
+    "type": "text",
+  },
+  {
+    "text": "{"success":true}",
+    "type": "text",
+  },
+]
+`);
+  });
+
+  it("should list environments", async () => {
+    const tools = await client.listTools();
+    const getEnvironmentsTool = tools.tools.find((tool) => tool.name === "getEnvironments");
+    expect(getEnvironmentsTool).toBeDefined();
+    jest.spyOn(api, 'listEnvironments').mockResolvedValue([
+      {
+        id: "env-id",
+        name: "env-name",
+        testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+        updatedAt: "2025-06-10T16:26:49.000Z",
+        type: "DEFAULT",
+        discoveryUrl: "https://example.com",
+      }
+    ]);
+    const result = await client.callTool({
+      name: getEnvironmentsTool!.name,
+      arguments: {
+        testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82"
+      }
+    });
+    expect(result.content).toMatchInlineSnapshot(`
+[
+  {
+    "text": "Retrieved environments for test target: 58f57faf-6da0-45be-aa76-a567ffb32e82",
+    "type": "text",
+  },
+  {
+    "text": "[{\"id\":\"env-id\",\"name\":\"env-name\",\"testTargetId\":\"58f57faf-6da0-45be-aa76-a567ffb32e82\",\"updatedAt\":\"2025-06-10T16:26:49.000Z\",\"type\":\"DEFAULT\",\"discoveryUrl\":\"https://example.com\"}]",
     "type": "text",
   },
 ]
