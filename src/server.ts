@@ -1,4 +1,4 @@
-import { removeSession, SessionStatus, setSession } from "./session";
+import { getAllSessions, removeSession, SessionStatus, setSession } from "./session";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import express, { Request, Response } from 'express';
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -47,6 +47,7 @@ export const buildServer = async (): Promise<McpServer> => {
       if (!apiKey) {
         throw new Error("APIKEY environment variable is required");
       }
+      logger.debug("Creating session for STDIO transport, using %s", theStdioSessionId);
       await setSession(buildSession({ transport, apiKey, sessionId: theStdioSessionId }));
     }
 
@@ -62,8 +63,14 @@ export const buildServer = async (): Promise<McpServer> => {
 const buildApp = () => {
   const app = express();
   app.use(express.json());
-  app.get('/', (_req: Request, res: Response) => { // health check
-    res.send('OK');
+  app.get('/', async (_req: Request, res: Response) => { // health check
+    const sessions = await getAllSessions();
+    logger.info("Health check, sessions: %s", sessions.length);
+    res.json({
+      status: "OK",
+      version,
+      sessions: sessions.length,
+    });
   });
   return app;
 }
@@ -151,6 +158,31 @@ export const startStdioServer = async (server: McpServer) => {
   console.error(`Octomind MCP Server version ${version} started`);
 }
 
+const buildTransport = async (req: Request, res: Response): Promise<StreamableHTTPServerTransport> => {
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: () => randomUUID(),
+    onsessioninitialized: async (sessionId) => {
+      // Store the transport by session ID
+      const apiKey = getApiKeyFromRequest(req);
+      if (!apiKey) {
+        res.status(401).send('Unauthorized');
+        return;
+      }
+      await setSession({ transport, apiKey, sessionId });
+      logger.info(`Transport initialized for session ${sessionId}`);
+    }
+  });
+
+  // Clean up transport when closed
+  transport.onclose = async () => {
+    logger.info(`Transport closed for session ${transport.sessionId}`);
+    if (transport.sessionId) {
+      await removeSession(transport.sessionId);
+    }
+  };
+  return transport;
+}
+
 export const startStreamingServer = async (server: McpServer, port: number) => {
   logger.info(`Starting server in streaming mode on port ${port}`);
     const app = buildApp();
@@ -197,6 +229,7 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
         // Connect to the MCP server
         await server.connect(transport);
       } else {
+        logger.warn("Bad Request: No valid session ID provided");
         sendError(res, 400, 'Bad Request: No valid session ID provided');
         return;
       }

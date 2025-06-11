@@ -10,6 +10,7 @@ import {
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
+
 import { getNotifications, getTestReports, getTestCases, getTestReport } from "./api";
 import { TestReport, TestCaseListItem } from "./types";
 import { getAllSessions, getSession, Session, setSession } from "./session";
@@ -25,6 +26,7 @@ export const reloadTestReports = async (
   const result = await getTestReports({ apiKey: session.apiKey, testTargetId: session.currentTestTargetId! });
   logger.info("Reloaded reports for test target:", session.currentTestTargetId);
   const reports = result.data;
+
   tracesForTestReport = {};
   session.testReportIds = [];
   session.tracesForTestReport = {};
@@ -47,6 +49,7 @@ export const reloadTestReports = async (
 export const clearTestReports = async (session: Session, server: McpServer) => {
   session.testReportIds = [];
   session.tracesForTestReport = {};
+
   await server.server.notification({
     method: "notifications/resources/list_changed",
   });
@@ -60,6 +63,7 @@ export const reloadTestCases = async (
 ) => {
   const result = await getTestCases({ apiKey: session.apiKey, testTargetId: session.currentTestTargetId! });
   session.testCaseIds = result.map((tc: TestCaseListItem) => tc.id);
+
   await server.server.notification({
     method: "notifications/resources/list_changed",
   });
@@ -72,7 +76,13 @@ export const checkNotifications = async (server: McpServer): Promise<void> => {
     if (!session.currentTestTargetId) {
       continue;
     }
-    await checkNotificationsForSession(server, session);
+    logger.debug("Checking notifications for test target: %s, session: %s", session.currentTestTargetId, session.sessionId);
+    try {
+      await checkNotificationsForSession(server, session);
+    } catch (e) {
+      logger.error("Failed to check notifications for test target: %s, session: %s", session.currentTestTargetId, session.sessionId, e);
+      await setSession({...session, currentTestTargetId: undefined});
+    }
   }
 }
 
