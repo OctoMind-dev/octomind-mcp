@@ -44,6 +44,11 @@ describe("Tools module", () => {
       apiKey: "test-api-key",
       currentTestTargetId: undefined,
       sessionId,
+      testReportIds: [],
+      testCaseIds: [],
+      tracesForTestReport: {},
+      lastTestReportRefreshTime: 0,
+      lastTestCaseRefreshTime: 0,
     };
     it("should initially return undefined", async () => {
       mockGetSession.mockResolvedValue(mockSession);

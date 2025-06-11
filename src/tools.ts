@@ -38,17 +38,16 @@ export const setLastTestTargetId = async (
   testTargetId: string | undefined,
   sessionId?: string,  
 ): Promise<void> => {
-  const apiKey = await getApiKey(sessionId);
   const session = await getSession(sessionId || theStdioSessionId);
   if (testTargetId !== session.currentTestTargetId) {
     logger.debug("Setting last test target id to %s", testTargetId);
+    session.currentTestTargetId = testTargetId;
+    await setSession(session);
     if (!testTargetId) {
       await clearTestReports(session, server);
     } else {
       await reloadTestReports(session, server);
     }
-    session.currentTestTargetId = testTargetId;
-    await setSession(session);
   }
 };
 
