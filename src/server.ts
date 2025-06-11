@@ -168,6 +168,7 @@ const buildTransport = async (req: Request, res: Response): Promise<StreamableHT
       const apiKey = getApiKeyFromRequest(req);
       if (!apiKey) {
         res.status(401).send('Unauthorized');
+        logger.error("Authorization header is required");
         return;
       }
       await setSession(buildSession({ transport, apiKey, sessionId }));
@@ -205,48 +206,13 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
         }
         transport = session.transport as StreamableHTTPServerTransport;
       } else if (!sessionId && isInitializeRequest(req.body)) {
-        // New initialization request
-        transport = new StreamableHTTPServerTransport({
-          sessionIdGenerator: () => randomUUID(),
-          onsessioninitialized: async (sessionId) => {
-            // Store the transport by session ID
-            const apiKey = getApiKeyFromRequest(req);
-            if (!apiKey) {
-              res.status(401).send('Unauthorized');
-              return;
-            }
-            await setSession(buildSession({ transport, apiKey, sessionId }));
-            logger.info(`Transport initialized for session ${sessionId}`);
-          }
-        });
-
-        // Clean up transport when closed
-        transport.onclose = async () => {
-          logger.info(`Transport closed for session ${transport.sessionId}`);
-          if (transport.sessionId) {
-            await removeSession(transport.sessionId);
-          }
-        };
-
-        // Connect to the MCP server
-        await server.connect(transport);
-      } else {
-        logger.warn("Bad Request: No valid session ID provided");
-        sendError(res, 400, 'Bad Request: No valid session ID provided');
-        return;
-      }
-
-      if (sessionId && await sessionExists(sessionId)) {
-        // Reuse existing transport
-        const session = await getSession(sessionId);
-        if (session.status === SessionStatus.TRANSPORT_MISSING) {
-          sendError(res, 404, 'Transport missing for sessionId');
-          logger.warn(`Transport missing for session ${sessionId}, connection closed`);
+        const apiKey = getApiKeyFromRequest(req);
+        if (!apiKey) {
+          res.status(401).send('Unauthorized, Authorization header is required');
+          logger.error("Authorization header is required");
           return;
         }
-        transport = session.transport as StreamableHTTPServerTransport;
-      } else if (!sessionId && isInitializeRequest(req.body)) {
-        logger.info("New initialization request");
+        // New initialization request
         transport = await buildTransport(req, res);
         await server.connect(transport);
       } else {
@@ -254,11 +220,10 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
         sendError(res, 400, 'Bad Request: No valid session ID provided');
         return;
       }
-
       try {
         await transport.handleRequest(req, res, req.body);
       } catch (error) {
-        logger.error("Error handling request", error);
+        logger.error({ error }, "Error handling request");
       }
     });
 
@@ -289,7 +254,7 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
     try {
       await transport.handleRequest(req, res);
     } catch (error) {
-      logger.error("Error handling request", error);
+      logger.error({ error }, "Error handling request");
     }
     if (req.method === "DELETE") {
       await removeSession(sessionId);
