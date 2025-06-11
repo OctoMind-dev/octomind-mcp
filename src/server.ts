@@ -168,7 +168,7 @@ const buildTransport = async (req: Request, res: Response): Promise<StreamableHT
         res.status(401).send('Unauthorized');
         return;
       }
-      await setSession({ transport, apiKey, sessionId });
+      await setSession(buildSession({ transport, apiKey, sessionId }));
       logger.info(`Transport initialized for session ${sessionId}`);
     }
   });
