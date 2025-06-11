@@ -1,8 +1,5 @@
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { logger } from "./logger";
-import { TestReport } from "./types";
+import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
 /**
  * Session status enum to track the state of the session
@@ -19,7 +16,7 @@ export enum SessionStatus {
  */
 export type Session = {
   /** Transport for communication with the client */
-  transport?: SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport;
+  transport?: Transport;
   /** Unique session identifier */
   sessionId: string;
   /** API key for authentication */
@@ -100,12 +97,14 @@ export class InMemorySessionStore implements SessionStore {
    */
   constructor(expirationSeconds = 3600, cleanupIntervalSeconds = 300) {
     this.expirationTimeMs = expirationSeconds * 1000;
-    logger.info(`InMemorySessionStore created with expiration time of ${expirationSeconds} seconds`);
+    logger.info(`InMemorySessionStore created with ${expirationSeconds === 0 ? 'no expiration' : `expiration time of ${expirationSeconds} seconds`}`);
     
-    // Start periodic cleanup of expired sessions
-    this.cleanupIntervalId = setInterval(() => {
-      this.removeExpiredSessions();
-    }, cleanupIntervalSeconds * 1000);
+    // Only set up cleanup if expiration is enabled (non-zero)
+    if (expirationSeconds > 0) {
+      this.cleanupIntervalId = setInterval(() => {
+        this.removeExpiredSessions();
+      }, cleanupIntervalSeconds * 1000);
+    }
   }
 
   /**
@@ -113,6 +112,11 @@ export class InMemorySessionStore implements SessionStore {
    * @returns The number of sessions that were removed
    */
   private removeExpiredSessions(): number {
+    // If expiration is disabled, no sessions should expire
+    if (this.expirationTimeMs <= 0) {
+      return 0;
+    }
+    
     const now = Date.now();
     const expiredSessionIds = Object.entries(this.sessions)
       .filter(([_, session]) => now - session.lastAccessedAt > this.expirationTimeMs)
@@ -190,7 +194,8 @@ export class InMemorySessionStore implements SessionStore {
   }
 }
 
-export const buildSession = ({transport, apiKey, sessionId, testReportIds, testCaseIds, tracesForTestReport, lastTestReportRefreshTime, lastTestCaseRefreshTime, status}: {transport: SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport,
+export const buildSession = ({transport, apiKey, sessionId, testReportIds, testCaseIds, tracesForTestReport, lastTestReportRefreshTime, lastTestCaseRefreshTime, status}:
+   {transport: Transport,
   apiKey: string, 
   sessionId: string,
   testReportIds?: string[],
@@ -224,7 +229,7 @@ export class RedisSessionStore implements SessionStore {
   private clientInitPromise: Promise<void> | null = null;
   private redisUrl: string;
   private expirationSeconds: number | null;
-  private transportCache: Record<string, SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport> = {};
+  private transportCache: Record<string, Transport> = {};
 
   /**
    * Create a new RedisSessionStore
@@ -440,7 +445,7 @@ export const initializeSessionStore = (
       expirationSeconds: options.sessionExpirationSeconds
     });
   } else {
-    sessionStore = new InMemorySessionStore();
+    sessionStore = new InMemorySessionStore(options?.sessionExpirationSeconds);
   }
   return sessionStore;
 };

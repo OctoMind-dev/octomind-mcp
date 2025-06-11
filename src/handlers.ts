@@ -162,13 +162,26 @@ export function registerDiscoveryTool(
         ),
       prompt: z
         .string()
-        .describe("Description or prompt used for test case generation"),
+        .describe(`Description or prompt that is used for test case generation. Best results are achieved when the prompt is strctured like: "INTENT 
+<describe what you want to test> 
+INSTRUCTIONS
+<everything important you want the agent to take into account> 
+record evidence by checking for relevant UI elements 
+EXPECTED RESULT 
+<describe what the agent should see once the task is done>"`),
       folderName: z
         .string()
         .optional()
         .describe(
           "Optional folder name that the newly discovered test case will be added to",
         ),
+      type: z
+        .enum(["LOGIN", "COOKIE_BANNER"])
+        .optional()
+        .describe(`Type of the test case to discover. A login is often used as a prerequisite for other test cases and should discovered first.
+          When it is completed it can be used as prerequisite for other test cases. A cookie banner is a test case is used to close the cookie banner of a website.
+          Is is also often used as a prerequisite for other test cases. Only set this option for these special test cases. Only one LOGIN or COOKIE_BANNER test case can
+          exist per test target at a time.`),
     },
     async (params, {sessionId}) => {
       if (!sessionId) {

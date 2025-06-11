@@ -41,9 +41,11 @@ export const buildServer = async (): Promise<McpServer> => {
   registerPrompts(server);
   const originalConnect = server.connect.bind(server);
   server.connect = async function (transport: Transport) {
+    if (transport instanceof SSEServerTransport || transport instanceof StreamableHTTPServerTransport) { 
+      logger.debug("Connecting %s transport", transport.constructor.name);
+    } else {
     // For STDIO transport, create session immediately
-    if (transport instanceof StdioServerTransport) {
-      const apiKey = process.env.APIKEY;
+    const apiKey = process.env.APIKEY;
       if (!apiKey) {
         throw new Error("APIKEY environment variable is required");
       }
@@ -56,7 +58,7 @@ export const buildServer = async (): Promise<McpServer> => {
 
     return result;
   };
-  
+
   return server;
 };
 
@@ -87,9 +89,9 @@ const sendError = (res: Response, code: number, message: string) => {
   });
 }
 
-export const startSSEServer = async(server: McpServer, port: number) => {
-     logger.info("Starting server in SSE mode");
-     const app = buildApp();
+export const startSSEServer = async (server: McpServer, port: number) => {
+  logger.info("Starting server in SSE mode");
+  const app = buildApp();
 
      app.get('/sse', async (req: Request, res: Response) => {
        const transport = new SSEServerTransport('/messages', res);
@@ -166,6 +168,7 @@ const buildTransport = async (req: Request, res: Response): Promise<StreamableHT
       const apiKey = getApiKeyFromRequest(req);
       if (!apiKey) {
         res.status(401).send('Unauthorized');
+        logger.error("Authorization header is required");
         return;
       }
       await setSession(buildSession({ transport, apiKey, sessionId }));
@@ -203,30 +206,14 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
         }
         transport = session.transport as StreamableHTTPServerTransport;
       } else if (!sessionId && isInitializeRequest(req.body)) {
+        const apiKey = getApiKeyFromRequest(req);
+        if (!apiKey) {
+          res.status(401).send('Unauthorized, Authorization header is required');
+          logger.error("Authorization header is required");
+          return;
+        }
         // New initialization request
-        transport = new StreamableHTTPServerTransport({
-          sessionIdGenerator: () => randomUUID(),
-          onsessioninitialized: async (sessionId) => {
-            // Store the transport by session ID
-            const apiKey = getApiKeyFromRequest(req);
-            if (!apiKey) {
-              res.status(401).send('Unauthorized');
-              return;
-            }
-            await setSession(buildSession({ transport, apiKey, sessionId }));
-            logger.info(`Transport initialized for session ${sessionId}`);
-          }
-        });
-
-        // Clean up transport when closed
-        transport.onclose = async () => {
-          logger.info(`Transport closed for session ${transport.sessionId}`);
-          if (transport.sessionId) {
-            await removeSession(transport.sessionId);
-          }
-        };
-
-        // Connect to the MCP server
+        transport = await buildTransport(req, res);
         await server.connect(transport);
       } else {
         logger.warn("Bad Request: No valid session ID provided");
@@ -236,53 +223,53 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
       try {
         await transport.handleRequest(req, res, req.body);
       } catch (error) {
-        logger.error("Error handling request", error);
+        logger.error({ error }, "Error handling request");
       }
     });
 
-    // Reusable handler for GET and DELETE requests
-    const handleSessionRequest = async (req: Request, res: Response) => {
-      const xsessionId = req.headers["x-session-id"];
-      logger.info(`Received ${req.method} /mcp request for session ${req.headers['mcp-session-id']}, x-session-id: ${xsessionId}`);
-      const sessionId = req.headers['mcp-session-id'] as string | undefined;
-      if (!sessionId || !sessionExists(sessionId)) {
-        sendError(res, 400, 'Invalid or missing session ID');
-        return;
-      }
+  // Reusable handler for GET and DELETE requests
+  const handleSessionRequest = async (req: Request, res: Response) => {
+    const xsessionId = req.headers["x-session-id"];
+    logger.info(`Received ${req.method} /mcp request for session ${req.headers['mcp-session-id']}, x-session-id: ${xsessionId}`);
+    const sessionId = req.headers['mcp-session-id'] as string | undefined;
+    if (!sessionId || !sessionExists(sessionId)) {
+      sendError(res, 400, 'Invalid or missing session ID');
+      return;
+    }
 
-      const session = await getSession(sessionId);
-      if (session.status === SessionStatus.TRANSPORT_MISSING) {
-        res.writeHead(404).end(JSON.stringify({
-          jsonrpc: "2.0",
-          error: {
-            code: -32001,
-            message: "Session not found"
-          },
-          id: null
-        }));
-        logger.warn(`Transport missing for session ${sessionId}, connection closed`);
-        return;
-      }
-      const transport = session.transport as StreamableHTTPServerTransport;
-      try {
-        await transport.handleRequest(req, res);
-      } catch (error) {
-        logger.error("Error handling request", error);
-      }
-      if( req.method === "DELETE") {
-        await removeSession(sessionId);
-        logger.info(`Session ${sessionId} removed`);
-      }
-    };
+    const session = await getSession(sessionId);
+    if (session.status === SessionStatus.TRANSPORT_MISSING) {
+      res.writeHead(404).end(JSON.stringify({
+        jsonrpc: "2.0",
+        error: {
+          code: -32001,
+          message: "Session not found"
+        },
+        id: null
+      }));
+      logger.warn(`Transport missing for session ${sessionId}, connection closed`);
+      return;
+    }
+    const transport = session.transport as StreamableHTTPServerTransport;
+    try {
+      await transport.handleRequest(req, res);
+    } catch (error) {
+      logger.error({ error }, "Error handling request");
+    }
+    if (req.method === "DELETE") {
+      await removeSession(sessionId);
+      logger.info(`Session ${sessionId} removed`);
+    }
+  };
 
-    // Handle DELETE requests for session termination
-    app.delete('/mcp', handleSessionRequest);
+  // Handle DELETE requests for session termination
+  app.delete('/mcp', handleSessionRequest);
 
-    // Handle GET requests for server-to-client notifications via SSE
-    app.get('/mcp', handleSessionRequest);
+  // Handle GET requests for server-to-client notifications via SSE
+  app.get('/mcp', handleSessionRequest);
 
-    app.listen(port, () => {
-      logger.info(`Streamable HTTP server started on port ${port}`);
-    });
-    logger.info(`Octomind MCP Server version ${version} started`);
-  }
+  app.listen(port, () => {
+    logger.info(`Streamable HTTP server started on port ${port}`);
+  });
+  logger.info(`Octomind MCP Server version ${version} started`);
+}
