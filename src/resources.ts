@@ -23,7 +23,13 @@ export const reloadTestReports = async (
   session: Session,
   server: McpServer,
 ) => {
-  const result = await getTestReports({ apiKey: session.apiKey, testTargetId: session.currentTestTargetId! });
+  if (!session.currentTestTargetId) {
+    logger.warn(`No test target id found for session ${session.sessionId}, cannot load test reports`);
+    session.lastTestReportRefreshTime = Date.now();
+    await setSession(session);
+    return;
+  }
+  const result = await getTestReports({ apiKey: session.apiKey, testTargetId: session.currentTestTargetId });
   logger.info("Reloaded reports for test target:", session.currentTestTargetId);
   const reports = result.data;
 
@@ -61,7 +67,13 @@ export const reloadTestCases = async (
   session: Session,
   server: McpServer,
 ) => {
-  const result = await getTestCases({ apiKey: session.apiKey, testTargetId: session.currentTestTargetId! });
+  if (!session.currentTestTargetId) {
+    logger.warn(`No test target id found for session ${session.sessionId}, cannot load test cases`);
+    session.lastTestCaseRefreshTime = Date.now();
+    await setSession(session);
+    return;
+  }
+  const result = await getTestCases({ apiKey: session.apiKey, testTargetId: session.currentTestTargetId });
   session.testCaseIds = result.map((tc: TestCaseListItem) => tc.id);
 
   await server.server.notification({
