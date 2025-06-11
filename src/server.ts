@@ -13,6 +13,7 @@ import { registerTools, theStdioSessionId } from "./tools";
 import { registerPrompts } from "./prompts";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { buildSession } from "./session";
 
 const getApiKeyFromRequest = (req: Request): string | undefined => {
   const authHeader = req.headers["authorization"];
@@ -49,7 +50,7 @@ export const buildServer = async (): Promise<McpServer> => {
         throw new Error("APIKEY environment variable is required");
       }
       logger.debug("Creating session for STDIO transport, using %s", theStdioSessionId);
-      await setSession({ transport, apiKey, sessionId: theStdioSessionId });
+      await setSession(buildSession({ transport, apiKey, sessionId: theStdioSessionId }));
     }
 
     // Call original connect
@@ -92,60 +93,60 @@ export const startSSEServer = async (server: McpServer, port: number) => {
   logger.info("Starting server in SSE mode");
   const app = buildApp();
 
-  app.get('/sse', async (req: Request, res: Response) => {
-    const transport = new SSEServerTransport('/messages', res);
-    const apiKey = getApiKeyFromRequest(req);
-    if (!apiKey) {
-      res.status(401).send('Unauthorized, authorization header is required');
-      return;
-    }
-    await setSession({ transport, apiKey, sessionId: transport.sessionId });
-    res.on('close', async () => {
-      await removeSession(transport.sessionId);
-    });
-
-    await server.connect(transport);
-    logger.info(`Octomind MCP Server SSEversion ${version} started`);
-  });
-  app.post('/messages', async (req: Request, res: Response) => {
-    const sessionId = req.query.sessionId as string;
-    let session;
-    try {
-      session = await getSession(sessionId);
-    } catch (error) {
-      res.status(400).send('No transport found for sessionId');
-      return;
-    }
-    const transport = session.transport as SSEServerTransport;
-    const apiKey = session.apiKey;
-    if (!apiKey) {
-      res.status(401).send('Unauthorized, authorization header is required');
-      return;
-    }
-    if (transport) {
-      if (!transport.sessionId) {
-        sendError(res, 400, 'Transport in invalid state: missing sessionId');
-        return;
-      }
-
-      if (res.writableEnded) {
-        sendError(res, 500, 'Response is already ended');
-        return;
-      }
-
-      try {
-        await transport.handlePostMessage(req, res);
-      } catch (error: any) {
-        sendError(res, 500, `Error handling message: ${error.message || 'Unknown error'}`);
-      }
-    } else {
-      sendError(res, 400, 'No transport found for sessionId');
-    }
-  });
-  app.listen(port, () => {
-    logger.info(`Server started on port ${port}`);
-  });
-  logger.info(`Octomind MCP Server version ${version} started`);
+     app.get('/sse', async (req: Request, res: Response) => {
+       const transport = new SSEServerTransport('/messages', res);
+       const apiKey = getApiKeyFromRequest(req);
+       if (!apiKey) {
+         res.status(401).send('Unauthorized, authorization header is required');
+         return;
+       }
+       await setSession(buildSession({ transport, apiKey, sessionId: transport.sessionId }));
+       res.on('close', async () => {
+         await removeSession(transport.sessionId);
+       });
+ 
+       await server.connect(transport);
+       logger.info(`Octomind MCP Server SSEversion ${version} started`);
+     });
+     app.post('/messages', async (req: Request, res: Response) => {
+       const sessionId = req.query.sessionId as string;
+       let session;
+       try {
+         session = await getSession(sessionId);
+       } catch (error) {
+         res.status(400).send('No transport found for sessionId');
+         return;
+       }
+       const transport = session.transport as SSEServerTransport;
+       const apiKey = session.apiKey;
+       if (!apiKey) {
+         res.status(401).send('Unauthorized, authorization header is required');
+         return;
+       }
+       if (transport) {
+         if (!transport.sessionId) {
+           sendError(res, 400, 'Transport in invalid state: missing sessionId');
+           return;
+         }
+ 
+         if (res.writableEnded) {
+           sendError(res, 500, 'Response is already ended');
+           return;
+         }
+ 
+         try {
+           await transport.handlePostMessage(req, res);
+         } catch (error: any) {
+           sendError(res, 500, `Error handling message: ${error.message || 'Unknown error'}`);
+         }
+       } else {
+         sendError(res, 400, 'No transport found for sessionId');
+       }
+     });
+     app.listen(port, () => {
+       logger.info(`Server started on port ${port}`);
+     });
+     logger.info(`Octomind MCP Server version ${version} started`);
 }
 
 export const startStdioServer = async (server: McpServer) => {
@@ -169,7 +170,7 @@ const buildTransport = async (req: Request, res: Response): Promise<StreamableHT
         res.status(401).send('Unauthorized');
         return;
       }
-      await setSession({ transport, apiKey, sessionId });
+      await setSession(buildSession({ transport, apiKey, sessionId }));
       logger.info(`Transport initialized for session ${sessionId}`);
     }
   });
@@ -186,38 +187,80 @@ const buildTransport = async (req: Request, res: Response): Promise<StreamableHT
 
 export const startStreamingServer = async (server: McpServer, port: number) => {
   logger.info(`Starting server in streaming mode on port ${port}`);
-  const app = buildApp();
-  app.post('/mcp', async (req: Request, res: Response) => {
-    const xsessionId = req.headers["x-session-id"];
-    logger.info(`Received POST /mcp request for session ${req.headers['mcp-session-id']}, x-session-id: ${xsessionId}`);
-    // Check for existing session ID
-    const sessionId = req.headers['mcp-session-id'] as string | undefined;
-    let transport: StreamableHTTPServerTransport;
+    const app = buildApp();
+    app.post('/mcp', async (req: Request, res: Response) => {
+      const xsessionId = req.headers["x-session-id"];
+      logger.info(`Received POST /mcp request for session ${req.headers['mcp-session-id']}, x-session-id: ${xsessionId}`);
+      // Check for existing session ID
+      const sessionId = req.headers['mcp-session-id'] as string | undefined;
+      let transport: StreamableHTTPServerTransport;
 
-    if (sessionId && await sessionExists(sessionId)) {
-      // Reuse existing transport
-      const session = await getSession(sessionId);
-      if (session.status === SessionStatus.TRANSPORT_MISSING) {
-        sendError(res, 404, 'Transport missing for sessionId');
-        logger.warn(`Transport missing for session ${sessionId}, connection closed`);
+      if (sessionId && await sessionExists(sessionId)) {
+        // Reuse existing transport
+        const session = await getSession(sessionId);
+        if (session.status === SessionStatus.TRANSPORT_MISSING) {
+          sendError(res, 404, 'Transport missing for sessionId');
+          logger.warn(`Transport missing for session ${sessionId}, connection closed`);
+          return;
+        }
+        transport = session.transport as StreamableHTTPServerTransport;
+      } else if (!sessionId && isInitializeRequest(req.body)) {
+        // New initialization request
+        transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => randomUUID(),
+          onsessioninitialized: async (sessionId) => {
+            // Store the transport by session ID
+            const apiKey = getApiKeyFromRequest(req);
+            if (!apiKey) {
+              res.status(401).send('Unauthorized');
+              return;
+            }
+            await setSession(buildSession({ transport, apiKey, sessionId }));
+            logger.info(`Transport initialized for session ${sessionId}`);
+          }
+        });
+
+        // Clean up transport when closed
+        transport.onclose = async () => {
+          logger.info(`Transport closed for session ${transport.sessionId}`);
+          if (transport.sessionId) {
+            await removeSession(transport.sessionId);
+          }
+        };
+
+        // Connect to the MCP server
+        await server.connect(transport);
+      } else {
+        logger.warn("Bad Request: No valid session ID provided");
+        sendError(res, 400, 'Bad Request: No valid session ID provided');
         return;
       }
-      transport = session.transport as StreamableHTTPServerTransport;
-    } else if (!sessionId && isInitializeRequest(req.body)) {
-      logger.info("New initialization request");
-      transport = await buildTransport(req, res);
-      await server.connect(transport);
-    } else {
-      logger.warn("Bad Request: No valid session ID provided");
-      sendError(res, 400, 'Bad Request: No valid session ID provided');
-      return;
-    }
-    try {
-      await transport.handleRequest(req, res, req.body);
-    } catch (error) {
-      logger.error("Error handling request", error);
-    }
-  });
+
+      if (sessionId && await sessionExists(sessionId)) {
+        // Reuse existing transport
+        const session = await getSession(sessionId);
+        if (session.status === SessionStatus.TRANSPORT_MISSING) {
+          sendError(res, 404, 'Transport missing for sessionId');
+          logger.warn(`Transport missing for session ${sessionId}, connection closed`);
+          return;
+        }
+        transport = session.transport as StreamableHTTPServerTransport;
+      } else if (!sessionId && isInitializeRequest(req.body)) {
+        logger.info("New initialization request");
+        transport = await buildTransport(req, res);
+        await server.connect(transport);
+      } else {
+        logger.warn("Bad Request: No valid session ID provided");
+        sendError(res, 400, 'Bad Request: No valid session ID provided');
+        return;
+      }
+
+      try {
+        await transport.handleRequest(req, res, req.body);
+      } catch (error) {
+        logger.error("Error handling request", error);
+      }
+    });
 
   // Reusable handler for GET and DELETE requests
   const handleSessionRequest = async (req: Request, res: Response) => {

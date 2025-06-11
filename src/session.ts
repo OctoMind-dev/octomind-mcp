@@ -28,6 +28,15 @@ export type Session = {
   currentTestTargetId?: string;
   /** Session status (defaults to ACTIVE when not specified) */
   status?: SessionStatus;
+
+  /** The time when the last test report was refreshed */
+  lastTestReportRefreshTime?: number;
+  /** The time when the last test case was refreshed */
+  lastTestCaseRefreshTime?: number;
+  /** IDs of the test reports that are currently available */
+  testReportIds: string[];
+  testCaseIds: string[];
+  tracesForTestReport: Record<string, string>;
 }
 
 /**
@@ -186,6 +195,29 @@ export class InMemorySessionStore implements SessionStore {
     
     return exists;
   }
+}
+
+export const buildSession = ({transport, apiKey, sessionId, testReportIds, testCaseIds, tracesForTestReport, lastTestReportRefreshTime, lastTestCaseRefreshTime, status}: {transport: SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport,
+  apiKey: string, 
+  sessionId: string,
+  testReportIds?: string[],
+  testCaseIds?: string[],
+  tracesForTestReport?: Record<string, string>,
+  lastTestReportRefreshTime?: number,
+  lastTestCaseRefreshTime?: number,
+  status?: SessionStatus,
+}): Session => {
+  return {
+    transport,
+    apiKey,
+    sessionId,
+    testReportIds: testReportIds || [],
+    testCaseIds: testCaseIds || [],
+    tracesForTestReport: tracesForTestReport || {},
+    lastTestReportRefreshTime: lastTestReportRefreshTime || undefined,
+    lastTestCaseRefreshTime: lastTestCaseRefreshTime || undefined,
+    status: status || SessionStatus.ACTIVE,
+  };
 }
 
 /**
