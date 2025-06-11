@@ -43,9 +43,9 @@ export const setLastTestTargetId = async (
   if (testTargetId !== session.currentTestTargetId) {
     logger.debug("Setting last test target id to %s", testTargetId);
     if (!testTargetId) {
-      await clearTestReports(server);
+      await clearTestReports(session, server);
     } else {
-      await reloadTestReports(testTargetId, server, apiKey);
+      await reloadTestReports(session, server);
     }
     session.currentTestTargetId = testTargetId;
     await setSession(session);

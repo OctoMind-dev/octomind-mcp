@@ -60,11 +60,7 @@ describe("Tools module", () => {
         ...mockSession,
         currentTestTargetId: testTargetId,
       });
-      expect(reloadTestReports).toHaveBeenCalledWith(
-        testTargetId,
-        server,
-        "test-api-key",
-      );
+      expect(reloadTestReports).toHaveBeenCalledWith(mockSession, server);
     });
 
     it("should not reload test reports when setting the same target", async () => {
