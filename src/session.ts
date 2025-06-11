@@ -1,6 +1,3 @@
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { logger } from "./logger";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
@@ -197,7 +194,8 @@ export class InMemorySessionStore implements SessionStore {
   }
 }
 
-export const buildSession = ({transport, apiKey, sessionId, testReportIds, testCaseIds, tracesForTestReport, lastTestReportRefreshTime, lastTestCaseRefreshTime, status}: {transport: SSEServerTransport | StdioServerTransport | StreamableHTTPServerTransport,
+export const buildSession = ({transport, apiKey, sessionId, testReportIds, testCaseIds, tracesForTestReport, lastTestReportRefreshTime, lastTestCaseRefreshTime, status}:
+   {transport: Transport,
   apiKey: string, 
   sessionId: string,
   testReportIds?: string[],
