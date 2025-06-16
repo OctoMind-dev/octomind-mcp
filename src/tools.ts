@@ -25,6 +25,7 @@ import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
 import { getSession, setSession } from "./session";
 import { search, trieveConfig } from "./search";
 import { randomUUID } from "crypto";
+import { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 
 export const theStdioSessionId = randomUUID();
 
@@ -88,6 +89,22 @@ const safeToolCall = async (fn: (...args: any[]) => Promise<any>, ...args: any[]
   }
 };
 
+export const buildReadOnlyAnnotation = (overrides?: Partial<ToolAnnotations>): ToolAnnotations => {
+  return {  
+    readOnlyHint: true,
+    idempotentHint: true,
+    ...overrides,
+  };
+};
+
+export const buildAnnotation = (overrides?: Partial<ToolAnnotations>): ToolAnnotations => {
+  return {
+    readOnlyHint: false,
+    idempotentHint: false,
+    ...overrides,
+  };
+};
+
 export const registerTools = async (server: McpServer): Promise<void> => {
   const trieve = await trieveConfig();
   if (trieve) {
@@ -98,6 +115,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       {
         query: z.string().describe("Search query"),
       },
+      buildReadOnlyAnnotation({title: "Searches the octomind documentation for a given query."}),
       ({query},{sessionId}) => safeToolCall(
         async (query: string, sessionId: string | undefined) => {
           const apiKey = await getApiKey(sessionId);
@@ -139,6 +157,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test target"),
     },
+    buildReadOnlyAnnotation({title: "Retrieves a test case for a given test target and test case id."}),
     ({testCaseId, testTargetId}, {sessionId}) => safeToolCall(
       async (testCaseId: string, testTargetId: string, sessionId: string | undefined) => {
         const apiKey = await getApiKey(sessionId);
@@ -195,6 +214,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .default([])
         .describe("List of tags used for filtering the tests to execute"),
     },
+    buildAnnotation({title: "Executes a set of tests for a given test target."}),
     ({testTargetId, url, description, environmentName, variablesToOverwrite, tags}, {sessionId}) => safeToolCall(
       async (
         testTargetId: string,
@@ -248,6 +268,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test target"),
     },
+    buildReadOnlyAnnotation({title: "Retrieves environments for a given test target."}),
     ({testTargetId}, {sessionId}) => safeToolCall(
       async (testTargetId: string, sessionId: string | undefined) => {
         const apiKey = await getApiKey(sessionId);
@@ -336,6 +357,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         if discovery needs additional headers to be set",
       ),
     },
+    buildAnnotation({title: "Creates an environment for a given test target."}),
     async ({testTargetId,name,discoveryUrl,testAccount,privateLocationName,additionalHeaderFields},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Creating environment");
@@ -441,6 +463,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           "Optional additional HTTP header fields, if discovery needs additional headers to be set",
         ),
     },
+    buildAnnotation({title: "Updates an environment for a given test target.", idempotentHint: true}),
     async ({testTargetId,environmentId,name,discoveryUrl,testAccount,privateLocationName,additionalHeaderFields},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Updating environment");
@@ -487,6 +510,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the environment to delete"),
     },
+    buildAnnotation({title: "Deletes an environment for a given test target.", destructiveHint: true}),
     async ({testTargetId,environmentId},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Deleting environment");
@@ -544,6 +568,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .optional()
         .describe("Optional filters for test reports"),
     },
+    buildReadOnlyAnnotation({title: "Retrieves test reports for a given test target."}),
     async ({testTargetId,key,filter},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Retrieving test reports");
@@ -586,6 +611,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test report"),
     },
+    buildReadOnlyAnnotation({title: "Retrieves a test report for a given test target and test report id."}),
     async ({testTargetId,testReportId},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Retrieving test report");
@@ -621,6 +647,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     `the getPrivateLocations tool can retrieve all private locations configured for that org. 
     A private location is a server that can be used to access a test target behind a firewall or VPN.`,
     {},
+    buildReadOnlyAnnotation({title: "Retrieves all private locations configured for the org the APIKEY authenticated for."}),
     async ({},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       const res = await listPrivateLocations({ apiKey });
@@ -645,6 +672,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     `the getTestTargets tool can retrieve all test targets or projects.
     Test targets represent applications or services that can be tested using Octomind.`,
     {},
+    buildReadOnlyAnnotation({title: "Retrieves all test targets or projects configured for the org the APIKEY authenticated for."}),
     async ({},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       const res = await listTestTargets(apiKey);
@@ -683,6 +711,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           "Skip automatic test creation right after the test target is created",
         ),
     },
+    buildAnnotation({title: "Creates a new test target or project."}),
     async ({app,discoveryUrl,skipAutomaticTestCreation},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       logger.debug({ app,discoveryUrl,skipAutomaticTestCreation }, "Creating test target");
@@ -757,6 +786,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .optional()
         .describe("The timeout per step in milliseconds"),
     },
+    buildAnnotation({title: "Updates a test target or project.", idempotentHint: true}),
     async ({testTargetId,discoveryUrl,testIdAttribute,testRailIntegration,timeoutPerStep},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Updating test target");
@@ -795,6 +825,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test target to delete"),
     },
+    buildAnnotation({title: "Deletes an existing test target.", destructiveHint: true}),
     async ({testTargetId},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Deleting test target");
@@ -819,6 +850,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     "getVersion",
     "Returns the current version of the Octomind MCP server",
     {},
+    buildReadOnlyAnnotation({title: "Returns the current version of the Octomind MCP server."}),
     async () => {
       logger.debug(`Retrieving version -> ${version}`);
       return {
@@ -849,6 +881,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           'Optional JSON string containing filter criteria for test cases. Supports fields: id, testTargetId, description, status (ENABLED, DISABLED, DRAFT, OUTDATED, PROVISIONAL), runStatus (ON, OFF), folderId, externalId. Logical operators: AND, OR, NOT. Example: \'{"status":"ENABLED","folderId":"some-folder-id","OR":[{"description":"Login Test"},{"externalId":"TEST-123"}]}\'',
         ),
     },
+    buildAnnotation({title: "Retrieves test cases for a given test target with optional filtering."}),
     ({testTargetId,filter},{sessionId}) => safeToolCall(
       async (testTargetId: string, filter: string | undefined, sessionId: string | undefined) => {
         const apiKey = await getApiKey(sessionId);
@@ -928,6 +961,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           "Optional external identifier for integration with external systems",
         ),
     },
+    buildAnnotation({title: "Updates an existing test case.",idempotentHint: true}),
     async ({testTargetId,testCaseId,description,entryPointUrlPath,status,runStatus,folderName,interactionStatus,assignedTagNames,externalId},{sessionId}) => {
       const apiKey = await getApiKey(sessionId);
       const res = await patchTestCase({

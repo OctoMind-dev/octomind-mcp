@@ -213,6 +213,56 @@ describe("Client", () => {
 ]
 `);
     });
+    it("should delete a test target", async () => {
+      const deleteTestTargetTool = getTool(clientTools, "deleteTestTarget");
+      jest.spyOn(api, "deleteTestTarget").mockResolvedValue({
+        success: true,
+      });
+      const result = await client.callTool({
+        name: deleteTestTargetTool.name,
+        arguments: {
+          testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+        },
+      });
+      expect(result.content).toMatchInlineSnapshot(`
+[
+  {
+    "text": "Deleted test target: 58f57faf-6da0-45be-aa76-a567ffb32e82",
+    "type": "text",
+  },
+]
+`);
+    });
+    it("should update a test target", async () => {
+      const updateTestTargetTool = getTool(clientTools, "updateTestTarget");
+      jest.spyOn(api, "updateTestTarget").mockResolvedValue({
+        id: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+        app: "test-app",
+        environments: [],
+        skipAutomaticTestCreation: false,
+      });
+      const result = await client.callTool({
+        name: updateTestTargetTool.name,
+        arguments: {
+          testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+          app: "test-app",
+          discoveryUrl: "https://example.com",
+          skipAutomaticTestCreation: false,
+        },
+      });
+      expect(result.content).toMatchInlineSnapshot(`
+[
+  {
+    "text": "Updated test target: 58f57faf-6da0-45be-aa76-a567ffb32e82",
+    "type": "text",
+  },
+  {
+    "text": "{"id":"58f57faf-6da0-45be-aa76-a567ffb32e82","app":"test-app","environments":[],"skipAutomaticTestCreation":false}",
+    "type": "text",
+  },
+]
+`);
+    });
   });
   describe("discovery", () => {
     it("should call discover test case", async () => {
@@ -417,6 +467,44 @@ describe("Client", () => {
     });
   });
   describe("test cases", () => {
+    it("should get one test case", async () => {
+      const getTestCaseTool = getTool(clientTools, "getTestCase");
+      jest.spyOn(api, "getTestCase").mockResolvedValue({
+        id: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+        testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+        description: "test-case-description",
+        status: "ENABLED",
+        createdAt: new Date("2025-06-10T17:06:25.000Z"),
+        updatedAt: new Date("2025-06-10T17:06:25.000Z"),
+        discovery: {
+          name: "test-case-name",
+          prompt: "test-case-prompt",
+          tagNames: ["test-case-tag"],
+          folderName: "test-case-folder",
+          discoveryUrl: "https://example.com",
+        },
+        elements: [],
+      });
+      const result = await client.callTool({
+        name: getTestCaseTool.name,
+        arguments: {
+          testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+          testCaseId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+        },
+      });
+      expect(result.content).toMatchInlineSnapshot(`
+[
+  {
+    "text": "Retrieved test case: 58f57faf-6da0-45be-aa76-a567ffb32e82 for test target: 58f57faf-6da0-45be-aa76-a567ffb32e82",
+    "type": "text",
+  },
+  {
+    "text": "{"id":"58f57faf-6da0-45be-aa76-a567ffb32e82","testTargetId":"58f57faf-6da0-45be-aa76-a567ffb32e82","description":"test-case-description","status":"ENABLED","createdAt":"2025-06-10T17:06:25.000Z","updatedAt":"2025-06-10T17:06:25.000Z","discovery":{"name":"test-case-name","prompt":"test-case-prompt","tagNames":["test-case-tag"],"folderName":"test-case-folder","discoveryUrl":"https://example.com"},"elements":[]}",
+    "type": "text",
+  },
+]
+`);
+    });
     it("should call get test cases", async () => {
       const getTestCasesTool = getTool(clientTools, "getTestCases");
 
@@ -459,6 +547,72 @@ describe("Client", () => {
     ]
   }
 ]",
+    "type": "text",
+  },
+]
+`);
+    });
+    it("should update a test case", async () => {
+      const updateTestCaseTool = getTool(clientTools, "updateTestCase");
+      jest.spyOn(api, "patchTestCase").mockResolvedValue({
+        id: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+        testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+        updatedAt: new Date("2025-06-10T17:06:25.000Z"),
+        description: "test-case-description",
+        status: "ENABLED",
+        createdAt: new Date("2025-06-10T17:06:25.000Z"),
+        discovery: {
+          name: "test-case-name",
+          prompt: "test-case-prompt",
+          tagNames: ["test-case-tag"],
+          folderName: "test-case-folder",
+          discoveryUrl: "https://example.com",
+        },
+        elements: [],
+      });
+      const result = await client.callTool({
+        name: updateTestCaseTool.name,
+        arguments: {
+          testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+          testCaseId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+          description: "test-case-description",
+          status: "ENABLED",
+          createdAt: "2025-06-10T17:06:25.000Z",
+          discovery: {
+            name: "test-case-name",
+            prompt: "test-case-prompt",
+            tagNames: ["test-case-tag"],
+            folderName: "test-case-folder",
+            discoveryUrl: "https://example.com",
+          },
+          elements: [],
+        },
+      });
+      expect(result.content).toMatchInlineSnapshot(`
+[
+  {
+    "text": "Updated test case: 58f57faf-6da0-45be-aa76-a567ffb32e82 for test target: 58f57faf-6da0-45be-aa76-a567ffb32e82",
+    "type": "text",
+  },
+  {
+    "text": "{
+  "id": "58f57faf-6da0-45be-aa76-a567ffb32e82",
+  "testTargetId": "58f57faf-6da0-45be-aa76-a567ffb32e82",
+  "updatedAt": "2025-06-10T17:06:25.000Z",
+  "description": "test-case-description",
+  "status": "ENABLED",
+  "createdAt": "2025-06-10T17:06:25.000Z",
+  "discovery": {
+    "name": "test-case-name",
+    "prompt": "test-case-prompt",
+    "tagNames": [
+      "test-case-tag"
+    ],
+    "folderName": "test-case-folder",
+    "discoveryUrl": "https://example.com"
+  },
+  "elements": []
+}",
     "type": "text",
   },
 ]
