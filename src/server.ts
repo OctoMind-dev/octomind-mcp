@@ -14,6 +14,7 @@ import { registerPrompts } from "./prompts";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { buildSession } from "./session";
+import { InMemoryEventStore } from "@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore.js";
 
 const getApiKeyFromRequest = (req: Request): string | undefined => {
   const authHeader = req.headers["authorization"];
@@ -163,6 +164,7 @@ export const startStdioServer = async (server: McpServer) => {
 const buildTransport = async (req: Request, res: Response): Promise<StreamableHTTPServerTransport> => {
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
+    eventStore: new InMemoryEventStore(),
     onsessioninitialized: async (sessionId) => {
       // Store the transport by session ID
       const apiKey = getApiKeyFromRequest(req);
@@ -249,6 +251,12 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
       }));
       logger.warn(`Transport missing for session ${sessionId}, connection closed`);
       return;
+    }
+    const lastEventId = req.headers['last-event-id'] as string | undefined;
+    if (lastEventId) {
+      logger.info(`Client reconnecting with Last-Event-ID: ${lastEventId}`);
+    } else {
+      logger.info(`Establishing new SSE stream for session ${sessionId}`);
     }
     const transport = session.transport as StreamableHTTPServerTransport;
     try {

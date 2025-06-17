@@ -45,9 +45,7 @@ export const reloadTestReports = async (
       }
     }
   });
-  await server.server.notification({
-    method: "notifications/resources/list_changed",
-  });
+  server.sendResourceListChanged();
   session.lastTestReportRefreshTime = Date.now();
   await setSession(session);
 };
@@ -56,9 +54,7 @@ export const clearTestReports = async (session: Session, server: McpServer) => {
   session.testReportIds = [];
   session.tracesForTestReport = {};
 
-  await server.server.notification({
-    method: "notifications/resources/list_changed",
-  });
+  server.sendResourceListChanged();
   session.lastTestReportRefreshTime = Date.now();
   await setSession(session);
 };
@@ -76,9 +72,7 @@ export const reloadTestCases = async (
   const result = await getTestCases({ apiKey: session.apiKey, testTargetId: session.currentTestTargetId });
   session.testCaseIds = result.map((tc: TestCaseListItem) => tc.id);
 
-  await server.server.notification({
-    method: "notifications/resources/list_changed",
-  });
+  server.sendResourceListChanged();
   session.lastTestCaseRefreshTime = Date.now();
   await setSession(session);
 };
