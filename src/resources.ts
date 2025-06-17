@@ -9,6 +9,8 @@ import {
   ReadResourceResult,
   ServerNotification,
   ServerRequest,
+  SubscribeRequestSchema,
+  UnsubscribeRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { getNotifications, getTestReports, getTestCases, getTestReport } from "./api";
@@ -233,4 +235,20 @@ export const registerResources = (server: McpServer): void => {
     }),
     readTestResultTrace,
   );
+
+  const subscriptions = new Set<string>();
+
+  server.server.setRequestHandler(SubscribeRequestSchema, async (request) => {
+    const { uri } = request.params;
+    subscriptions.add(uri);
+
+    // Request sampling from client when someone subscribes
+    //await requestSampling("A new subscription was started", uri);
+    return {};
+  });
+
+  server.server.setRequestHandler(UnsubscribeRequestSchema, async (request) => {
+    subscriptions.delete(request.params.uri);
+    return {};
+  });
 };

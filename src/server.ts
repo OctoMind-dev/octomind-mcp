@@ -35,8 +35,21 @@ const getApiKeyFromRequest = (req: Request): string | undefined => {
 export const buildServer = async (): Promise<McpServer> => {
   const server = new McpServer({
     name: "Octomind MCP Server",
-    version,
-  });
+    version, 
+  }, {
+    capabilities: {
+      resources: {
+        subscribe: true,
+        listChanged: true,
+      },
+      tools: {
+        listChanged: true,
+      },
+      prompts: {
+        listChanged: true,
+      },
+    }
+  } );
   await registerTools(server);
   registerResources(server);
   registerPrompts(server);
