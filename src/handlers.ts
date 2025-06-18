@@ -4,6 +4,7 @@ import { logger } from "./logger";
 import { discovery } from "./api";
 import { DiscoveryOptions } from "./types";
 import { getSession } from "./session";
+import { buildAnnotation } from "./tools";
 
 /**
  * Interface for tool handler functions
@@ -183,6 +184,7 @@ EXPECTED RESULT
           Is is also often used as a prerequisite for other test cases. Only set this option for these special test cases. Only one LOGIN or COOKIE_BANNER test case can
           exist per test target at a time.`),
     },
+    buildAnnotation({title: "Discovers a new test case for a given test target with a test case description or prompt."}),
     async (params, {sessionId}) => {
       if (!sessionId) {
         throw new Error("Unauthorized");
