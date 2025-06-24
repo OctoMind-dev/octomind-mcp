@@ -3,7 +3,7 @@ import { z } from "zod";
 import { logger } from "./logger";
 import { discovery } from "./api";
 import { DiscoveryOptions } from "./types";
-import { getSession } from "./session";
+import { getApiKey } from "./tools";
 
 /**
  * Interface for tool handler functions
@@ -184,14 +184,8 @@ EXPECTED RESULT
           exist per test target at a time.`),
     },
     async (params, {sessionId}) => {
-      if (!sessionId) {
-        throw new Error("Unauthorized");
-      }
-      const session = await getSession(sessionId);
-      if (!session) {
-        throw new Error("Unauthorized");
-      }
-      return await handler.execute(params, session.apiKey);
+      const apiKey = await getApiKey(sessionId);
+      return await handler.execute(params, apiKey);
     },
   );
 }
