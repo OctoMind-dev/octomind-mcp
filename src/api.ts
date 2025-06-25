@@ -88,7 +88,6 @@ export const apiCall = async <T>(
           headers: error.response?.headers,
           data: error.response?.data,
         },
-       
       };
       logger.error({error: filteredError}, `API Error: ${filteredError.message}`);
       throw new Error(`API request failed. ${JSON.stringify(filteredError, null, 2)}`);

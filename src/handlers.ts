@@ -185,7 +185,7 @@ EXPECTED RESULT
     },
     async (params, {sessionId}) => {
       const apiKey = await getApiKey(sessionId);
-      return await handler.execute(params, apiKey);
+      return handler.execute(params, apiKey);
     },
   );
 }

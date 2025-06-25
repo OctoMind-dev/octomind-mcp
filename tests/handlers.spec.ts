@@ -1,6 +1,6 @@
-import { DiscoveryHandler, DiscoveryParams } from "@/handlers";
+import { DiscoveryHandler, DiscoveryParams, registerDiscoveryTool } from "@/handlers";
 import { discovery } from "@/api";
-import { getApiKey } from "@/tools";
+import { getApiKey, theStdioSessionId } from "@/tools";
 import { logger } from "@/logger";
 jest.mock("@/tools", () => ({
   getApiKey: jest.fn(() => "test-api-key"),
@@ -159,6 +159,33 @@ describe("DiscoveryHandler", () => {
 
       // Assert
       expect(apiKey).toBe("test-api-key");
+    });
+  });
+
+  describe("registerDiscoveryTool integration", () => {
+    it("should call getApiKey with theStdioSessionId if sessionId is undefined", async () => {
+      const mockServer = { tool: jest.fn() };
+      const handler = new DiscoveryHandler();
+      registerDiscoveryTool(mockServer as any, handler);
+
+      const registrationCall = mockServer.tool.mock.calls.find(
+        ([name]) => name === "discovery"
+      );
+      expect(registrationCall).toBeTruthy();
+      const toolHandler = registrationCall[3];
+
+      (getApiKey as jest.Mock).mockResolvedValue("test-api-key");
+      (discovery as jest.Mock).mockResolvedValue({ id: "mock-id" });
+
+      const params: DiscoveryParams = {
+        name: "NoSessionIdTest",
+        testTargetId: "123e4567-e89b-12d3-a456-426614174000",
+        prompt: "Prompt",
+      };
+      const result = await toolHandler(params, { sessionId: undefined });
+
+      expect(getApiKey).toHaveBeenCalledWith(theStdioSessionId);
+      expect(result.content[0].text).toContain("NoSessionIdTest");
     });
   });
 });
