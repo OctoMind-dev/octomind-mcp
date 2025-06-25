@@ -22,6 +22,7 @@
   "scripts": {
     "version": "pnpm genversion -des src/version.ts",
     "lint": "pnpm genversion -des src/version.ts && eslint src/**/*.ts tests/**/*.ts --max-warnings=0",
+    "typecheck": "tsc --noEmit",
     "build": "pnpm genversion -des src/version.ts && tsc --project tsconfig.build.json",
     "octomind-mcp": "tsx src/index.ts",
     "test": "jest",
