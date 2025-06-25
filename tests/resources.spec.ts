@@ -19,6 +19,7 @@ jest.mock("@/logger", () => ({
 describe("Resources module", () => {
   let server: McpServer;
   const mockTestTargetId = "123e4567-e89b-12d3-a456-426614174000";
+  const mockSessionId = "test-session-id";
   const baseTime = new Date("2025-03-23T10:00:00Z").getTime();
   const mockGetLastTestTargetId = jest.mocked(getLastTestTargetId);
   const mockGetNotifications = jest.mocked(getNotifications);
@@ -37,7 +38,7 @@ describe("Resources module", () => {
       {
         apiKey: "test-api-key",
         currentTestTargetId: mockTestTargetId,
-        sessionId: "test-session-id",
+        sessionId: mockSessionId,
         testReportIds: [],
         testCaseIds: [],
         tracesForTestReport: {},
@@ -54,7 +55,7 @@ describe("Resources module", () => {
         {
           apiKey: "test-api-key",
           currentTestTargetId: undefined,
-          sessionId: "test-session-id",
+          sessionId: mockSessionId,
           testReportIds: [],
           testCaseIds: [],
           tracesForTestReport: {},
@@ -74,7 +75,7 @@ describe("Resources module", () => {
         {
           apiKey: "test-api-key",
           currentTestTargetId: mockTestTargetId,
-          sessionId: "test-session-id",
+          sessionId: mockSessionId,
           testReportIds: [],
           testCaseIds: [],
           tracesForTestReport: {},
@@ -98,13 +99,11 @@ describe("Resources module", () => {
       await checkNotifications(server);
 
       expect(mockGetNotifications).toHaveBeenCalledWith(
-        apiKey,
-        mockTestTargetId,
+        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
       );
-      expect(mockGetTestReports).toHaveBeenCalledWith({
-        apiKey,
-        testTargetId: mockTestTargetId,
-      });
+      expect(mockGetTestReports).toHaveBeenCalledWith(
+        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
+      );
       expect(server.server.notification).toHaveBeenCalledWith({
         method: "notifications/resources/list_changed",
       });
@@ -115,7 +114,7 @@ describe("Resources module", () => {
         {
           apiKey: "test-api-key",
           currentTestTargetId: mockTestTargetId,
-          sessionId: "test-session-id",
+          sessionId: mockSessionId,
           testReportIds: [],
           testCaseIds: [],
           tracesForTestReport: {},
@@ -140,13 +139,11 @@ describe("Resources module", () => {
       await checkNotifications(server);
 
       expect(mockGetNotifications).toHaveBeenCalledWith(
-        apiKey,
-        mockTestTargetId,
+        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
       );
-      expect(mockGetTestCases).toHaveBeenCalledWith({
-        apiKey,
-        testTargetId: mockTestTargetId,
-      });
+      expect(mockGetTestCases).toHaveBeenCalledWith(
+        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
+      );
       expect(server.server.notification).toHaveBeenCalledWith({
         method: "notifications/resources/list_changed",
       });
@@ -157,7 +154,7 @@ describe("Resources module", () => {
         {
           apiKey: "test-api-key",
           currentTestTargetId: mockTestTargetId,
-          sessionId: "test-session-id",
+          sessionId: mockSessionId,
           testReportIds: [],
           testCaseIds: [],
           tracesForTestReport: {},
@@ -190,17 +187,14 @@ describe("Resources module", () => {
       await checkNotifications(server);
 
       expect(mockGetNotifications).toHaveBeenCalledWith(
-        apiKey,
-        mockTestTargetId,
+        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
       );
-      expect(mockGetTestReports).toHaveBeenCalledWith({
-        apiKey,
-        testTargetId: mockTestTargetId,
-      });
-      expect(mockGetTestCases).toHaveBeenCalledWith({
-        apiKey,
-        testTargetId: mockTestTargetId,
-      });
+      expect(mockGetTestReports).toHaveBeenCalledWith(
+        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
+      );
+      expect(mockGetTestCases).toHaveBeenCalledWith(
+        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
+      );
       expect(server.server.notification).toHaveBeenCalledTimes(2);
     });
 
@@ -220,8 +214,7 @@ describe("Resources module", () => {
       await checkNotifications(server);
 
       expect(mockGetNotifications).toHaveBeenCalledWith(
-        apiKey,
-        mockTestTargetId,
+        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
       );
       expect(mockGetTestReports).not.toHaveBeenCalled();
       expect(server.server.notification).not.toHaveBeenCalled();
