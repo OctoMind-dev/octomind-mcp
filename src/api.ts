@@ -23,7 +23,6 @@ import {
   DiscoveryResponse,
   Notification,
   notificationSchema,
-  SearchResult,
   TestTarget,
   CreateTestTargetOptions,
   UpdateTestTargetOptions,
@@ -35,20 +34,19 @@ import {
 } from "./types";
 import { version } from "./version";
 import { logger } from "./logger";
+import { getApiKey } from "./sessionToApiKeyResolver";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
+
 
 // Helper function for API calls
 export const apiCall = async <T>(
   method: "get" | "post" | "put" | "delete" | "patch",
   endpoint: string,
-  apiKey: string,
+  sessionId: string | undefined,
   data?: unknown,
 ): Promise<T> => {
-  if (!apiKey) {
-    logger.error("API key is required");
-    throw new Error("API key is required");
-  }
+  const apiKey = await getApiKey(sessionId);
 
   try {
     const response = await axios({
@@ -88,7 +86,6 @@ export const apiCall = async <T>(
           headers: error.response?.headers,
           data: error.response?.data,
         },
-       
       };
       logger.error({error: filteredError}, `API Error: ${filteredError.message}`);
       throw new Error(`API request failed. ${JSON.stringify(filteredError, null, 2)}`);
@@ -120,14 +117,12 @@ export type TestCase = {
 };
 
 export const getTestCase = async (
-  apiKey: string,
-  testCaseId: string,
-  testTargetId: string,
+  {testCaseId, testTargetId, sessionId}: {testCaseId: string, testTargetId: string, sessionId: string | undefined}
 ): Promise<TestCase> => {
   const response = await apiCall<TestCase>(
     "get",
     `/apiKey/v2/test-targets/${testTargetId}/test-cases/${testCaseId}`,
-    apiKey,
+    sessionId
   );
 
   return response;
@@ -149,7 +144,7 @@ export const discovery = async (
   const response = await apiCall<DiscoveryResponse>(
     "post",
     `/apiKey/v2/test-targets/${options.testTargetId}/discoveries`,
-    options.apiKey,
+    options.sessionId,
     requestBody,
   );
 
@@ -170,13 +165,12 @@ export const discovery = async (
     },
     */
 export const getNotifications = async (
-  apiKey: string,
-  testTargetId: string,
+  {testTargetId, sessionId}: {testTargetId: string, sessionId: string | undefined}
 ): Promise<Notification[]> => {
   const raw = await apiCall<Notification[]>(
     "get",
     `/apiKey/v2/test-targets/${testTargetId}/notifications`,
-    apiKey,
+    sessionId,
   );
   const response = raw.map((n) => notificationSchema.parse(n));
   return response;
@@ -204,7 +198,7 @@ export const executeTests = async (
   const response = await apiCall<TestReportResponse>(
     "post",
     "/apiKey/v2/execute",
-    options.apiKey,
+    options.sessionId,
     requestBody,
   );
   return response;
@@ -216,7 +210,7 @@ export const getTestReport = async (
   const response = await apiCall<TestReport>(
     "get",
     `/apiKey/v2/test-targets/${options.testTargetId}/test-reports/${options.reportId}`,
-    options.apiKey,
+    options.sessionId,
   );
 
   return response;
@@ -237,7 +231,7 @@ export const registerLocation = async (
   const response = await apiCall<SuccessResponse>(
     "put",
     "/apiKey/v1/private-location/register",
-    options.apiKey,
+    options.sessionId,
     requestBody,
   );
 
@@ -254,7 +248,7 @@ export const unregisterLocation = async (
   const response = await apiCall<SuccessResponse>(
     "put",
     "/apiKey/v1/private-location/unregister",
-    options.apiKey,
+    options.sessionId,
     requestBody,
   );
 
@@ -267,7 +261,7 @@ export const listPrivateLocations = async (
   const response = await apiCall<PrivateLocationInfo[]>(
     "get",
     "/apiKey/v1/private-location",
-    options.apiKey,
+    options.sessionId,
   );
 
   return response;
@@ -279,7 +273,7 @@ export const listEnvironments = async (
   const response = await apiCall<Environment[]>(
     "get",
     `/apiKey/v2/test-targets/${options.testTargetId}/environments`,
-    options.apiKey,
+    options.sessionId,
   );
 
   return response;
@@ -300,7 +294,7 @@ export const createEnvironment = async (
   const response = await apiCall<Environment>(
     "post",
     `/apiKey/v2/test-targets/${options.testTargetId}/environments`,
-    options.apiKey,
+    options.sessionId,
     requestBody,
   );
 
@@ -322,7 +316,7 @@ export const updateEnvironment = async (
   const response = await apiCall<Environment>(
     "patch",
     `/apiKey/v2/test-targets/${options.testTargetId}/environments/${options.environmentId}`,
-    options.apiKey,
+    options.sessionId,
     requestBody,
   );
   return response;
@@ -334,7 +328,7 @@ export const deleteEnvironment = async (
   await apiCall(
     "delete",
     `/apiKey/v2/test-targets/${options.testTargetId}/environments/${options.environmentId}`,
-    options.apiKey,
+    options.sessionId,
   );
 
   return { success: true };
@@ -359,19 +353,19 @@ export const getTestReports = async (
   const response = await apiCall<TestReportsResponse>(
     "get",
     endpoint,
-    options.apiKey,
+    options.sessionId,
   );
 
   return response;
 };
 
 export const listTestTargets = async (
-  apiKey: string,
+  {sessionId}: {sessionId: string | undefined}
 ): Promise<TestTarget[]> => {
   const response = await apiCall<TestTarget[]>(
     "get",
     "/apiKey/v2/test-targets",
-    apiKey,
+    sessionId,
   );
   return response;
 };
@@ -390,7 +384,7 @@ export const createTestTarget = async (
   const response = await apiCall<TestTarget>(
     "post",
     "/apiKey/v2/test-targets",
-    options.apiKey,
+    options.sessionId,
     requestBody,
   );
 
@@ -412,7 +406,7 @@ export const updateTestTarget = async (
   const response = await apiCall<TestTarget>(
     "patch",
     `/apiKey/v2/test-targets/${options.testTargetId}`,
-    options.apiKey,
+    options.sessionId,
     requestBody,
   );
 
@@ -425,7 +419,7 @@ export const deleteTestTarget = async (
   const res = await apiCall<SuccessResponse>(
     "delete",
     `/apiKey/v2/test-targets/${options.testTargetId}`,
-    options.apiKey,
+    options.sessionId,
   );
 
   return res;
@@ -440,7 +434,7 @@ export const getTestCases = async (
   const response = await apiCall<TestCaseListItem[]>(
     "get",
     `/apiKey/v2/test-targets/${options.testTargetId}/test-cases${queryParams}`,
-    options.apiKey,
+    options.sessionId,
   );
 
   return response;
@@ -465,7 +459,7 @@ export const patchTestCase = async (
   const response = await apiCall<TestCase>(
     "patch",
     `/apiKey/v2/test-targets/${options.testTargetId}/test-cases/${options.testCaseId}`,
-    options.apiKey,
+    options.sessionId,
     requestBody,
   );
 

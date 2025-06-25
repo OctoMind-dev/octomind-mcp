@@ -29,7 +29,7 @@ export const reloadTestReports = async (
     await setSession(session);
     return;
   }
-  const result = await getTestReports({ apiKey: session.apiKey, testTargetId: session.currentTestTargetId });
+  const result = await getTestReports({ sessionId: session.sessionId, testTargetId: session.currentTestTargetId });
   logger.info("Reloaded reports for test target:", session.currentTestTargetId);
   const reports = result.data;
 
@@ -73,7 +73,7 @@ export const reloadTestCases = async (
     await setSession(session);
     return;
   }
-  const result = await getTestCases({ apiKey: session.apiKey, testTargetId: session.currentTestTargetId });
+  const result = await getTestCases({ sessionId: session.sessionId, testTargetId: session.currentTestTargetId });
   session.testCaseIds = result.map((tc: TestCaseListItem) => tc.id);
 
   await server.server.notification({
@@ -103,7 +103,7 @@ const checkNotificationsForSession = async (server: McpServer, session: Session)
   let forceReloadTestCases = false;
   if (session.currentTestTargetId) {
     logger.info("Checking notifications for test target:", session.currentTestTargetId);
-    const notifications = await getNotifications(session.apiKey, session.currentTestTargetId);
+    const notifications = await getNotifications({sessionId: session.sessionId, testTargetId: session.currentTestTargetId});
     notifications.forEach(async (n) => {
       if (
         n.type === "REPORT_EXECUTION_FINISHED" &&
@@ -153,7 +153,7 @@ export const readTestReport = async (
   }
   logger.info("Reading test report:", uri, vars);
   const reportId = vars.id as string;
-  const result = await getTestReport({ apiKey: session.apiKey, testTargetId: session.currentTestTargetId!, reportId });
+  const result = await getTestReport({ sessionId: session.sessionId, testTargetId: session.currentTestTargetId!, reportId });
   if (result) {
     return {
       contents: [

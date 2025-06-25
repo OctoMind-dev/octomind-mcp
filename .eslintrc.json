@@ -23,7 +23,7 @@
     "github/array-foreach": "off",
     "i18n-text/no-en": "off",
     "github/no-then": "off",
-    "camelcase": "off",
+    "filenames/match-regex": "off", // introduced by github/recommended, only allows one hump for camelCase in test file names ?!
     "import/no-namespace": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": "off"

@@ -3,7 +3,6 @@ import { z } from "zod";
 import { logger } from "./logger";
 import { discovery } from "./api";
 import { DiscoveryOptions } from "./types";
-import { getSession } from "./session";
 
 /**
  * Interface for tool handler functions
@@ -81,11 +80,11 @@ export class DiscoveryHandler
    * @param params Parameters for the discovery tool
    * @returns Response from the discovery tool execution
    */
-  async execute(params: DiscoveryParams, apiKey: string): Promise<ToolResponse> {
+  async execute(params: DiscoveryParams, sessionId: string | undefined): Promise<ToolResponse> {
     logger.debug({ params }, "Discovering test case");
 
     const discoveryOptions: DiscoveryOptions = {
-      apiKey,
+      sessionId,
       json: true,
       name: params.name,
       prompt: params.prompt,
@@ -184,14 +183,7 @@ EXPECTED RESULT
           exist per test target at a time.`),
     },
     async (params, {sessionId}) => {
-      if (!sessionId) {
-        throw new Error("Unauthorized");
-      }
-      const session = await getSession(sessionId);
-      if (!session) {
-        throw new Error("Unauthorized");
-      }
-      return await handler.execute(params, session.apiKey);
+      return handler.execute(params, sessionId);
     },
   );
 }

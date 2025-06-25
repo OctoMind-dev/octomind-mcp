@@ -32,7 +32,7 @@ export type DiscoveryResponse = {
 };
 
 export interface DiscoveryOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   name: string;
   prompt: string;
   testTargetId: string;
@@ -120,7 +120,7 @@ export interface SuccessResponse {
 }
 
 export interface ExecuteTestsOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   url: string;
   environmentName?: string;
@@ -131,14 +131,14 @@ export interface ExecuteTestsOptions {
 }
 
 export interface GetTestReportOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   reportId: string;
   json?: boolean;
 }
 
 export interface RegisterLocationOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   name: string;
   proxypass: string;
   proxyuser: string;
@@ -147,13 +147,13 @@ export interface RegisterLocationOptions {
 }
 
 export interface UnregisterLocationOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   name: string;
   json?: boolean;
 }
 
 export interface ListPrivateLocationsOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   json?: boolean;
 }
 
@@ -191,13 +191,13 @@ export interface Environment {
 }
 
 export interface ListEnvironmentsOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   json?: boolean;
 }
 
 export interface CreateEnvironmentOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   name: string;
   discoveryUrl: string;
@@ -216,7 +216,7 @@ export interface CreateEnvironmentOptions {
 }
 
 export interface UpdateEnvironmentOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   environmentId: string;
   name?: string;
@@ -236,14 +236,14 @@ export interface UpdateEnvironmentOptions {
 }
 
 export interface DeleteEnvironmentOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   environmentId: string;
   json?: boolean;
 }
 
 export interface GetTestReportsOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   key?: {
     createdAt: string;
@@ -280,7 +280,7 @@ export interface CreateTestTargetBody {
 }
 
 export interface CreateTestTargetOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   app: string;
   discoveryUrl: string;
   skipAutomaticTestCreation?: boolean;
@@ -288,7 +288,7 @@ export interface CreateTestTargetOptions {
 }
 
 export interface UpdateTestTargetOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   app?: string;
   discoveryUrl?: string;
@@ -305,13 +305,13 @@ export interface UpdateTestTargetOptions {
 }
 
 export interface DeleteTestTargetOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   json?: boolean;
 }
 
 export interface GetTestCasesOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   filter?: string;
   json?: boolean;
@@ -341,7 +341,7 @@ export interface TestCaseElement {
 }
 
 export interface PatchTestCaseOptions {
-  apiKey: string;
+  sessionId: string | undefined;
   testTargetId: string;
   testCaseId: string;
   elements?: TestCaseElement[];
