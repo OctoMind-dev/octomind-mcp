@@ -7,7 +7,7 @@ import { theStdioSessionId } from "./tools";
  * @param sessionId 
  * @returns 
  */
-export const getApiKey = async (sessionId?: string): Promise<string> => {
+export const getApiKey = async (sessionId: string | undefined): Promise<string> => {
     if (!sessionId) {
       sessionId = theStdioSessionId;
     }
