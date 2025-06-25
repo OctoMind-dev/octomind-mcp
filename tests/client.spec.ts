@@ -8,10 +8,13 @@ import * as tools from "@/tools";
 import { theStdioSessionId } from "@/tools";
 import { trieveConfig } from "@/search";
 import { AxiosError } from "axios";
+import { getApiKey } from "@/sessionToApiKeyResolver";
 
 jest.mock("@/search", () => ({
   trieveConfig: jest.fn().mockResolvedValue({}),
 }));
+
+jest.mock("@/sessionToApiKeyResolver");
 
 type CLientTools = {
   name: string;
@@ -51,7 +54,7 @@ describe("Client", () => {
     await server.connect(serverTransport);
     clientTools = (await client.listTools()).tools;
     jest.clearAllMocks();
-    jest.spyOn(tools, "getApiKey").mockResolvedValue("test-api-key");
+    jest.mocked(getApiKey).mockResolvedValue("test-api-key");
     jest
       .spyOn(tools, "setLastTestTargetId")
       .mockImplementation(() => Promise.resolve());
@@ -68,7 +71,7 @@ describe("Client", () => {
   });
   describe("errors", () => {
     it("should return unauthorized error because apikey missing", async () => {
-      jest.spyOn(tools, "getApiKey").mockImplementation(() => {
+      jest.mocked(getApiKey).mockImplementation(() => {
         throw new Error("Unauthorized, no apiKey found for session");
       });
 
@@ -90,7 +93,7 @@ describe("Client", () => {
 `);
     });
     it("should return unauthorized error because session missing", async () => {
-      jest.spyOn(tools, "getApiKey").mockImplementation(() => {
+      jest.mocked(getApiKey).mockImplementation(() => {
         throw new Error("Unauthorized, no session found");
       });
 

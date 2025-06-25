@@ -6,7 +6,6 @@ import {
 } from "@/tools";
 import { reloadTestReports } from "@/resources";
 import { getSession, Session, setSession } from "@/session";
-import { logger } from "@/logger";
 
 jest.mock("@/resources", () => ({
   reloadTestReports: jest.fn(),

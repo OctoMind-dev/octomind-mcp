@@ -22,7 +22,7 @@ import {
   UnregisterLocationOptions,
   UpdateEnvironmentOptions,
 } from "../src/types";
-import { logger } from "@/logger";
+
 jest.mock("axios");
 jest.mock("@/logger", () => ({
   logger: {
@@ -35,8 +35,14 @@ jest.mock("@/logger", () => ({
 }));
 const mockedAxios = jest.mocked(axios);
 
+const mockApiKey = "test-api-key";
+jest.mock("@/sessionToApiKeyResolver", () => ({
+  getApiKey: jest.fn(() => mockApiKey),
+}));
+
+const mockSessionId = "test-session-id";
+
 describe("API calls", () => {
-  const apiKey = "test-api-key";
   const BASE_URL = "https://app.octomind.dev";
   afterEach(() => {
     jest.clearAllMocks();
@@ -44,7 +50,7 @@ describe("API calls", () => {
 
   it("executeTests", async () => {
     const options: ExecuteTestsOptions = {
-      apiKey,
+      sessionId: mockSessionId,
       testTargetId: "test-target-id",
       url: "https://example.com",
       environmentName: "default",
@@ -67,7 +73,7 @@ describe("API calls", () => {
         url: `${BASE_URL}/api/apiKey/v2/execute`,
         data: expect.any(Object),
         headers: expect.objectContaining({
-          "X-API-Key": apiKey,
+          "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
         }),
       }),
@@ -89,14 +95,17 @@ describe("API calls", () => {
       ],
     });
 
-    const res = await getNotifications(apiKey, "testTargetId");
+    const res = await getNotifications({
+      sessionId: mockSessionId,
+      testTargetId: "testTargetId",
+    });
 
     expect(res[0].createdAt.getTime()).toBe(1742507141413);
   });
 
   it("getTestReport", async () => {
     const options: GetTestReportOptions = {
-      apiKey,
+      sessionId: mockSessionId,
       testTargetId: "test-target-id",
       reportId: "test-report-id",
       json: true,
@@ -117,7 +126,7 @@ describe("API calls", () => {
         method: "get",
         url: `${BASE_URL}/api/apiKey/v2/test-targets/test-target-id/test-reports/test-report-id`,
         headers: expect.objectContaining({
-          "X-API-Key": apiKey,
+          "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
         }),
       }),
@@ -126,7 +135,7 @@ describe("API calls", () => {
 
   it("registerLocation", async () => {
     const options: RegisterLocationOptions = {
-      apiKey,
+      sessionId: mockSessionId,
       name: "test-location",
       proxypass: "password",
       proxyuser: "user",
@@ -144,7 +153,7 @@ describe("API calls", () => {
         url: `${BASE_URL}/api/apiKey/v1/private-location/register`,
         data: expect.any(Object),
         headers: expect.objectContaining({
-          "X-API-Key": apiKey,
+          "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
         }),
       }),
@@ -153,7 +162,7 @@ describe("API calls", () => {
 
   it("unregisterLocation", async () => {
     const options: UnregisterLocationOptions = {
-      apiKey,
+      sessionId: mockSessionId,
       name: "test-location",
       json: true,
     };
@@ -168,7 +177,7 @@ describe("API calls", () => {
         url: `${BASE_URL}/api/apiKey/v1/private-location/unregister`,
         data: expect.any(Object),
         headers: expect.objectContaining({
-          "X-API-Key": apiKey,
+          "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
         }),
       }),
@@ -177,7 +186,7 @@ describe("API calls", () => {
 
   it("listPrivateLocations", async () => {
     const options: ListPrivateLocationsOptions = {
-      apiKey,
+      sessionId: mockSessionId,
       json: true,
     };
 
@@ -192,7 +201,7 @@ describe("API calls", () => {
         method: "get",
         url: `${BASE_URL}/api/apiKey/v1/private-location`,
         headers: expect.objectContaining({
-          "X-API-Key": apiKey,
+          "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
         }),
       }),
@@ -201,7 +210,7 @@ describe("API calls", () => {
 
   it("listEnvironments", async () => {
     const options: ListEnvironmentsOptions = {
-      apiKey,
+      sessionId: mockSessionId,
       testTargetId: "test-target-id",
       json: true,
     };
@@ -224,7 +233,7 @@ describe("API calls", () => {
         method: "get",
         url: `${BASE_URL}/api/apiKey/v2/test-targets/test-target-id/environments`,
         headers: expect.objectContaining({
-          "X-API-Key": apiKey,
+          "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
         }),
       }),
@@ -233,7 +242,7 @@ describe("API calls", () => {
 
   it("createEnvironment", async () => {
     const options: CreateEnvironmentOptions = {
-      apiKey,
+      sessionId: mockSessionId,
       testTargetId: "test-target-id",
       name: "env1",
       discoveryUrl: "https://example.com",
@@ -257,7 +266,7 @@ describe("API calls", () => {
         url: `${BASE_URL}/api/apiKey/v2/test-targets/test-target-id/environments`,
         data: expect.any(Object),
         headers: expect.objectContaining({
-          "X-API-Key": apiKey,
+          "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
         }),
       }),
@@ -266,7 +275,7 @@ describe("API calls", () => {
 
   it("updateEnvironment", async () => {
     const options: UpdateEnvironmentOptions = {
-      apiKey,
+      sessionId: mockSessionId,
       testTargetId: "test-target-id",
       environmentId: "env1",
       name: "env1-updated",
@@ -291,7 +300,7 @@ describe("API calls", () => {
         url: `${BASE_URL}/api/apiKey/v2/test-targets/test-target-id/environments/env1`,
         data: expect.any(Object),
         headers: expect.objectContaining({
-          "X-API-Key": apiKey,
+          "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
         }),
       }),
@@ -300,7 +309,7 @@ describe("API calls", () => {
 
   it("deleteEnvironment", async () => {
     const options: DeleteEnvironmentOptions = {
-      apiKey,
+      sessionId: mockSessionId,
       testTargetId: "test-target-id",
       environmentId: "env1",
       json: true,
@@ -315,7 +324,7 @@ describe("API calls", () => {
         method: "delete",
         url: `${BASE_URL}/api/apiKey/v2/test-targets/test-target-id/environments/env1`,
         headers: expect.objectContaining({
-          "X-API-Key": apiKey,
+          "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
         }),
       }),

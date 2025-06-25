@@ -51,27 +51,6 @@ export const setLastTestTargetId = async (
   }
 };
 
-/**
- * for StdioServerTransport the sessionId undefined so we check if there is
- * only one session with StdioServerTransport and return it
- * @param sessionId 
- * @returns 
- */
-export const getApiKey = async (sessionId?: string): Promise<string> => {
-  if (!sessionId) {
-    sessionId = theStdioSessionId;
-  }
-  const session = await getSession(sessionId);
-  if (!session) {
-    throw new Error("Unauthorized, no session found");
-  }
-  const apiKey = session.apiKey;
-  if(!apiKey) {
-    throw new Error("Unauthorized, no apiKey found for session");
-  }
-  return apiKey;
-};
-
 // Wrapper for tool calls to return error objects instead of throwing
 const safeToolCall = async (fn: (...args: any[]) => Promise<any>, ...args: any[]) => {
   try {
@@ -100,8 +79,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       },
       ({query},{sessionId}) => safeToolCall(
         async (query: string, sessionId: string | undefined) => {
-          const apiKey = await getApiKey(sessionId);
-          logger.debug("Search query", query, apiKey);
+          logger.debug("Search query", query);
           const results = await search(query, trieve);
           logger.debug("Search results", results);
           const c = results.map((result) => {
@@ -141,11 +119,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     ({testCaseId, testTargetId}, {sessionId}) => safeToolCall(
       async (testCaseId: string, testTargetId: string, sessionId: string | undefined) => {
-        const apiKey = await getApiKey(sessionId);
+        
         const res = await getTestCase(
-          apiKey,
-          testCaseId,
-          testTargetId,
+          {testCaseId, testTargetId, sessionId}
         );
         logger.debug("Retrieved test case", res);
         await setLastTestTargetId(server, testTargetId, sessionId);
@@ -205,10 +181,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         tags: string[],
         sessionId: string | undefined
       ) => {
-        const apiKey = await getApiKey(sessionId);
         logger.debug({ testTargetId }, "Executing tests");
         const res = await executeTests({
-          apiKey,
+          sessionId,
           json: true,
           description: description || "triggered by MCP Tool",
           testTargetId,
@@ -250,10 +225,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     ({testTargetId}, {sessionId}) => safeToolCall(
       async (testTargetId: string, sessionId: string | undefined) => {
-        const apiKey = await getApiKey(sessionId);
         logger.debug({ testTargetId }, "Retrieving environments");
         const res = await listEnvironments({
-          apiKey,
+          sessionId,
           testTargetId,
         });
         logger.debug({ res }, "Retrieved environments");
@@ -337,10 +311,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       ),
     },
     async ({testTargetId,name,discoveryUrl,testAccount,privateLocationName,additionalHeaderFields},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Creating environment");
       const res = await createEnvironment({
-        apiKey,
+        sessionId,
         testTargetId,
         name,
         discoveryUrl,
@@ -442,10 +415,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         ),
     },
     async ({testTargetId,environmentId,name,discoveryUrl,testAccount,privateLocationName,additionalHeaderFields},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Updating environment");
       const res = await updateEnvironment({
-        apiKey,
+        sessionId,
         testTargetId,
         environmentId,
         name,
@@ -488,10 +460,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("Unique identifier of the environment to delete"),
     },
     async ({testTargetId,environmentId},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Deleting environment");
       const res = await deleteEnvironment({
-        apiKey,
+        sessionId,
         testTargetId,
         environmentId,
       });
@@ -545,10 +516,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("Optional filters for test reports"),
     },
     async ({testTargetId,key,filter},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Retrieving test reports");
       const res = await getTestReports({
-        apiKey,
+        sessionId,
         json: true,
         testTargetId,
         key,
@@ -587,10 +557,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("Unique identifier of the test report"),
     },
     async ({testTargetId,testReportId},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Retrieving test report");
       const res = await getTestReport({
-        apiKey,
+        sessionId,
         json: true,
         reportId: testReportId,
         testTargetId,
@@ -614,7 +583,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
 
   const discoveryHandler = new DiscoveryHandler();
   registerDiscoveryTool(server, discoveryHandler);
-
   // Private location endpoints
   server.tool(
     "getPrivateLocations",
@@ -622,8 +590,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     A private location is a server that can be used to access a test target behind a firewall or VPN.`,
     {},
     async ({},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
-      const res = await listPrivateLocations({ apiKey });
+      const res = await listPrivateLocations({ sessionId });
       logger.debug({ res }, "Retrieved all private locations");
       return {
         content: [
@@ -646,8 +613,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     Test targets represent applications or services that can be tested using Octomind.`,
     {},
     async ({},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
-      const res = await listTestTargets(apiKey);
+      const res = await listTestTargets({sessionId});
       logger.debug({ res }, "Retrieved all test targets");
       return {
         content: [
@@ -684,10 +650,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         ),
     },
     async ({app,discoveryUrl,skipAutomaticTestCreation},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
       logger.debug({ app,discoveryUrl,skipAutomaticTestCreation }, "Creating test target");
       const res = await createTestTarget({
-        apiKey,
+        sessionId,
         app,
         discoveryUrl,
         skipAutomaticTestCreation,
@@ -758,10 +723,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("The timeout per step in milliseconds"),
     },
     async ({testTargetId,discoveryUrl,testIdAttribute,testRailIntegration,timeoutPerStep},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Updating test target");
       const res = await updateTestTarget({
-        apiKey,
+        sessionId,
         testTargetId,
         discoveryUrl,
         testIdAttribute,
@@ -796,10 +760,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("Unique identifier of the test target to delete"),
     },
     async ({testTargetId},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
       logger.debug({ testTargetId }, "Deleting test target");
       await deleteTestTarget({
-        apiKey,
+        sessionId,
         testTargetId,
       });
       await setLastTestTargetId(server, undefined, sessionId);
@@ -851,12 +814,11 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     ({testTargetId,filter},{sessionId}) => safeToolCall(
       async (testTargetId: string, filter: string | undefined, sessionId: string | undefined) => {
-        const apiKey = await getApiKey(sessionId);
         if (!filter) {
           filter = JSON.stringify({ status: "ENABLED" });
         }
         const res = await getTestCases({
-          apiKey,
+          sessionId,
           testTargetId,
           filter,
         });
@@ -929,9 +891,8 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         ),
     },
     async ({testTargetId,testCaseId,description,entryPointUrlPath,status,runStatus,folderName,interactionStatus,assignedTagNames,externalId},{sessionId}) => {
-      const apiKey = await getApiKey(sessionId);
       const res = await patchTestCase({
-        apiKey,
+        sessionId,
         testTargetId,
         testCaseId,
         description,
