@@ -15,4 +15,5 @@ runs:
           node-version: 22
           cache: "pnpm"
       - name: Install dependencies
+        shell: bash
         run: pnpm install --frozen-lockfile --prefer-offline
