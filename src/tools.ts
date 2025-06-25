@@ -119,7 +119,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     ({testCaseId, testTargetId}, {sessionId}) => safeToolCall(
       async (testCaseId: string, testTargetId: string, sessionId: string | undefined) => {
-        
         const res = await getTestCase(
           {testCaseId, testTargetId, sessionId}
         );
