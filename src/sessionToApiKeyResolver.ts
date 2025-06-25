@@ -15,5 +15,3 @@ export const getApiKey = async (sessionId: string | undefined): Promise<string> 
 
     return session.apiKey;
   };
-
-  
