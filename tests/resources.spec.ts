@@ -98,12 +98,14 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(
-        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
-      );
-      expect(mockGetTestReports).toHaveBeenCalledWith(
-        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
-      );
+      expect(mockGetNotifications).toHaveBeenCalledWith({
+        sessionId: mockSessionId,
+        testTargetId: mockTestTargetId,
+      });
+      expect(mockGetTestReports).toHaveBeenCalledWith({
+        sessionId: mockSessionId,
+        testTargetId: mockTestTargetId,
+      });
       expect(server.server.notification).toHaveBeenCalledWith({
         method: "notifications/resources/list_changed",
       });
@@ -138,12 +140,14 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(
-        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
-      );
-      expect(mockGetTestCases).toHaveBeenCalledWith(
-        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
-      );
+      expect(mockGetNotifications).toHaveBeenCalledWith({
+        sessionId: mockSessionId,
+        testTargetId: mockTestTargetId,
+      });
+      expect(mockGetTestCases).toHaveBeenCalledWith({
+        sessionId: mockSessionId,
+        testTargetId: mockTestTargetId,
+      });
       expect(server.server.notification).toHaveBeenCalledWith({
         method: "notifications/resources/list_changed",
       });
@@ -186,15 +190,18 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(
-        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
-      );
-      expect(mockGetTestReports).toHaveBeenCalledWith(
-        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
-      );
-      expect(mockGetTestCases).toHaveBeenCalledWith(
-        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
-      );
+      expect(mockGetNotifications).toHaveBeenCalledWith({
+        sessionId: mockSessionId,
+        testTargetId: mockTestTargetId,
+      });
+      expect(mockGetTestReports).toHaveBeenCalledWith({
+        sessionId: mockSessionId,
+        testTargetId: mockTestTargetId,
+      });
+      expect(mockGetTestCases).toHaveBeenCalledWith({
+        sessionId: mockSessionId,
+        testTargetId: mockTestTargetId,
+      });
       expect(server.server.notification).toHaveBeenCalledTimes(2);
     });
 
@@ -213,9 +220,10 @@ describe("Resources module", () => {
 
       await checkNotifications(server);
 
-      expect(mockGetNotifications).toHaveBeenCalledWith(
-        {sessionId: mockSessionId, testTargetId: mockTestTargetId},
-      );
+      expect(mockGetNotifications).toHaveBeenCalledWith({
+        sessionId: mockSessionId,
+        testTargetId: mockTestTargetId,
+      });
       expect(mockGetTestReports).not.toHaveBeenCalled();
       expect(server.server.notification).not.toHaveBeenCalled();
     });
