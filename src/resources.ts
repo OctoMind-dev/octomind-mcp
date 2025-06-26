@@ -9,6 +9,8 @@ import {
   ReadResourceResult,
   ServerNotification,
   ServerRequest,
+  SubscribeRequestSchema,
+  UnsubscribeRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { getNotifications, getTestReports, getTestCases, getTestReport } from "./api";
@@ -45,9 +47,7 @@ export const reloadTestReports = async (
       }
     }
   });
-  await server.server.notification({
-    method: "notifications/resources/list_changed",
-  });
+  server.sendResourceListChanged();
   session.lastTestReportRefreshTime = Date.now();
   await setSession(session);
 };
@@ -56,9 +56,7 @@ export const clearTestReports = async (session: Session, server: McpServer) => {
   session.testReportIds = [];
   session.tracesForTestReport = {};
 
-  await server.server.notification({
-    method: "notifications/resources/list_changed",
-  });
+  server.sendResourceListChanged();
   session.lastTestReportRefreshTime = Date.now();
   await setSession(session);
 };
@@ -76,9 +74,7 @@ export const reloadTestCases = async (
   const result = await getTestCases({ sessionId: session.sessionId, testTargetId: session.currentTestTargetId });
   session.testCaseIds = result.map((tc: TestCaseListItem) => tc.id);
 
-  await server.server.notification({
-    method: "notifications/resources/list_changed",
-  });
+  server.sendResourceListChanged();
   session.lastTestCaseRefreshTime = Date.now();
   await setSession(session);
 };
@@ -239,4 +235,20 @@ export const registerResources = (server: McpServer): void => {
     }),
     readTestResultTrace,
   );
+
+  const subscriptions = new Set<string>();
+
+  server.server.setRequestHandler(SubscribeRequestSchema, async (request) => {
+    const { uri } = request.params;
+    subscriptions.add(uri);
+
+    // Request sampling from client when someone subscribes
+    //await requestSampling("A new subscription was started", uri);
+    return {};
+  });
+
+  server.server.setRequestHandler(UnsubscribeRequestSchema, async (request) => {
+    subscriptions.delete(request.params.uri);
+    return {};
+  });
 };
