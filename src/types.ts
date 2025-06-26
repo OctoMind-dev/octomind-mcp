@@ -283,7 +283,6 @@ export interface CreateTestTargetOptions {
   sessionId: string | undefined;
   app: string;
   discoveryUrl: string;
-  skipAutomaticTestCreation?: boolean;
   json?: boolean;
 }
 
