@@ -794,8 +794,17 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
   );
 
-  // Get Test Cases with filter
-  server.tool(
+    const testCaseFilterSchema = z
+        .object({
+            description: z.string().optional(),
+            runStatus: z.enum(["ON", "OFF"]).optional(),
+            folderId: z.string().optional(),
+            externalId: z.string().optional(),
+            status: z.enum(["ENABLED", "DISABLED", "DRAFT", "OUTDATED", "PROVISIONAL"]).optional(),
+        });
+    type TestCaseFilter = z.infer<typeof testCaseFilterSchema>;
+
+    server.tool(
     "getTestCases",
     `the getTestCases tool can retrieve test cases for a given test target with optional filtering.
     Test cases can be filtered by various criteria such as status, description, or tags.`,
@@ -804,22 +813,23 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .string()
         .uuid()
         .describe("Unique identifier of the test target"),
-      filter: z
-        .string()
+      filter: testCaseFilterSchema.omit({
+          status: true,
+      })
         .optional()
         .describe(
-          'Optional JSON string containing filter criteria for test cases. Supports fields: id, testTargetId, description, status (ENABLED, DISABLED, DRAFT, OUTDATED, PROVISIONAL), runStatus (ON, OFF), folderId, externalId. Logical operators: AND, OR, NOT. Example: \'{"status":"ENABLED","folderId":"some-folder-id","OR":[{"description":"Login Test"},{"externalId":"TEST-123"}]}\'',
+          'Filter criteria for test cases, these are by default connected by AND. Includes description, runStatus, folderId and externalId. Example: "{ description: "create node", runStatus: "ON" }"',
         ),
     },
     ({testTargetId,filter},{sessionId}) => safeToolCall(
-      async (testTargetId: string, filter: string | undefined, sessionId: string | undefined) => {
-        if (!filter) {
-          filter = JSON.stringify({ status: "ENABLED" });
-        }
+      async (testTargetId: string, filter: TestCaseFilter | undefined, sessionId: string | undefined) => {
+        const filterWithFallback = filter ?? {};
+        filterWithFallback.status = "ENABLED";
+
         const res = await getTestCases({
           sessionId,
           testTargetId,
-          filter,
+          filter: JSON.stringify(filterWithFallback),
         });
         logger.debug("Retrieved test cases", res);
         await setLastTestTargetId(server, testTargetId, sessionId);

@@ -6,7 +6,6 @@ import * as api from "@/api";
 import { version } from "@/version";
 import * as tools from "@/tools";
 import { theStdioSessionId } from "@/tools";
-import { trieveConfig } from "@/search";
 import { AxiosError } from "axios";
 import { getApiKey } from "@/sessionToApiKeyResolver";
 
@@ -16,13 +15,13 @@ jest.mock("@/search", () => ({
 
 jest.mock("@/sessionToApiKeyResolver");
 
-type CLientTools = {
+type ClientTools = {
   name: string;
   description?: string;
   inputSchema: object;
 }[];
 
-const getTool = (clientTools: CLientTools, toolName: string) => {
+const getTool = (clientTools: ClientTools, toolName: string) => {
   const tool = clientTools.find((t) => t.name === toolName);
   if (!tool) {
     throw new Error(`Tool ${toolName} not found`);
@@ -33,7 +32,7 @@ const getTool = (clientTools: CLientTools, toolName: string) => {
 describe("Client", () => {
   let client: Client;
   let server: McpServer;
-  let clientTools: CLientTools;
+  let clientTools: ClientTools;
 
   beforeAll(async () => {
     process.env.APIKEY = "test-api-key";
@@ -444,7 +443,7 @@ describe("Client", () => {
       expect(result.content).toMatchInlineSnapshot(`
 [
   {
-    "text": "Retrieved 1 test cases for test target: 58f57faf-6da0-45be-aa76-a567ffb32e82 with filter: {"status":"ENABLED"}",
+    "text": "Retrieved 1 test cases for test target: 58f57faf-6da0-45be-aa76-a567ffb32e82",
     "type": "text",
   },
   {
@@ -467,7 +466,40 @@ describe("Client", () => {
 ]
 `);
     });
+    it.each([undefined, {}, { description: "log in" }])(
+      "should use an 'ENABLED' status filter for getTestCases with agent-filter %j",
+      async (filter) => {
+        const getTestCasesTool = getTool(clientTools, "getTestCases");
+        const testTargetId = "58f57faf-6da0-45be-aa76-a567ffb32e82";
+
+        jest.spyOn(api, "getTestCases").mockResolvedValue([
+          {
+            id: "test-case-id",
+            testTargetId,
+            updatedAt: "2025-06-10T17:06:25.000Z",
+            description: "test-case-description",
+            status: "ENABLED",
+            runStatus: "ON",
+            createdAt: "2025-06-10T17:06:25.000Z",
+            tags: ["test-case-tag"],
+          },
+        ]);
+        await client.callTool({
+          name: getTestCasesTool.name,
+          arguments: {
+            testTargetId,
+            filter,
+          },
+        });
+        expect(api.getTestCases).toHaveBeenCalledWith({
+          filter: JSON.stringify({ ...filter, status: "ENABLED" }),
+          testTargetId,
+          sessionId: theStdioSessionId,
+        });
+      },
+    );
   });
+
   describe("private locations", () => {
     it("should call get private locations", async () => {
       const getPrivateLocationsTool = getTool(
