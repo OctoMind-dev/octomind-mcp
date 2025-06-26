@@ -447,7 +447,6 @@ export const patchTestCase = async (
     elements: options.elements,
     description: options.description,
     entryPointUrlPath: options.entryPointUrlPath,
-    status: options.status,
     runStatus: options.runStatus,
     folderName: options.folderName,
     interactionStatus: options.interactionStatus,

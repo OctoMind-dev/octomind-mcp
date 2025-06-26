@@ -8,6 +8,7 @@ import * as tools from "@/tools";
 import { theStdioSessionId } from "@/tools";
 import { AxiosError } from "axios";
 import { getApiKey } from "@/sessionToApiKeyResolver";
+import { patchTestCase } from "@/api";
 
 jest.mock("@/search", () => ({
   trieveConfig: jest.fn().mockResolvedValue({}),
@@ -498,6 +499,45 @@ describe("Client", () => {
         });
       },
     );
+
+    it.each([
+      "description",
+      "entryPointUrlPath",
+      "runStatus",
+      "externalId",
+      "folderName",
+      "interactionStatus",
+      "assignedTagNames",
+    ])("should allow null values for key '%s'", async (key) => {
+      const updateTestCaseTool = getTool(clientTools, "updateTestCase");
+      const testTargetId = "58f57faf-6da0-45be-aa76-a567ffb32e82";
+      const testCaseId = "58f57faf-6da0-45be-aa76-a567ffb32e83";
+
+      jest.spyOn(api, "patchTestCase").mockResolvedValue({
+        id: testCaseId,
+        testTargetId,
+        description: "test-case-description",
+        status: "ENABLED",
+        discovery: undefined,
+        elements: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      await client.callTool({
+        name: updateTestCaseTool.name,
+        arguments: {
+          testTargetId,
+          testCaseId,
+          [key]: null,
+        },
+      });
+      expect(api.patchTestCase).toHaveBeenCalledWith(
+        expect.objectContaining({
+          [key]: undefined,
+        }),
+      );
+    });
   });
 
   describe("private locations", () => {
