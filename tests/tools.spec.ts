@@ -1,11 +1,7 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import {
-  getLastTestTargetId,
-  setLastTestTargetId,
-  theStdioSessionId,
-} from "@/tools";
-import { reloadTestReports } from "@/resources";
-import { getSession, Session, setSession } from "@/session";
+import {McpServer} from "@modelcontextprotocol/sdk/server/mcp.js";
+import {getLastTestTargetId, setLastTestTargetId, theStdioSessionId,} from "@/tools";
+import {reloadTestReports} from "@/resources";
+import {getSession, Session, setSession} from "@/session";
 
 jest.mock("@/resources", () => ({
   reloadTestReports: jest.fn(),
