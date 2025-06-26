@@ -475,7 +475,7 @@ describe("Client", () => {
         jest.spyOn(api, "getTestCases").mockResolvedValue([
           {
             id: "test-case-id",
-            testTargetId: testTargetId,
+            testTargetId,
             updatedAt: "2025-06-10T17:06:25.000Z",
             description: "test-case-description",
             status: "ENABLED",
@@ -484,10 +484,10 @@ describe("Client", () => {
             tags: ["test-case-tag"],
           },
         ]);
-        const result = await client.callTool({
+        await client.callTool({
           name: getTestCasesTool.name,
           arguments: {
-            testTargetId: testTargetId,
+            testTargetId,
             filter,
           },
         });
