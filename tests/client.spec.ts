@@ -1,13 +1,13 @@
-import {buildServer} from "@/server";
-import {Client} from "@modelcontextprotocol/sdk/client/index.js";
-import {InMemoryTransport} from "@modelcontextprotocol/sdk/inMemory.js";
-import {McpServer} from "@modelcontextprotocol/sdk/server/mcp.js";
+import { buildServer } from "@/server";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as api from "@/api";
-import {version} from "@/version";
+import { version } from "@/version";
 import * as tools from "@/tools";
-import {theStdioSessionId} from "@/tools";
-import {AxiosError} from "axios";
-import {getApiKey} from "@/sessionToApiKeyResolver";
+import { theStdioSessionId } from "@/tools";
+import { AxiosError } from "axios";
+import { getApiKey } from "@/sessionToApiKeyResolver";
 
 jest.mock("@/search", () => ({
   trieveConfig: jest.fn().mockResolvedValue({}),
@@ -466,31 +466,38 @@ describe("Client", () => {
 ]
 `);
     });
-      it.each([undefined, {}, { description: "log in" }])("should use an 'ENABLED' status filter for getTestCases with agent-filter %j", async (filter) => {
-          const getTestCasesTool = getTool(clientTools, "getTestCases");
-          const testTargetId = "58f57faf-6da0-45be-aa76-a567ffb32e82";
+    it.each([undefined, {}, { description: "log in" }])(
+      "should use an 'ENABLED' status filter for getTestCases with agent-filter %j",
+      async (filter) => {
+        const getTestCasesTool = getTool(clientTools, "getTestCases");
+        const testTargetId = "58f57faf-6da0-45be-aa76-a567ffb32e82";
 
-          jest.spyOn(api, "getTestCases").mockResolvedValue([
-              {
-                  id: "test-case-id",
-                  testTargetId: testTargetId,
-                  updatedAt: "2025-06-10T17:06:25.000Z",
-                  description: "test-case-description",
-                  status: "ENABLED",
-                  runStatus: "ON",
-                  createdAt: "2025-06-10T17:06:25.000Z",
-                  tags: ["test-case-tag"],
-              },
-          ]);
-          const result = await client.callTool({
-              name: getTestCasesTool.name,
-              arguments: {
-                  testTargetId: testTargetId,
-                  filter
-              },
-          });
-          expect(api.getTestCases).toHaveBeenCalledWith({ filter: JSON.stringify({ ...filter, status: "ENABLED" }), testTargetId, sessionId: theStdioSessionId  }, );
-      });
+        jest.spyOn(api, "getTestCases").mockResolvedValue([
+          {
+            id: "test-case-id",
+            testTargetId: testTargetId,
+            updatedAt: "2025-06-10T17:06:25.000Z",
+            description: "test-case-description",
+            status: "ENABLED",
+            runStatus: "ON",
+            createdAt: "2025-06-10T17:06:25.000Z",
+            tags: ["test-case-tag"],
+          },
+        ]);
+        const result = await client.callTool({
+          name: getTestCasesTool.name,
+          arguments: {
+            testTargetId: testTargetId,
+            filter,
+          },
+        });
+        expect(api.getTestCases).toHaveBeenCalledWith({
+          filter: JSON.stringify({ ...filter, status: "ENABLED" }),
+          testTargetId,
+          sessionId: theStdioSessionId,
+        });
+      },
+    );
   });
 
   describe("private locations", () => {
