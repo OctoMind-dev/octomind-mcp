@@ -377,7 +377,6 @@ export const createTestTarget = async (
     testTarget: {
       app: options.app,
       discoveryUrl: options.discoveryUrl,
-      skipAutomaticTestCreation: options.skipAutomaticTestCreation,
     },
   };
 

@@ -641,20 +641,13 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .string()
         .url()
         .describe("The discovery URL of the test target"),
-      skipAutomaticTestCreation: z
-        .boolean()
-        .optional()
-        .describe(
-          "Skip automatic test creation right after the test target is created",
-        ),
     },
-    async ({app,discoveryUrl,skipAutomaticTestCreation},{sessionId}) => {
-      logger.debug({ app,discoveryUrl,skipAutomaticTestCreation }, "Creating test target");
+    async ({app,discoveryUrl},{sessionId}) => {
+      logger.debug({ app,discoveryUrl }, "Creating test target");
       const res = await createTestTarget({
         sessionId,
         app,
         discoveryUrl,
-        skipAutomaticTestCreation,
       });
       logger.debug({ res }, "Created test target");
       await setLastTestTargetId(server, res.id, sessionId);
