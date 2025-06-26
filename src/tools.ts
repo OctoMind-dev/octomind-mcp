@@ -818,7 +818,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       })
         .optional()
         .describe(
-          'Filter criteria for test cases, these are by default connected by AND',
+          'Filter criteria for test cases, these are by default connected by AND. Includes description, runStatus, folderId and externalId. Example: "{ description: "create node", runStatus: "ON" }"',
         ),
     },
     ({testTargetId,filter},{sessionId}) => safeToolCall(
