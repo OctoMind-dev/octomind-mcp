@@ -867,46 +867,41 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       description: z
         .string()
         .optional()
-        .describe("Optional new description for the test case"),
+        .describe("Optional new description for the test case - only pass this if you want to change it"),
       entryPointUrlPath: z
         .string()
         .optional()
-        .describe("Optional new entry point URL path"),
-      status: z
-        .enum(["ENABLED", "DISABLED", "DRAFT", "OUTDATED", "PROVISIONAL"])
-        .optional()
-        .describe("Optional new status for the test case"),
+        .describe("Optional new entry point URL path - only pass this if you want to change it"),
       runStatus: z
         .enum(["ON", "OFF"])
         .optional()
-        .describe("Optional new run status for the test case"),
+        .describe("Optional new run status for the test case - only pass this if you want to change it"),
       folderName: z
         .string()
         .optional()
-        .describe("Optional folder name to organize the test case"),
+        .describe("Optional folder name to organize the test case - only pass this if you want to change it"),
       interactionStatus: z
-        .enum(["NEW", "EDITED", "APPROVED", "REJECTED"])
+        .enum(["NEW", "OPENED"])
         .optional()
-        .describe("Optional new interaction status"),
+        .describe("Optional new interaction status - only pass this if you explicitly want to change it"),
       assignedTagNames: z
         .array(z.string())
         .optional()
-        .describe("Optional list of tag names to assign to the test case"),
+        .describe("Optional list of tag names to assign to the test case - only pass this if you want to change it"),
       externalId: z
         .string()
         .optional()
         .describe(
-          "Optional external identifier for integration with external systems",
+          "Optional external identifier for integration with external systems - - only pass this if you want to change it",
         ),
     },
-    async ({testTargetId,testCaseId,description,entryPointUrlPath,status,runStatus,folderName,interactionStatus,assignedTagNames,externalId},{sessionId}) => {
+    async ({testTargetId,testCaseId,description,entryPointUrlPath,runStatus,folderName,interactionStatus,assignedTagNames,externalId},{sessionId}) => {
       const res = await patchTestCase({
         sessionId,
         testTargetId,
         testCaseId,
         description,
         entryPointUrlPath,
-        status,
         runStatus,
         folderName,
         interactionStatus,

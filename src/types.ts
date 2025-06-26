@@ -347,10 +347,9 @@ export interface PatchTestCaseOptions {
   elements?: TestCaseElement[];
   description?: string;
   entryPointUrlPath?: string;
-  status?: "ENABLED" | "DISABLED" | "DRAFT" | "OUTDATED" | "PROVISIONAL";
   runStatus?: "ON" | "OFF";
   folderName?: string;
-  interactionStatus?: "NEW" | "EDITED" | "APPROVED" | "REJECTED";
+  interactionStatus?: "NEW" | "OPENED";
   createBackendDiscoveryPrompt?: string;
   assignedTagNames?: string[];
   externalId?: string;
