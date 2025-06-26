@@ -854,7 +854,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
   server.tool(
     "updateTestCase",
     `the updateTestCase tool can update specific properties of a test case.
-    This allows modifying test case details such as description, status, or test elements.`,
+    This allows modifying test case details such as description, status, or folderName.`,
     {
       testTargetId: z
         .string()
@@ -866,38 +866,37 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("Unique identifier of the test case to update"),
       description: z
         .string()
-        .optional()
-        .describe("Optional new description for the test case - only pass this if you want to change it"),
+        .nullish()
+        .describe("Optional new description for the test case"),
       entryPointUrlPath: z
         .string()
-        .optional()
-        .describe("Optional new entry point URL path - only pass this if you want to change it"),
+        .nullish()
+        .describe("Optional new entry point URL path"),
       runStatus: z
         .enum(["ON", "OFF"])
-        .optional()
-        .describe("Optional new run status for the test case - only pass this if you want to change it"),
+        .nullish()
+        .describe("Optional new run status for the test case"),
       folderName: z
         .string()
-        .optional()
-        .describe("Optional folder name to organize the test case - only pass this if you want to change it"),
+        .nullish()
+        .describe("Optional folder name to organize the test case"),
       interactionStatus: z
         .enum(["NEW", "OPENED"])
-        .optional()
-        .describe("Optional new interaction status - only pass this if you explicitly want to change it"),
+        .nullish()
+        .describe("Optional new interaction status"),
       assignedTagNames: z
         .array(z.string())
-        .optional()
-        .describe("Optional list of tag names to assign to the test case - only pass this if you want to change it"),
+        .nullish()
+        .describe("Optional list of tag names to assign to the test case"),
       externalId: z
         .string()
-        .optional()
+        .nullish()
         .describe(
-          "Optional external identifier for integration with external systems - - only pass this if you want to change it",
+          "Optional external identifier for integration with external systems",
         ),
     },
-    async ({testTargetId,testCaseId,description,entryPointUrlPath,runStatus,folderName,interactionStatus,assignedTagNames,externalId},{sessionId}) => {
-      const res = await patchTestCase({
-        sessionId,
+    async (
+      {
         testTargetId,
         testCaseId,
         description,
@@ -907,6 +906,20 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         interactionStatus,
         assignedTagNames,
         externalId,
+      },
+      { sessionId },
+    ) => {
+      const res = await patchTestCase({
+        sessionId,
+        testTargetId,
+        testCaseId,
+        description: description ?? undefined,
+        entryPointUrlPath: entryPointUrlPath ?? undefined,
+        runStatus: runStatus ?? undefined,
+        folderName: folderName ?? undefined,
+        interactionStatus: interactionStatus ?? undefined,
+        assignedTagNames: assignedTagNames ?? undefined,
+        externalId: externalId ?? undefined,
       });
       logger.debug("Updated test case", res);
       await setLastTestTargetId(server, testTargetId, sessionId);
