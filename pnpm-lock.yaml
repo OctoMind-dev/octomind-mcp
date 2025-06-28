@@ -65,7 +65,7 @@ importers:
         version: 29.0.1(@typescript-eslint/eslint-plugin@8.27.0(@typescript-eslint/parser@8.35.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(jest@30.0.3(@types/node@24.0.4)(ts-node@10.9.2(@types/node@24.0.4)(typescript@5.8.3)))(typescript@5.8.3)
       eslint-plugin-prettier:
         specifier: ^5.0.0
-        version: 5.5.1(eslint-config-prettier@10.1.5(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.1)
+        version: 5.5.1(eslint-config-prettier@10.1.5(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.2)
       genversion:
         specifier: ^3.2.0
         version: 3.2.0
@@ -74,7 +74,7 @@ importers:
         version: 30.0.3(@types/node@24.0.4)(ts-node@10.9.2(@types/node@24.0.4)(typescript@5.8.3))
       prettier:
         specifier: ^3.0.1
-        version: 3.6.1
+        version: 3.6.2
       ts-jest:
         specifier: ^29.2.6
         version: 29.4.0(@babel/core@7.27.4)(@jest/transform@30.0.2)(@jest/types@30.0.1)(babel-jest@30.0.2(@babel/core@7.27.4))(jest-util@30.0.2)(jest@30.0.3(@types/node@24.0.4)(ts-node@10.9.2(@types/node@24.0.4)(typescript@5.8.3)))(typescript@5.8.3)
@@ -2527,8 +2527,8 @@ packages:
     resolution: {integrity: sha512-GbK2cP9nraSSUF9N2XwUwqfzlAFlMNYYl+ShE/V+H8a9uNl/oUqB1w2EL54Jh0OlyRSd8RfWYJ3coVS4TROP2w==}
     engines: {node: '>=6.0.0'}
 
-  prettier@3.6.1:
-    resolution: {integrity: sha512-5xGWRa90Sp2+x1dQtNpIpeOQpTDBs9cZDmA/qs2vDNN2i18PdapqY7CmBeyLlMuGqXJRIOPaCaVZTLNQRWUH/A==}
+  prettier@3.6.2:
+    resolution: {integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -4663,11 +4663,11 @@ snapshots:
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.35.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-typescript@4.4.4)(eslint@8.57.1)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.57.1)
       eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-prettier: 5.5.1(eslint-config-prettier@10.1.5(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.1)
+      eslint-plugin-prettier: 5.5.1(eslint-config-prettier@10.1.5(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.2)
       eslint-rule-documentation: 1.0.23
       globals: 15.15.0
       jsx-ast-utils: 3.3.5
-      prettier: 3.6.1
+      prettier: 3.6.2
       svg-element-attributes: 1.3.1
       typescript-eslint: 8.27.0(eslint@8.57.1)(typescript@5.8.3)
     transitivePeerDependencies:
@@ -4742,10 +4742,10 @@ snapshots:
 
   eslint-plugin-no-only-tests@3.3.0: {}
 
-  eslint-plugin-prettier@5.5.1(eslint-config-prettier@10.1.5(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.1):
+  eslint-plugin-prettier@5.5.1(eslint-config-prettier@10.1.5(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.2):
     dependencies:
       eslint: 8.57.1
-      prettier: 3.6.1
+      prettier: 3.6.2
       prettier-linter-helpers: 1.0.0
       synckit: 0.11.8
     optionalDependencies:
@@ -5965,7 +5965,7 @@ snapshots:
     dependencies:
       fast-diff: 1.3.0
 
-  prettier@3.6.1: {}
+  prettier@3.6.2: {}
 
   pretty-format@30.0.2:
     dependencies:
