@@ -3,12 +3,12 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as api from "@/api";
+import { patchTestCase } from "@/api";
 import { version } from "@/version";
 import * as tools from "@/tools";
 import { theStdioSessionId } from "@/tools";
 import { AxiosError } from "axios";
 import { getApiKey } from "@/sessionToApiKeyResolver";
-import { patchTestCase } from "@/api";
 
 jest.mock("@/search", () => ({
   trieveConfig: jest.fn().mockResolvedValue({}),
@@ -572,7 +572,7 @@ describe("Client", () => {
           testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
           testCaseId: "58f57faf-6da0-45be-aa76-a567ffb32e83",
           elementId: "58f57faf-6da0-45be-aa76-a567ffb32e84",
-          locatorLine: "locator('body')"
+          locatorLine: "locator('body')",
         },
       });
       expect(result.content).toMatchInlineSnapshot(`
