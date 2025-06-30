@@ -31,6 +31,7 @@ import {
   GetTestCasesOptions,
   TestCaseListItem,
   PatchTestCaseOptions,
+  UpdateTestCaseElementOptions,
 } from "./types";
 import { version } from "./version";
 import { logger } from "./logger";
@@ -459,6 +460,19 @@ export const patchTestCase = async (
     `/apiKey/v2/test-targets/${options.testTargetId}/test-cases/${options.testCaseId}`,
     options.sessionId,
     requestBody,
+  );
+
+  return response;
+};
+
+export const updateTestCaseElement = async (
+  options: UpdateTestCaseElementOptions,
+): Promise<TestCaseElement> => {
+  const response = await apiCall<TestCaseElement>(
+    "patch",
+    `/apiKey/v2/test-targets/${options.testTargetId}/test-cases/${options.testCaseId}/elements/${options.elementId}`,
+    options.sessionId,
+    { locatorLine: options.locatorLine },
   );
 
   return response;

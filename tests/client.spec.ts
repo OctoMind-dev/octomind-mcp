@@ -61,7 +61,7 @@ describe("Client", () => {
   });
   describe("tools, prompts", () => {
     it("should find tools", async () => {
-      expect(clientTools.length).toBe(18);
+      expect(clientTools.length).toBe(19);
     });
 
     it("should find prompts", async () => {
@@ -537,6 +537,76 @@ describe("Client", () => {
           [key]: undefined,
         }),
       );
+    });
+  });
+
+  describe("test case element", () => {
+    it("should call update test case element", async () => {
+      const updateTestCaseElementTool = getTool(
+        clientTools,
+        "updateTestCaseElement",
+      );
+
+      jest.spyOn(api, "updateTestCaseElement").mockResolvedValue({
+        id: "test-case-element-id",
+        index: 0,
+        interaction: {
+          id: "some-interaction-0",
+          action: "CLICK",
+          calledWith: null,
+        },
+        ignoreFailure: false,
+        assertion: null,
+        selectors: [
+          {
+            id: "selector0",
+            selectorType: "ROLE",
+            selector: "button",
+            options: { name: "some button" },
+          },
+        ],
+      });
+      const result = await client.callTool({
+        name: updateTestCaseElementTool.name,
+        arguments: {
+          testTargetId: "58f57faf-6da0-45be-aa76-a567ffb32e82",
+          testCaseId: "58f57faf-6da0-45be-aa76-a567ffb32e83",
+          elementId: "58f57faf-6da0-45be-aa76-a567ffb32e84",
+          locatorLine: "locator('body')"
+        },
+      });
+      expect(result.content).toMatchInlineSnapshot(`
+[
+  {
+    "text": "Updated test case element: 58f57faf-6da0-45be-aa76-a567ffb32e84 in test case: 58f57faf-6da0-45be-aa76-a567ffb32e83 for test target: 58f57faf-6da0-45be-aa76-a567ffb32e82",
+    "type": "text",
+  },
+  {
+    "text": "{
+  "id": "test-case-element-id",
+  "index": 0,
+  "interaction": {
+    "id": "some-interaction-0",
+    "action": "CLICK",
+    "calledWith": null
+  },
+  "ignoreFailure": false,
+  "assertion": null,
+  "selectors": [
+    {
+      "id": "selector0",
+      "selectorType": "ROLE",
+      "selector": "button",
+      "options": {
+        "name": "some button"
+      }
+    }
+  ]
+}",
+    "type": "text",
+  },
+]
+`);
     });
   });
 

@@ -17,6 +17,7 @@ import {
   updateTestTarget,
   deleteTestTarget,
   listPrivateLocations,
+  updateTestCaseElement,
 } from "./api";
 
 import { reloadTestReports, clearTestReports } from "./resources";
@@ -78,7 +79,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         query: z.string().describe("Search query"),
       },
       ({query},{sessionId}) => safeToolCall(
-        async (query: string, sessionId: string | undefined) => {
+        async (query: string, _sessionId: string | undefined) => {
           logger.debug("Search query", query);
           const results = await search(query, trieve);
           logger.debug("Search results", results);
@@ -340,8 +341,8 @@ export const registerTools = async (server: McpServer): Promise<void> => {
   server.tool(
     "updateEnvironment",
     `the updateEnvironment tool can update an environment for a given test target.
-    an environment represents a specific setup or deployments for a test target. It include a test account when necsesary
-    to login, a header configuration, a discovery url and a set of variables.`,
+    An environment represents a specific setup or deployments for a test target. It includes a test account when necessary
+    to login, a header configuration or a discovery url.`,
     {
       testTargetId: z
         .string()
@@ -920,6 +921,54 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         content: [
           {
             text: `Updated test case: ${testCaseId} for test target: ${testTargetId}`,
+            type: "text",
+          },
+          {
+            type: "text",
+            text: JSON.stringify(res, null, 2),
+          },
+        ],
+      };
+    },
+  );
+
+
+  server.tool(
+    "updateTestCaseElement",
+    `the updateTestCaseElement tool can update a specific element within a test case.
+    Test case elements represent individual steps in a test case, such as interactions (clicks, text input)
+    or assertions (checking if elements are visible, have text, etc.). Each element has selectors that
+    identify the target element on the page and an action to perform or assertion to verify.`,
+    {
+      testTargetId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test target"),
+      testCaseId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test case containing the element"),
+      elementId: z
+        .string()
+        .uuid()
+        .describe("Unique identifier of the test case element to update"),
+      locatorLine: z.string().describe("a valid playwright locator line, e.g. \"locator('body')\", or \"getByRole('button', { name: 'some button'}).filter({ hasText: 'some text' })\"")
+    },
+    async ({ testTargetId, testCaseId, elementId, locatorLine }, { sessionId }) => {
+      logger.debug({ testTargetId, testCaseId, elementId }, "Updating test case element");
+      const res = await updateTestCaseElement({
+        sessionId,
+        testTargetId,
+        testCaseId,
+        elementId,
+        locatorLine,
+      });
+      logger.debug({ res }, "Updated test case element");
+      await setLastTestTargetId(server, testTargetId, sessionId);
+      return {
+        content: [
+          {
+            text: `Updated test case element: ${elementId} in test case: ${testCaseId} for test target: ${testTargetId}`,
             type: "text",
           },
           {
