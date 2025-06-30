@@ -938,7 +938,8 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     `the updateTestCaseElement tool can update a specific element within a test case.
     Test case elements represent individual steps in a test case, such as interactions (clicks, text input)
     or assertions (checking if elements are visible, have text, etc.). Each element has selectors that
-    identify the target element on the page and an action to perform or assertion to verify.`,
+    identify the target element on the page and an action to perform or assertion to verify. You can only update the locatorLine
+    of the element in question, for everything else the user currently needs to use the octomind ui.`,
     {
       testTargetId: z
         .string()
