@@ -354,3 +354,11 @@ export interface PatchTestCaseOptions {
   externalId?: string;
   json?: boolean;
 }
+
+export interface UpdateTestCaseElementOptions {
+  sessionId: string | undefined;
+  testTargetId: string;
+  testCaseId: string;
+  elementId: string;
+  locatorLine: string;
+}
