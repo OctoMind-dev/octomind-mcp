@@ -147,6 +147,8 @@ To get an APIKEY see here https://octomind.dev/docs/get-started/execution-withou
 
 # Listings / Integrations
 
+Certified by [MCPHub](https://mcphub.com/mcp-servers/octomind-dev/octomind-mcp)
+
 <a href="https://glama.ai/mcp/servers/@OctoMind-dev/octomind-mcp">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@OctoMind-dev/octomind-mcp/badge" alt="octomind-mcp MCP server" />
 </a>
