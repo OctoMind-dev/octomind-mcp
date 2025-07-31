@@ -1,6 +1,7 @@
 import axios from "axios";
-import { SearchResult } from "./types";
+
 import { logger } from "./logger";
+import { SearchResult } from "./types";
 
 // see https://mintlify.com/docs/api-reference/introduction#assistant-api-key
 const PUBLIC_MINTLIFY_API_KEY = "mint_dsc_3ZNWe13kDZKPFdidzxsnQFyU";

@@ -1,8 +1,13 @@
+import { randomUUID } from "crypto";
+
+import { OAuthClientProvider } from "@modelcontextprotocol/sdk/client/auth.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { OAuthClientProvider } from "@modelcontextprotocol/sdk/client/auth.js";
-import { OAuthClientInformation, OAuthClientMetadata, OAuthTokens } from "@modelcontextprotocol/sdk/shared/auth.js";
-import { randomUUID } from "crypto";
+import {
+  OAuthClientInformation,
+  OAuthClientMetadata,
+  OAuthTokens,
+} from "@modelcontextprotocol/sdk/shared/auth.js";
 
 // Create a simple OAuthClientProvider implementation that returns a fixed token
 class SimpleOAuthProvider implements OAuthClientProvider {
@@ -12,20 +17,20 @@ class SimpleOAuthProvider implements OAuthClientProvider {
   private _clientInformation: OAuthClientInformation | undefined;
   private _codeVerifier: string = "";
   private _tokens: OAuthTokens | undefined;
-  
+
   constructor(token: string) {
     this.token = token;
     this._redirectUrl = "http://localhost:3000/callback";
     this._clientMetadata = {
       client_name: "Simple OAuth Client",
-      redirect_uris: [this._redirectUrl]
+      redirect_uris: [this._redirectUrl],
     };
     this._clientInformation = {
       client_id: "simple-client-id",
-      client_secret: "simple-client-secret"
+      client_secret: "simple-client-secret",
     };
   }
-  
+
   // Required property for redirect URL
   get redirectUrl(): string | URL {
     return this._redirectUrl;
@@ -35,17 +40,20 @@ class SimpleOAuthProvider implements OAuthClientProvider {
   get clientMetadata(): OAuthClientMetadata {
     return this._clientMetadata;
   }
-  
+
   // Required method to get client information
-  clientInformation(): OAuthClientInformation | undefined | Promise<OAuthClientInformation | undefined> {
+  clientInformation():
+    | OAuthClientInformation
+    | undefined
+    | Promise<OAuthClientInformation | undefined> {
     return this._clientInformation;
   }
-  
+
   // Required method to get the access token
   async getAccessToken(): Promise<string> {
     return this.token;
   }
-  
+
   // Required method to refresh the token
   async refreshToken(): Promise<string> {
     // In this simple implementation, we just return the same token
@@ -70,7 +78,7 @@ class SimpleOAuthProvider implements OAuthClientProvider {
 
   // Required method to redirect to authorization URL
   redirectToAuthorization(authorizationUrl: URL): void | Promise<void> {
-    console.log(`Would redirect to: ${authorizationUrl.toString()}`); 
+    console.log(`Would redirect to: ${authorizationUrl.toString()}`);
     // In a real app with a UI, you would redirect the user here
   }
 
@@ -91,35 +99,39 @@ async function createAndUseMcpClient(serverUrl: string) {
     // 1. Create the client
     const client = new Client({
       name: "minimal-mcp-client",
-      version: "1.0.0"
+      version: "1.0.0",
     });
 
     // 2. Create the transport with the server URL
-    const transport = new StreamableHTTPClientTransport(
-      new URL(serverUrl),
-      {
-        requestInit: {
-          headers: {
-            'Authorization': 'Bearer test-api-key',
-            'X-Session-Id': randomUUID(),
-          }
-        }
-      }
-    );
+    const transport = new StreamableHTTPClientTransport(new URL(serverUrl), {
+      requestInit: {
+        headers: {
+          Authorization: "Bearer test-api-key",
+          "X-Session-Id": randomUUID(),
+        },
+      },
+    });
     console.log("Successfully created transport", transport.sessionId);
     // 3. Connect the client to the transport
     // This handles the initialization handshake with the server
     await client.connect(transport);
-    console.log("Successfully connected to MCP server", client.getServerCapabilities(), client.transport?.sessionId);
+    console.log(
+      "Successfully connected to MCP server",
+      client.getServerCapabilities(),
+      client.transport?.sessionId,
+    );
 
     // 4. Basic interaction examples
     // List available tools
     const toolsResponse = await client.listTools();
-    console.log("Available tools:", toolsResponse.tools.map(tool => tool.name));
+    console.log(
+      "Available tools:",
+      toolsResponse.tools.map((tool) => tool.name),
+    );
 
     const versionResponse = await client.callTool({
       name: "getVersion",
-      arguments: {}
+      arguments: {},
     });
     console.log("Version:", versionResponse);
 
@@ -130,7 +142,6 @@ async function createAndUseMcpClient(serverUrl: string) {
     // 6. Cleanup when done
     transport.close();
     return client; // Return client in case you want to reuse it
-    
   } catch (error) {
     console.error("Error with MCP client:", error);
     throw error;
@@ -140,9 +151,9 @@ async function createAndUseMcpClient(serverUrl: string) {
 // Usage example
 const serverUrl = "https://mcp.preview.octomind.dev/mcp";
 createAndUseMcpClient(serverUrl)
-  .then(client => {
+  .then((client) => {
     console.log("Client operation complete");
   })
-  .catch(err => {
+  .catch((err) => {
     console.error("Failed to create or use MCP client:", err);
   });

@@ -8,7 +8,7 @@ const jestConfig: jest.Config = {
   watchPathIgnorePatterns: ["temp"],
   prettierPath: null, //https://github.com/jestjs/jest/issues/14305 -> jest 30 will support it
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1"
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
 };
 
