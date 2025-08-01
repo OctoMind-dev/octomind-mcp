@@ -408,7 +408,7 @@ export class RedisSessionStore implements SessionStore {
 
   async getAllSessions(): Promise<Session[]> {
     await this.ensureClient();
-    const keys = await this.client.keys(this.prefix + "*");
+    const keys = await this.client.keys(`${this.prefix}*`);
     if (keys.length === 0) return [];
 
     const sessions = await Promise.all(
