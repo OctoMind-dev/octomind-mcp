@@ -106,9 +106,9 @@ export type TestCaseElement = {
   id: string;
   index: number;
   ignoreFailure: boolean;
-  interaction: any;
-  assertion: any;
-  selectors: any[];
+  interaction: unknown;
+  assertion: unknown;
+  selectors: unknown[];
 };
 
 export type TestCase = {
@@ -118,7 +118,7 @@ export type TestCase = {
   description: string;
   status: string;
   testTargetId: string;
-  discovery: any;
+  discovery: unknown;
   elements: TestCaseElement[];
 };
 

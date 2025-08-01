@@ -57,16 +57,25 @@ export const setLastTestTargetId = async (
 
 // Wrapper for tool calls to return error objects instead of throwing
 const safeToolCall = async (
+  // biome-ignore lint/suspicious/noExplicitAny: check in PR
   fn: (...args: any[]) => Promise<any>,
-  ...callbackArgs: any[]
+  ...callbackArgs: unknown[]
 ) => {
   try {
     return await fn(...callbackArgs);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let errorMessage: string;
+
+    if (error instanceof Error) {
+      errorMessage = `Error: ${error.message}`;
+    } else {
+      errorMessage = "Unknown error occurred.";
+    }
+
     return {
       content: [
         {
-          text: `Error: ${error?.message || String(error)}`,
+          text: errorMessage,
           type: "text",
         },
       ],

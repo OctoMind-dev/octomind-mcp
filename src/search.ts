@@ -75,7 +75,7 @@ export const search = async (
   if (data.chunks === undefined || data.chunks.length === 0) {
     throw new Error("No results found");
   }
-  return data.chunks.map((result: any) => {
+  return data.chunks.map((result: typeof data.chunks) => {
     const { chunk } = result;
     return {
       title: chunk.metadata.title,
