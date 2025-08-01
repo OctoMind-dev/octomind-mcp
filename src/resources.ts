@@ -23,6 +23,15 @@ import { TestCaseListItem, TestReport } from "./types";
 
 let tracesForTestReport: Record<string, string> = {};
 
+const validatedSession = async (
+  extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+): Promise<Session> => {
+  if (!extra.sessionId) {
+    throw new Error(`No sessionId provided in ${extra}`);
+  }
+  return await getSession(extra.sessionId);
+};
+
 export const reloadTestReports = async (
   session: Session,
   server: McpServer,
@@ -160,10 +169,8 @@ const checkNotificationsForSession = async (
 export const listTestReports = async (
   extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
 ): Promise<ListResourcesResult> => {
-  const session = await getSession(extra.sessionId!);
-  if (!session) {
-    throw new Error(`No session found for sessionId ${extra.sessionId}`);
-  }
+  const session = await validatedSession(extra);
+
   return {
     resources:
       session.testReportIds?.map((reportId) => ({
@@ -179,15 +186,18 @@ export const readTestReport = async (
   vars: Variables,
   extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
 ): Promise<ReadResourceResult> => {
-  const session = await getSession(extra.sessionId!);
-  if (!session) {
-    throw new Error(`No session found for sessionId ${extra.sessionId}`);
+  const session = await validatedSession(extra);
+
+  if (!session.currentTestTargetId) {
+    throw new Error(
+      `No currentTestTargetId found for session ${session.sessionId}`,
+    );
   }
   logger.info("Reading test report:", uri, vars);
   const reportId = vars.id as string;
   const result = await getTestReport({
     sessionId: session.sessionId,
-    testTargetId: session.currentTestTargetId!,
+    testTargetId: session.currentTestTargetId,
     reportId,
   });
   if (result) {
@@ -211,10 +221,7 @@ export const readTestReport = async (
 const listTestResultTraces = async (
   extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
 ): Promise<ListResourcesResult> => {
-  const session = await getSession(extra.sessionId!);
-  if (!session) {
-    throw new Error(`No session found for sessionId ${extra.sessionId}`);
-  }
+  const session = await validatedSession(extra);
   return {
     resources: Object.entries(session.tracesForTestReport).map(
       ([id, traceUrl]) => ({
@@ -233,10 +240,7 @@ const readTestResultTrace = async (
   extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
 ): Promise<ReadResourceResult> => {
   const id: string = vars.id as string;
-  const session = await getSession(extra.sessionId!);
-  if (!session) {
-    throw new Error(`No session found for sessionId ${extra.sessionId}`);
-  }
+  const session = await validatedSession(extra);
   const traceUrl = session.tracesForTestReport[id];
   if (!traceUrl) {
     throw new Error(`No trace found for test result ${id}`);
