@@ -55,7 +55,7 @@
         "useYield": "error"
       },
       "nursery": {
-        "noFloatingPromises": "warn",
+        "noFloatingPromises": "error",
         "noShadow": "error",
         "noTsIgnore": "error",
         "useConsistentObjectDefinition": "error",
