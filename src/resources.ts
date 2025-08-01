@@ -21,8 +21,6 @@ import { logger } from "./logger";
 import { getAllSessions, getSession, Session, setSession } from "./session";
 import { TestCaseListItem, TestReport } from "./types";
 
-let tracesForTestReport: Record<string, string> = {};
-
 const validatedSession = async (
   extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
 ): Promise<Session> => {
@@ -51,7 +49,6 @@ export const reloadTestReports = async (
   logger.info("Reloaded reports for test target:", session.currentTestTargetId);
   const reports = result.data;
 
-  tracesForTestReport = {};
   session.testReportIds = [];
   session.tracesForTestReport = {};
   reports.forEach((r: TestReport) => {

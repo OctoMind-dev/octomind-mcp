@@ -132,7 +132,7 @@ export const startSSEServer = async (server: McpServer, port: number) => {
     let session;
     try {
       session = await getSession(sessionId);
-    } catch (error) {
+    } catch (_error) {
       res.status(400).send("No transport found for sessionId");
       return;
     }

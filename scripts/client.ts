@@ -10,6 +10,7 @@ import {
 } from "@modelcontextprotocol/sdk/shared/auth.js";
 
 // Create a simple OAuthClientProvider implementation that returns a fixed token
+// biome-ignore lint/correctness/noUnusedVariables: check in PR why this is not used
 class SimpleOAuthProvider implements OAuthClientProvider {
   private token: string;
   private _redirectUrl: string;

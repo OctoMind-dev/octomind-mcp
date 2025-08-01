@@ -649,7 +649,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     `the getPrivateLocations tool can retrieve all private locations configured for that org. 
     A private location is a server that can be used to access a test target behind a firewall or VPN.`,
     {},
-    async ({}, { sessionId }) => {
+    async (_, { sessionId }) => {
       const res = await listPrivateLocations({ sessionId });
       logger.debug({ res }, "Retrieved all private locations");
       return {
@@ -672,7 +672,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     `the getTestTargets tool can retrieve all test targets or projects.
     Test targets represent applications or services that can be tested using Octomind.`,
     {},
-    async ({}, { sessionId }) => {
+    async (_, { sessionId }) => {
       const res = await listTestTargets({ sessionId });
       logger.debug({ res }, "Retrieved all test targets");
       return {

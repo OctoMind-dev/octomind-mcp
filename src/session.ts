@@ -339,7 +339,7 @@ export class RedisSessionStore implements SessionStore {
     let status = session.status || SessionStatus.ACTIVE;
 
     // If transport is missing, override status regardless of what was provided
-    if (!session.transport) {
+    if (!transport) {
       status = SessionStatus.TRANSPORT_MISSING;
     }
 
