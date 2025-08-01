@@ -58,10 +58,10 @@ export const setLastTestTargetId = async (
 // Wrapper for tool calls to return error objects instead of throwing
 const safeToolCall = async (
   fn: (...args: any[]) => Promise<any>,
-  ...args: any[]
+  ...callbackArgs: any[]
 ) => {
   try {
-    return await fn(...args);
+    return await fn(...callbackArgs);
   } catch (error: any) {
     return {
       content: [
@@ -84,7 +84,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       {
         query: z.string().describe("Search query"),
       },
-      ({ query }, { sessionId }) =>
+      ({ query: searchQuery }, { sessionId }) =>
         safeToolCall(
           async (query: string, _sessionId: string | undefined) => {
             logger.debug("Search query", query);
@@ -105,7 +105,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
               })),
             };
           },
-          query,
+          searchQuery,
           sessionId,
         ),
     );
@@ -126,7 +126,10 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test target"),
     },
-    ({ testCaseId, testTargetId }, { sessionId }) =>
+    (
+      { testCaseId: toolTestCaseId, testTargetId: toolTestTargetId },
+      { sessionId: toolSessionId },
+    ) =>
       safeToolCall(
         async (
           testCaseId: string,
@@ -153,9 +156,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
             ],
           };
         },
-        testCaseId,
-        testTargetId,
-        sessionId,
+        toolTestCaseId,
+        toolTestTargetId,
+        toolSessionId,
       ),
   );
 
@@ -190,14 +193,14 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
     (
       {
-        testTargetId,
-        url,
-        description,
-        environmentName,
-        variablesToOverwrite,
-        tags,
+        testTargetId: toolTestTargetId,
+        url: toolUrl,
+        description: toolDescription,
+        environmentName: toolEnvironmentName,
+        variablesToOverwrite: toolVariablesToOverwrite,
+        tags: toolTags,
       },
-      { sessionId },
+      { sessionId: toolSessionId },
     ) =>
       safeToolCall(
         async (
@@ -235,13 +238,13 @@ export const registerTools = async (server: McpServer): Promise<void> => {
             ],
           };
         },
-        testTargetId,
-        url,
-        description,
-        environmentName,
-        variablesToOverwrite,
-        tags,
-        sessionId,
+        toolTestTargetId,
+        toolUrl,
+        toolDescription,
+        toolEnvironmentName,
+        toolVariablesToOverwrite,
+        toolTags,
+        toolSessionId,
       ),
   );
 
@@ -257,7 +260,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test target"),
     },
-    ({ testTargetId }, { sessionId }) =>
+    ({ testTargetId: toolTestTargetId }, { sessionId: toolSessionId }) =>
       safeToolCall(
         async (testTargetId: string, sessionId: string | undefined) => {
           logger.debug({ testTargetId }, "Retrieving environments");
@@ -280,8 +283,8 @@ export const registerTools = async (server: McpServer): Promise<void> => {
             ],
           };
         },
-        testTargetId,
-        sessionId,
+        toolTestTargetId,
+        toolSessionId,
       ),
   );
 
@@ -883,7 +886,10 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           'Filter criteria for test cases, these are by default connected by AND. Includes description, runStatus, folderId and externalId. Example: "{ description: "create node", runStatus: "ON" }"',
         ),
     },
-    ({ testTargetId, filter }, { sessionId }) =>
+    (
+      { testTargetId: toolTestTargetId, filter: testCaseFilter },
+      { sessionId: toolSessionId },
+    ) =>
       safeToolCall(
         async (
           testTargetId: string,
@@ -913,9 +919,9 @@ export const registerTools = async (server: McpServer): Promise<void> => {
             ],
           };
         },
-        testTargetId,
-        filter,
-        sessionId,
+        toolTestTargetId,
+        testCaseFilter,
+        toolSessionId,
       ),
   );
 

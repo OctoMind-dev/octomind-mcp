@@ -149,8 +149,8 @@ async function createAndUseMcpClient(serverUrl: string) {
 }
 
 // Usage example
-const serverUrl = "https://mcp.preview.octomind.dev/mcp";
-createAndUseMcpClient(serverUrl)
+const serverUrlExample = "https://mcp.preview.octomind.dev/mcp";
+createAndUseMcpClient(serverUrlExample)
   .then((client) => {
     console.log("Client operation complete");
   })
