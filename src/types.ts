@@ -1,5 +1,5 @@
-import { z, type ZodEffects, type ZodString } from "zod";
 import { validate } from "uuid";
+import { type ZodEffects, type ZodString, z } from "zod";
 
 export const uuidValidation = (
   message = "id must be a valid UUID",
@@ -334,9 +334,9 @@ export interface TestCaseElement {
   id: string;
   index: number;
   ignoreFailure: boolean;
-  interaction: any;
-  assertion: any;
-  selectors: any[];
+  interaction: unknown;
+  assertion: unknown;
+  selectors: unknown[];
 }
 
 export interface PatchTestCaseOptions {

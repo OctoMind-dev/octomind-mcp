@@ -1,6 +1,7 @@
 import axios from "axios";
-import { SearchResult } from "./types";
+
 import { logger } from "./logger";
+import { SearchResult } from "./types";
 
 // see https://mintlify.com/docs/api-reference/introduction#assistant-api-key
 const PUBLIC_MINTLIFY_API_KEY = "mint_dsc_3ZNWe13kDZKPFdidzxsnQFyU";
@@ -74,7 +75,7 @@ export const search = async (
   if (data.chunks === undefined || data.chunks.length === 0) {
     throw new Error("No results found");
   }
-  return data.chunks.map((result: any) => {
+  return data.chunks.map((result: typeof data.chunks) => {
     const { chunk } = result;
     return {
       title: chunk.metadata.title,

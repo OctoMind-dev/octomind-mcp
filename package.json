@@ -10,18 +10,14 @@
   "bin": {
     "octomind": "./dist/index.js"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "!dist/**/*.map"
-  ],
+  "files": ["dist", "README.md", "!dist/**/*.map"],
   "exports": {
     "import": "./dist/index.js",
     "require": "./dist/index.js"
   },
   "scripts": {
     "version": "pnpm genversion -des src/version.ts",
-    "lint": "pnpm genversion -des src/version.ts && eslint src/**/*.ts tests/**/*.ts --max-warnings=0",
+    "lint": "pnpm genversion -des src/version.ts && biome check",
     "typecheck": "tsc --noEmit",
     "build": "pnpm genversion -des src/version.ts && tsc --project tsconfig.build.json",
     "octomind-mcp": "tsx src/index.ts",
@@ -32,41 +28,31 @@
     "type": "git",
     "url": "git+https://github.com/Octomind-dev/mcp-octomind.git"
   },
-  "keywords": [
-    "mcp",
-    "octomind"
-  ],
+  "keywords": ["mcp", "octomind"],
   "author": "Stefan Rinke",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Octomind-dev/mcp-octomind/issues"
   },
+
   "homepage": "https://github.com/Octomind-dev/mcp-octomind#readme",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.7.0",
-    "axios": "^1.8.4",
-    "commander": "^14.0.0",
-    "express": "^5.1.0",
-    "pino": "^9.6.0",
-    "redis": "^5.0.1",
-    "uuid": "^11.1.0",
-    "zod": "^3.24.2"
+    "@modelcontextprotocol/sdk": "1.17.1",
+    "axios": "1.11.0",
+    "commander": "14.0.0",
+    "express": "5.1.0",
+    "pino": "9.7.0",
+    "redis": "5.6.1",
+    "uuid": "11.1.0",
+    "zod": "3.25.76"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.1.3",
     "@types/express": "^5.0.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.1",
-    "@typescript-eslint/parser": "^8.25.0",
-    "eslint": "8.57.1",
-    "eslint-config-prettier": "^10.0.1",
-    "eslint-import-resolver-typescript": "^4.0.0",
-    "eslint-plugin-github": "^5.0.0",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-jest": "^29.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
     "genversion": "^3.2.0",
     "jest": "^30.0.3",
-    "prettier": "^3.0.1",
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.3",

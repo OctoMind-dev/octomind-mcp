@@ -1,44 +1,44 @@
 import axios from "axios";
-import {
-  ExecuteTestsOptions,
-  GetTestReportOptions,
-  GetTestReportsOptions,
-  RegisterLocationOptions,
-  UnregisterLocationOptions,
-  ListPrivateLocationsOptions,
-  PrivateLocationInfo,
-  ListEnvironmentsOptions,
-  CreateEnvironmentOptions,
-  UpdateEnvironmentOptions,
-  DeleteEnvironmentOptions,
-  TestTargetExecutionRequest,
-  TestReportResponse,
-  TestReportsResponse,
-  RegisterRequest,
-  UnregisterRequest,
-  SuccessResponse,
-  Environment,
-  TestReport,
-  DiscoveryOptions,
-  DiscoveryResponse,
-  Notification,
-  notificationSchema,
-  TestTarget,
-  CreateTestTargetOptions,
-  UpdateTestTargetOptions,
-  DeleteTestTargetOptions,
-  CreateTestTargetBody,
-  GetTestCasesOptions,
-  TestCaseListItem,
-  PatchTestCaseOptions,
-  UpdateTestCaseElementOptions,
-} from "./types";
-import { version } from "./version";
+
 import { logger } from "./logger";
 import { getApiKey } from "./sessionToApiKeyResolver";
+import {
+  CreateEnvironmentOptions,
+  CreateTestTargetBody,
+  CreateTestTargetOptions,
+  DeleteEnvironmentOptions,
+  DeleteTestTargetOptions,
+  DiscoveryOptions,
+  DiscoveryResponse,
+  Environment,
+  ExecuteTestsOptions,
+  GetTestCasesOptions,
+  GetTestReportOptions,
+  GetTestReportsOptions,
+  ListEnvironmentsOptions,
+  ListPrivateLocationsOptions,
+  Notification,
+  notificationSchema,
+  PatchTestCaseOptions,
+  PrivateLocationInfo,
+  RegisterLocationOptions,
+  RegisterRequest,
+  SuccessResponse,
+  TestCaseListItem,
+  TestReport,
+  TestReportResponse,
+  TestReportsResponse,
+  TestTarget,
+  TestTargetExecutionRequest,
+  UnregisterLocationOptions,
+  UnregisterRequest,
+  UpdateEnvironmentOptions,
+  UpdateTestCaseElementOptions,
+  UpdateTestTargetOptions,
+} from "./types";
+import { version } from "./version";
 
 const BASE_URL = process.env.OCTOMIND_API_URL || "https://app.octomind.dev/api";
-
 
 // Helper function for API calls
 export const apiCall = async <T>(
@@ -88,8 +88,13 @@ export const apiCall = async <T>(
           data: error.response?.data,
         },
       };
-      logger.error({error: filteredError}, `API Error: ${filteredError.message}`);
-      throw new Error(`API request failed. ${JSON.stringify(filteredError, null, 2)}`);
+      logger.error(
+        { error: filteredError },
+        `API Error: ${filteredError.message}`,
+      );
+      throw new Error(
+        `API request failed. ${JSON.stringify(filteredError, null, 2)}`,
+      );
     } else {
       logger.error("Error:", error);
       throw error;
@@ -101,9 +106,9 @@ export type TestCaseElement = {
   id: string;
   index: number;
   ignoreFailure: boolean;
-  interaction: any;
-  assertion: any;
-  selectors: any[];
+  interaction: unknown;
+  assertion: unknown;
+  selectors: unknown[];
 };
 
 export type TestCase = {
@@ -113,17 +118,23 @@ export type TestCase = {
   description: string;
   status: string;
   testTargetId: string;
-  discovery: any;
+  discovery: unknown;
   elements: TestCaseElement[];
 };
 
-export const getTestCase = async (
-  {testCaseId, testTargetId, sessionId}: {testCaseId: string, testTargetId: string, sessionId: string | undefined}
-): Promise<TestCase> => {
+export const getTestCase = async ({
+  testCaseId,
+  testTargetId,
+  sessionId,
+}: {
+  testCaseId: string;
+  testTargetId: string;
+  sessionId: string | undefined;
+}): Promise<TestCase> => {
   const response = await apiCall<TestCase>(
     "get",
     `/apiKey/v2/test-targets/${testTargetId}/test-cases/${testCaseId}`,
-    sessionId
+    sessionId,
   );
 
   return response;
@@ -165,9 +176,13 @@ export const discovery = async (
         "ack": "IN_WEB_APP"
     },
     */
-export const getNotifications = async (
-  {testTargetId, sessionId}: {testTargetId: string, sessionId: string | undefined}
-): Promise<Notification[]> => {
+export const getNotifications = async ({
+  testTargetId,
+  sessionId,
+}: {
+  testTargetId: string;
+  sessionId: string | undefined;
+}): Promise<Notification[]> => {
   const raw = await apiCall<Notification[]>(
     "get",
     `/apiKey/v2/test-targets/${testTargetId}/notifications`,
@@ -360,9 +375,11 @@ export const getTestReports = async (
   return response;
 };
 
-export const listTestTargets = async (
-  {sessionId}: {sessionId: string | undefined}
-): Promise<TestTarget[]> => {
+export const listTestTargets = async ({
+  sessionId,
+}: {
+  sessionId: string | undefined;
+}): Promise<TestTarget[]> => {
   const response = await apiCall<TestTarget[]>(
     "get",
     "/apiKey/v2/test-targets",

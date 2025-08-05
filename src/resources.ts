@@ -2,7 +2,7 @@ import {
   McpServer,
   ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-
+import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import { Variables } from "@modelcontextprotocol/sdk/shared/uriTemplate.js";
 import {
   ListResourcesResult,
@@ -11,29 +11,44 @@ import {
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import { getNotifications, getTestReports, getTestCases, getTestReport } from "./api";
-import { TestReport, TestCaseListItem } from "./types";
-import { getAllSessions, getSession, Session, setSession } from "./session";
+import {
+  getNotifications,
+  getTestCases,
+  getTestReport,
+  getTestReports,
+} from "./api";
 import { logger } from "./logger";
-import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
+import { getAllSessions, getSession, Session, setSession } from "./session";
+import { TestCaseListItem, TestReport } from "./types";
 
-let tracesForTestReport: Record<string, string> = {};
+const validatedSession = async (
+  extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+): Promise<Session> => {
+  if (!extra.sessionId) {
+    throw new Error(`No sessionId provided in ${extra}`);
+  }
+  return await getSession(extra.sessionId);
+};
 
 export const reloadTestReports = async (
   session: Session,
   server: McpServer,
 ) => {
   if (!session.currentTestTargetId) {
-    logger.warn(`No test target id found for session ${session.sessionId}, cannot load test reports`);
+    logger.warn(
+      `No test target id found for session ${session.sessionId}, cannot load test reports`,
+    );
     session.lastTestReportRefreshTime = Date.now();
     await setSession(session);
     return;
   }
-  const result = await getTestReports({ sessionId: session.sessionId, testTargetId: session.currentTestTargetId });
+  const result = await getTestReports({
+    sessionId: session.sessionId,
+    testTargetId: session.currentTestTargetId,
+  });
   logger.info("Reloaded reports for test target:", session.currentTestTargetId);
   const reports = result.data;
 
-  tracesForTestReport = {};
   session.testReportIds = [];
   session.tracesForTestReport = {};
   reports.forEach((r: TestReport) => {
@@ -63,17 +78,19 @@ export const clearTestReports = async (session: Session, server: McpServer) => {
   await setSession(session);
 };
 
-export const reloadTestCases = async (
-  session: Session,
-  server: McpServer,
-) => {
+export const reloadTestCases = async (session: Session, server: McpServer) => {
   if (!session.currentTestTargetId) {
-    logger.warn(`No test target id found for session ${session.sessionId}, cannot load test cases`);
+    logger.warn(
+      `No test target id found for session ${session.sessionId}, cannot load test cases`,
+    );
     session.lastTestCaseRefreshTime = Date.now();
     await setSession(session);
     return;
   }
-  const result = await getTestCases({ sessionId: session.sessionId, testTargetId: session.currentTestTargetId });
+  const result = await getTestCases({
+    sessionId: session.sessionId,
+    testTargetId: session.currentTestTargetId,
+  });
   session.testCaseIds = result.map((tc: TestCaseListItem) => tc.id);
 
   await server.server.notification({
@@ -88,26 +105,45 @@ export const checkNotifications = async (server: McpServer): Promise<void> => {
     if (!session.currentTestTargetId) {
       continue;
     }
-    logger.debug("Checking notifications for test target: %s, session: %s", session.currentTestTargetId, session.sessionId);
+    logger.debug(
+      "Checking notifications for test target: %s, session: %s",
+      session.currentTestTargetId,
+      session.sessionId,
+    );
     try {
       await checkNotificationsForSession(server, session);
     } catch (e) {
-      logger.error("Failed to check notifications for test target: %s, session: %s", session.currentTestTargetId, session.sessionId, e);
-      await setSession({...session, currentTestTargetId: undefined});
+      logger.error(
+        "Failed to check notifications for test target: %s, session: %s",
+        session.currentTestTargetId,
+        session.sessionId,
+        e,
+      );
+      await setSession({ ...session, currentTestTargetId: undefined });
     }
   }
-}
+};
 
-const checkNotificationsForSession = async (server: McpServer, session: Session): Promise<void> => {
+const checkNotificationsForSession = async (
+  server: McpServer,
+  session: Session,
+): Promise<void> => {
   let forceReloadReports = false;
   let forceReloadTestCases = false;
   if (session.currentTestTargetId) {
-    logger.info("Checking notifications for test target:", session.currentTestTargetId);
-    const notifications = await getNotifications({sessionId: session.sessionId, testTargetId: session.currentTestTargetId});
+    logger.info(
+      "Checking notifications for test target:",
+      session.currentTestTargetId,
+    );
+    const notifications = await getNotifications({
+      sessionId: session.sessionId,
+      testTargetId: session.currentTestTargetId,
+    });
     notifications.forEach(async (n) => {
       if (
         n.type === "REPORT_EXECUTION_FINISHED" &&
-        n.updatedAt.getTime() > (session.lastTestReportRefreshTime ?? Date.now())
+        n.updatedAt.getTime() >
+          (session.lastTestReportRefreshTime ?? Date.now())
       ) {
         forceReloadReports = true;
       }
@@ -127,11 +163,11 @@ const checkNotificationsForSession = async (server: McpServer, session: Session)
   }
 };
 
-export const listTestReports = async (extra: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<ListResourcesResult> => {
-  const session = await getSession(extra.sessionId!);
-  if (!session) {
-    throw new Error(`No session found for sessionId ${extra.sessionId}`);
-  }
+export const listTestReports = async (
+  extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+): Promise<ListResourcesResult> => {
+  const session = await validatedSession(extra);
+
   return {
     resources:
       session.testReportIds?.map((reportId) => ({
@@ -147,13 +183,20 @@ export const readTestReport = async (
   vars: Variables,
   extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
 ): Promise<ReadResourceResult> => {
-  const session = await getSession(extra.sessionId!);
-  if (!session) {
-    throw new Error(`No session found for sessionId ${extra.sessionId}`);
+  const session = await validatedSession(extra);
+
+  if (!session.currentTestTargetId) {
+    throw new Error(
+      `No currentTestTargetId found for session ${session.sessionId}`,
+    );
   }
   logger.info("Reading test report:", uri, vars);
   const reportId = vars.id as string;
-  const result = await getTestReport({ sessionId: session.sessionId, testTargetId: session.currentTestTargetId!, reportId });
+  const result = await getTestReport({
+    sessionId: session.sessionId,
+    testTargetId: session.currentTestTargetId,
+    reportId,
+  });
   if (result) {
     return {
       contents: [
@@ -172,18 +215,19 @@ export const readTestReport = async (
   }
 };
 
-const listTestResultTraces = async (extra: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<ListResourcesResult> => {
-  const session = await getSession(extra.sessionId!);
-  if (!session) {
-    throw new Error(`No session found for sessionId ${extra.sessionId}`);
-  }
+const listTestResultTraces = async (
+  extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+): Promise<ListResourcesResult> => {
+  const session = await validatedSession(extra);
   return {
-    resources: Object.entries(session.tracesForTestReport).map(([id, traceUrl]) => ({
-      uri: `testresulttrace://${id}`,
-      name: `Trace ${id}`,
-      description: `Trace for test result ${id}`,
-      metadata: { traceUrl },
-    })),
+    resources: Object.entries(session.tracesForTestReport).map(
+      ([id, traceUrl]) => ({
+        uri: `testresulttrace://${id}`,
+        name: `Trace ${id}`,
+        description: `Trace for test result ${id}`,
+        metadata: { traceUrl },
+      }),
+    ),
   };
 };
 
@@ -193,10 +237,7 @@ const readTestResultTrace = async (
   extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
 ): Promise<ReadResourceResult> => {
   const id: string = vars.id as string;
-  const session = await getSession(extra.sessionId!);
-  if (!session) {
-    throw new Error(`No session found for sessionId ${extra.sessionId}`);
-  }
+  const session = await validatedSession(extra);
   const traceUrl = session.tracesForTestReport[id];
   if (!traceUrl) {
     throw new Error(`No trace found for test result ${id}`);
@@ -227,7 +268,7 @@ const readTestResultTrace = async (
 export const registerResources = (server: McpServer): void => {
   server.resource(
     "test reports",
-    new ResourceTemplate("testreport://{id}", { 
+    new ResourceTemplate("testreport://{id}", {
       list: listTestReports,
     }),
     readTestReport,

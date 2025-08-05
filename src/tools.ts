@@ -1,35 +1,38 @@
+import { randomUUID } from "crypto";
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { version } from "./version";
+
 import {
   createEnvironment,
+  createTestTarget,
   deleteEnvironment,
+  deleteTestTarget,
   executeTests,
   getTestCase,
   getTestCases,
   getTestReport,
   getTestReports,
   listEnvironments,
+  listPrivateLocations,
   listTestTargets,
   patchTestCase,
   updateEnvironment,
-  createTestTarget,
-  updateTestTarget,
-  deleteTestTarget,
-  listPrivateLocations,
   updateTestCaseElement,
+  updateTestTarget,
 } from "./api";
-
-import { reloadTestReports, clearTestReports } from "./resources";
-import { logger } from "./logger";
 import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
-import { getSession, setSession } from "./session";
+import { logger } from "./logger";
+import { clearTestReports, reloadTestReports } from "./resources";
 import { search, trieveConfig } from "./search";
-import { randomUUID } from "crypto";
+import { getSession, setSession } from "./session";
+import { version } from "./version";
 
 export const theStdioSessionId = randomUUID();
 
-export const getLastTestTargetId = async (sessionId: string): Promise<string | undefined> => {
+export const getLastTestTargetId = async (
+  sessionId: string,
+): Promise<string | undefined> => {
   const session = await getSession(sessionId);
   return session?.currentTestTargetId;
 };
@@ -37,7 +40,7 @@ export const getLastTestTargetId = async (sessionId: string): Promise<string | u
 export const setLastTestTargetId = async (
   server: McpServer,
   testTargetId: string | undefined,
-  sessionId?: string,  
+  sessionId?: string,
 ): Promise<void> => {
   const session = await getSession(sessionId || theStdioSessionId);
   if (testTargetId !== session.currentTestTargetId) {
@@ -53,14 +56,26 @@ export const setLastTestTargetId = async (
 };
 
 // Wrapper for tool calls to return error objects instead of throwing
-const safeToolCall = async (fn: (...args: any[]) => Promise<any>, ...args: any[]) => {
+const safeToolCall = async (
+  // biome-ignore lint/suspicious/noExplicitAny: check in PR
+  fn: (...args: any[]) => Promise<any>,
+  ...callbackArgs: unknown[]
+) => {
   try {
-    return await fn(...args);
-  } catch (error: any) {
+    return await fn(...callbackArgs);
+  } catch (error: unknown) {
+    let errorMessage: string;
+
+    if (error instanceof Error) {
+      errorMessage = `Error: ${error.message}`;
+    } else {
+      errorMessage = "Unknown error occurred.";
+    }
+
     return {
       content: [
         {
-          text: `Error: ${error?.message || String(error)}`,
+          text: errorMessage,
           type: "text",
         },
       ],
@@ -78,28 +93,30 @@ export const registerTools = async (server: McpServer): Promise<void> => {
       {
         query: z.string().describe("Search query"),
       },
-      ({query},{sessionId}) => safeToolCall(
-        async (query: string, _sessionId: string | undefined) => {
-          logger.debug("Search query", query);
-          const results = await search(query, trieve);
-          logger.debug("Search results", results);
-          const c = results.map((result) => {
-            const { title, content, link } = result;
-            const text = `Title: ${title}\nContent: ${content}\nLink: ${link}`;
+      ({ query: searchQuery }, { sessionId }) =>
+        safeToolCall(
+          async (query: string, _sessionId: string | undefined) => {
+            logger.debug("Search query", query);
+            const results = await search(query, trieve);
+            logger.debug("Search results", results);
+            const c = results.map((result) => {
+              const { title, content, link } = result;
+              const text = `Title: ${title}\nContent: ${content}\nLink: ${link}`;
+              return {
+                type: "text",
+                text,
+              };
+            });
             return {
-              type: "text",
-              text,
+              content: c.map((content) => ({
+                ...content,
+                type: "text",
+              })),
             };
-          });
-          return {
-            content: c.map((content) => ({
-              ...content,
-              type: "text",
-            })),
-          };
-        },
-        query, sessionId
-      ),
+          },
+          searchQuery,
+          sessionId,
+        ),
     );
   }
 
@@ -118,28 +135,40 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test target"),
     },
-    ({testCaseId, testTargetId}, {sessionId}) => safeToolCall(
-      async (testCaseId: string, testTargetId: string, sessionId: string | undefined) => {
-        const res = await getTestCase(
-          {testCaseId, testTargetId, sessionId}
-        );
-        logger.debug("Retrieved test case", res);
-        await setLastTestTargetId(server, testTargetId, sessionId);
-        return {
-          content: [
-            {
-              text: `Retrieved test case: ${testCaseId} for test target: ${testTargetId}`,
-              type: "text",
-            },
-            {
-              type: "text",
-              text: JSON.stringify(res),
-            },
-          ],
-        };
-      },
-      testCaseId, testTargetId, sessionId
-    ),
+    (
+      { testCaseId: toolTestCaseId, testTargetId: toolTestTargetId },
+      { sessionId: toolSessionId },
+    ) =>
+      safeToolCall(
+        async (
+          testCaseId: string,
+          testTargetId: string,
+          sessionId: string | undefined,
+        ) => {
+          const res = await getTestCase({
+            testCaseId,
+            testTargetId,
+            sessionId,
+          });
+          logger.debug("Retrieved test case", res);
+          await setLastTestTargetId(server, testTargetId, sessionId);
+          return {
+            content: [
+              {
+                text: `Retrieved test case: ${testCaseId} for test target: ${testTargetId}`,
+                type: "text",
+              },
+              {
+                type: "text",
+                text: JSON.stringify(res),
+              },
+            ],
+          };
+        },
+        toolTestCaseId,
+        toolTestTargetId,
+        toolSessionId,
+      ),
   );
 
   // Test execution
@@ -171,44 +200,61 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .default([])
         .describe("List of tags used for filtering the tests to execute"),
     },
-    ({testTargetId, url, description, environmentName, variablesToOverwrite, tags}, {sessionId}) => safeToolCall(
-      async (
-        testTargetId: string,
-        url: string,
-        description: string | undefined,
-        environmentName: string,
-        variablesToOverwrite: Record<string, string[]> | undefined,
-        tags: string[],
-        sessionId: string | undefined
-      ) => {
-        logger.debug({ testTargetId }, "Executing tests");
-        const res = await executeTests({
-          sessionId,
-          json: true,
-          description: description || "triggered by MCP Tool",
-          testTargetId,
-          url,
-          environmentName,
-          variablesToOverwrite,
-          tags,
-        });
-        logger.debug({ res }, "Executed tests");
-        await setLastTestTargetId(server, testTargetId, sessionId);
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Executing tests for target: ${testTargetId} on URL: ${url}`,
-            },
-            {
-              type: "text",
-              text: JSON.stringify(res),
-            },
-          ],
-        };
+    (
+      {
+        testTargetId: toolTestTargetId,
+        url: toolUrl,
+        description: toolDescription,
+        environmentName: toolEnvironmentName,
+        variablesToOverwrite: toolVariablesToOverwrite,
+        tags: toolTags,
       },
-      testTargetId, url, description, environmentName, variablesToOverwrite, tags, sessionId
-    ),
+      { sessionId: toolSessionId },
+    ) =>
+      safeToolCall(
+        async (
+          testTargetId: string,
+          url: string,
+          description: string | undefined,
+          environmentName: string,
+          variablesToOverwrite: Record<string, string[]> | undefined,
+          tags: string[],
+          sessionId: string | undefined,
+        ) => {
+          logger.debug({ testTargetId }, "Executing tests");
+          const res = await executeTests({
+            sessionId,
+            json: true,
+            description: description || "triggered by MCP Tool",
+            testTargetId,
+            url,
+            environmentName,
+            variablesToOverwrite,
+            tags,
+          });
+          logger.debug({ res }, "Executed tests");
+          await setLastTestTargetId(server, testTargetId, sessionId);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Executing tests for target: ${testTargetId} on URL: ${url}`,
+              },
+              {
+                type: "text",
+                text: JSON.stringify(res),
+              },
+            ],
+          };
+        },
+        toolTestTargetId,
+        toolUrl,
+        toolDescription,
+        toolEnvironmentName,
+        toolVariablesToOverwrite,
+        toolTags,
+        toolSessionId,
+      ),
   );
 
   // Environment endpoints
@@ -223,30 +269,32 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test target"),
     },
-    ({testTargetId}, {sessionId}) => safeToolCall(
-      async (testTargetId: string, sessionId: string | undefined) => {
-        logger.debug({ testTargetId }, "Retrieving environments");
-        const res = await listEnvironments({
-          sessionId,
-          testTargetId,
-        });
-        logger.debug({ res }, "Retrieved environments");
-        await setLastTestTargetId(server, testTargetId, sessionId);
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Retrieved environments for test target: ${testTargetId}`,
-            },
-            {
-              type: "text",
-              text: JSON.stringify(res),
-            },
-          ],
-        };
-      },
-      testTargetId, sessionId
-    ),
+    ({ testTargetId: toolTestTargetId }, { sessionId: toolSessionId }) =>
+      safeToolCall(
+        async (testTargetId: string, sessionId: string | undefined) => {
+          logger.debug({ testTargetId }, "Retrieving environments");
+          const res = await listEnvironments({
+            sessionId,
+            testTargetId,
+          });
+          logger.debug({ res }, "Retrieved environments");
+          await setLastTestTargetId(server, testTargetId, sessionId);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Retrieved environments for test target: ${testTargetId}`,
+              },
+              {
+                type: "text",
+                text: JSON.stringify(res),
+              },
+            ],
+          };
+        },
+        toolTestTargetId,
+        toolSessionId,
+      ),
   );
 
   server.tool(
@@ -310,7 +358,17 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         if discovery needs additional headers to be set",
       ),
     },
-    async ({testTargetId,name,discoveryUrl,testAccount,privateLocationName,additionalHeaderFields},{sessionId}) => {
+    async (
+      {
+        testTargetId,
+        name,
+        discoveryUrl,
+        testAccount,
+        privateLocationName,
+        additionalHeaderFields,
+      },
+      { sessionId },
+    ) => {
       logger.debug({ testTargetId }, "Creating environment");
       const res = await createEnvironment({
         sessionId,
@@ -414,7 +472,18 @@ export const registerTools = async (server: McpServer): Promise<void> => {
           "Optional additional HTTP header fields, if discovery needs additional headers to be set",
         ),
     },
-    async ({testTargetId,environmentId,name,discoveryUrl,testAccount,privateLocationName,additionalHeaderFields},{sessionId}) => {
+    async (
+      {
+        testTargetId,
+        environmentId,
+        name,
+        discoveryUrl,
+        testAccount,
+        privateLocationName,
+        additionalHeaderFields,
+      },
+      { sessionId },
+    ) => {
       logger.debug({ testTargetId }, "Updating environment");
       const res = await updateEnvironment({
         sessionId,
@@ -459,7 +528,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the environment to delete"),
     },
-    async ({testTargetId,environmentId},{sessionId}) => {
+    async ({ testTargetId, environmentId }, { sessionId }) => {
       logger.debug({ testTargetId }, "Deleting environment");
       const res = await deleteEnvironment({
         sessionId,
@@ -515,7 +584,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .optional()
         .describe("Optional filters for test reports"),
     },
-    async ({testTargetId,key,filter},{sessionId}) => {
+    async ({ testTargetId, key, filter }, { sessionId }) => {
       logger.debug({ testTargetId }, "Retrieving test reports");
       const res = await getTestReports({
         sessionId,
@@ -556,7 +625,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test report"),
     },
-    async ({testTargetId,testReportId},{sessionId}) => {
+    async ({ testTargetId, testReportId }, { sessionId }) => {
       logger.debug({ testTargetId }, "Retrieving test report");
       const res = await getTestReport({
         sessionId,
@@ -589,7 +658,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     `the getPrivateLocations tool can retrieve all private locations configured for that org. 
     A private location is a server that can be used to access a test target behind a firewall or VPN.`,
     {},
-    async ({},{sessionId}) => {
+    async (_, { sessionId }) => {
       const res = await listPrivateLocations({ sessionId });
       logger.debug({ res }, "Retrieved all private locations");
       return {
@@ -612,8 +681,8 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     `the getTestTargets tool can retrieve all test targets or projects.
     Test targets represent applications or services that can be tested using Octomind.`,
     {},
-    async ({},{sessionId}) => {
-      const res = await listTestTargets({sessionId});
+    async (_, { sessionId }) => {
+      const res = await listTestTargets({ sessionId });
       logger.debug({ res }, "Retrieved all test targets");
       return {
         content: [
@@ -643,8 +712,8 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .url()
         .describe("The discovery URL of the test target"),
     },
-    async ({app,discoveryUrl},{sessionId}) => {
-      logger.debug({ app,discoveryUrl }, "Creating test target");
+    async ({ app, discoveryUrl }, { sessionId }) => {
+      logger.debug({ app, discoveryUrl }, "Creating test target");
       const res = await createTestTarget({
         sessionId,
         app,
@@ -715,7 +784,16 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .optional()
         .describe("The timeout per step in milliseconds"),
     },
-    async ({testTargetId,discoveryUrl,testIdAttribute,testRailIntegration,timeoutPerStep},{sessionId}) => {
+    async (
+      {
+        testTargetId,
+        discoveryUrl,
+        testIdAttribute,
+        testRailIntegration,
+        timeoutPerStep,
+      },
+      { sessionId },
+    ) => {
       logger.debug({ testTargetId }, "Updating test target");
       const res = await updateTestTarget({
         sessionId,
@@ -752,7 +830,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .uuid()
         .describe("Unique identifier of the test target to delete"),
     },
-    async ({testTargetId},{sessionId}) => {
+    async ({ testTargetId }, { sessionId }) => {
       logger.debug({ testTargetId }, "Deleting test target");
       await deleteTestTarget({
         sessionId,
@@ -788,17 +866,18 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
   );
 
-    const testCaseFilterSchema = z
-        .object({
-            description: z.string().optional(),
-            runStatus: z.enum(["ON", "OFF"]).optional(),
-            folderId: z.string().optional(),
-            externalId: z.string().optional(),
-            status: z.enum(["ENABLED", "DISABLED", "DRAFT", "OUTDATED", "PROVISIONAL"]).optional(),
-        });
-    type TestCaseFilter = z.infer<typeof testCaseFilterSchema>;
+  const testCaseFilterSchema = z.object({
+    description: z.string().optional(),
+    runStatus: z.enum(["ON", "OFF"]).optional(),
+    folderId: z.string().optional(),
+    externalId: z.string().optional(),
+    status: z
+      .enum(["ENABLED", "DISABLED", "DRAFT", "OUTDATED", "PROVISIONAL"])
+      .optional(),
+  });
+  type TestCaseFilter = z.infer<typeof testCaseFilterSchema>;
 
-    server.tool(
+  server.tool(
     "getTestCases",
     `the getTestCases tool can retrieve test cases for a given test target with optional filtering.
     Test cases can be filtered by various criteria such as status, description, or tags.`,
@@ -807,41 +886,52 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .string()
         .uuid()
         .describe("Unique identifier of the test target"),
-      filter: testCaseFilterSchema.omit({
+      filter: testCaseFilterSchema
+        .omit({
           status: true,
-      })
+        })
         .optional()
         .describe(
           'Filter criteria for test cases, these are by default connected by AND. Includes description, runStatus, folderId and externalId. Example: "{ description: "create node", runStatus: "ON" }"',
         ),
     },
-    ({testTargetId,filter},{sessionId}) => safeToolCall(
-      async (testTargetId: string, filter: TestCaseFilter | undefined, sessionId: string | undefined) => {
-        const filterWithFallback = filter ?? {};
-        filterWithFallback.status = "ENABLED";
+    (
+      { testTargetId: toolTestTargetId, filter: testCaseFilter },
+      { sessionId: toolSessionId },
+    ) =>
+      safeToolCall(
+        async (
+          testTargetId: string,
+          filter: TestCaseFilter | undefined,
+          sessionId: string | undefined,
+        ) => {
+          const filterWithFallback = filter ?? {};
+          filterWithFallback.status = "ENABLED";
 
-        const res = await getTestCases({
-          sessionId,
-          testTargetId,
-          filter: JSON.stringify(filterWithFallback),
-        });
-        logger.debug("Retrieved test cases", res);
-        await setLastTestTargetId(server, testTargetId, sessionId);
-        return {
-          content: [
-            {
-              text: `Retrieved ${res.length} test cases for test target: ${testTargetId}${filter ? ` with filter: ${filter}` : ""}`,
-              type: "text",
-            },
-            {
-              type: "text",
-              text: JSON.stringify(res, null, 2),
-            },
-          ],
-        };
-      },
-      testTargetId, filter, sessionId
-    ),
+          const res = await getTestCases({
+            sessionId,
+            testTargetId,
+            filter: JSON.stringify(filterWithFallback),
+          });
+          logger.debug("Retrieved test cases", res);
+          await setLastTestTargetId(server, testTargetId, sessionId);
+          return {
+            content: [
+              {
+                text: `Retrieved ${res.length} test cases for test target: ${testTargetId}${filter ? ` with filter: ${filter}` : ""}`,
+                type: "text",
+              },
+              {
+                type: "text",
+                text: JSON.stringify(res, null, 2),
+              },
+            ],
+          };
+        },
+        toolTestTargetId,
+        testCaseFilter,
+        toolSessionId,
+      ),
   );
 
   // Update Test Case
@@ -932,7 +1022,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
     },
   );
 
-
   server.tool(
     "updateTestCaseElement",
     `the updateTestCaseElement tool can update a specific element within a test case.
@@ -953,10 +1042,20 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .string()
         .uuid()
         .describe("Unique identifier of the test case element to update"),
-      locatorLine: z.string().describe("a valid playwright locator line, e.g. \"locator('body')\", or \"getByRole('button', { name: 'some button'}).filter({ hasText: 'some text' })\"")
+      locatorLine: z
+        .string()
+        .describe(
+          "a valid playwright locator line, e.g. \"locator('body')\", or \"getByRole('button', { name: 'some button'}).filter({ hasText: 'some text' })\"",
+        ),
     },
-    async ({ testTargetId, testCaseId, elementId, locatorLine }, { sessionId }) => {
-      logger.debug({ testTargetId, testCaseId, elementId }, "Updating test case element");
+    async (
+      { testTargetId, testCaseId, elementId, locatorLine },
+      { sessionId },
+    ) => {
+      logger.debug(
+        { testTargetId, testCaseId, elementId },
+        "Updating test case element",
+      );
       const res = await updateTestCaseElement({
         sessionId,
         testTargetId,

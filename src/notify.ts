@@ -16,8 +16,6 @@ const server = new Server(
   },
 );
 
-let numberOfNotifications = 0;
-
 export const notify = async () => {
   const transport = new StdioServerTransport();
   console.error("Connecting server to transport...");
@@ -31,7 +29,6 @@ export const notify = async () => {
      });*/
   await server.connect(transport);
   setTimeout(async () => {
-    numberOfNotifications++;
     console.error("Sending notification...");
     await server.notification({
       method: "notifications/resources/list_changed",

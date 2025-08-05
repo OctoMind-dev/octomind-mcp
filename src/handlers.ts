@@ -1,7 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { logger } from "./logger";
+
 import { discovery } from "./api";
+import { logger } from "./logger";
 import { DiscoveryOptions } from "./types";
 
 /**
@@ -80,7 +81,10 @@ export class DiscoveryHandler
    * @param params Parameters for the discovery tool
    * @returns Response from the discovery tool execution
    */
-  async execute(params: DiscoveryParams, sessionId: string | undefined): Promise<ToolResponse> {
+  async execute(
+    params: DiscoveryParams,
+    sessionId: string | undefined,
+  ): Promise<ToolResponse> {
     logger.debug({ params }, "Discovering test case");
 
     const discoveryOptions: DiscoveryOptions = {
@@ -112,8 +116,6 @@ export class DiscoveryHandler
       ],
     };
   }
-
-
 }
 
 /**
@@ -182,7 +184,7 @@ EXPECTED RESULT
           Is is also often used as a prerequisite for other test cases. Only set this option for these special test cases. Only one LOGIN or COOKIE_BANNER test case can
           exist per test target at a time.`),
     },
-    async (params, {sessionId}) => {
+    async (params, { sessionId }) => {
       return handler.execute(params, sessionId);
     },
   );
