@@ -10,7 +10,11 @@
   "bin": {
     "octomind": "./dist/index.js"
   },
-  "files": ["dist", "README.md", "!dist/**/*.map"],
+  "files": [
+    "dist",
+    "README.md",
+    "!dist/**/*.map"
+  ],
   "exports": {
     "import": "./dist/index.js",
     "require": "./dist/index.js"
@@ -28,13 +32,15 @@
     "type": "git",
     "url": "git+https://github.com/Octomind-dev/mcp-octomind.git"
   },
-  "keywords": ["mcp", "octomind"],
+  "keywords": [
+    "mcp",
+    "octomind"
+  ],
   "author": "Stefan Rinke",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Octomind-dev/mcp-octomind/issues"
   },
-
   "homepage": "https://github.com/Octomind-dev/mcp-octomind#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.17.2",
@@ -47,7 +53,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.4",
+    "@biomejs/biome": "2.2.2",
     "@types/express": "^5.0.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.1",
