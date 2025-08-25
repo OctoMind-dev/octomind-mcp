@@ -10,11 +10,7 @@
   "bin": {
     "octomind": "./dist/index.js"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "!dist/**/*.map"
-  ],
+  "files": ["dist", "README.md", "!dist/**/*.map"],
   "exports": {
     "import": "./dist/index.js",
     "require": "./dist/index.js"
@@ -32,10 +28,7 @@
     "type": "git",
     "url": "git+https://github.com/Octomind-dev/mcp-octomind.git"
   },
-  "keywords": [
-    "mcp",
-    "octomind"
-  ],
+  "keywords": ["mcp", "octomind"],
   "author": "Stefan Rinke",
   "license": "ISC",
   "bugs": {
