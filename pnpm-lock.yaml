@@ -52,10 +52,10 @@ importers:
         specifier: 30.0.5
         version: 30.0.5(@types/node@24.2.1)(ts-node@10.9.2(@types/node@24.2.1)(typescript@5.9.2))
       ts-jest:
-        specifier: ^29.2.6
+        specifier: 29.4.1
         version: 29.4.1(@babel/core@7.28.0)(@jest/transform@30.0.5)(@jest/types@30.0.5)(babel-jest@30.0.5(@babel/core@7.28.0))(jest-util@30.0.5)(jest@30.0.5(@types/node@24.2.1)(ts-node@10.9.2(@types/node@24.2.1)(typescript@5.9.2)))(typescript@5.9.2)
       ts-node:
-        specifier: ^10.9.2
+        specifier: 10.9.2
         version: 10.9.2(@types/node@24.2.1)(typescript@5.9.2)
       tsx:
         specifier: 4.20.4
@@ -557,9 +557,6 @@ packages:
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
     engines: {node: '>=6.0.0'}
-
-  '@jridgewell/sourcemap-codec@1.5.0':
-    resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
 
   '@jridgewell/sourcemap-codec@1.5.4':
     resolution: {integrity: sha512-VT2+G1VQs/9oz078bLrYbecdZKs912zQlkelYpuf+SXF+QvZDYJlbx/LSx+meSAwdDFnF8FVXW92AVjjkVmgFw==}
@@ -2694,8 +2691,6 @@ snapshots:
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
-  '@jridgewell/sourcemap-codec@1.5.0': {}
-
   '@jridgewell/sourcemap-codec@1.5.4': {}
 
   '@jridgewell/trace-mapping@0.3.29':
@@ -2706,7 +2701,7 @@ snapshots:
   '@jridgewell/trace-mapping@0.3.9':
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
-      '@jridgewell/sourcemap-codec': 1.5.0
+      '@jridgewell/sourcemap-codec': 1.5.4
 
   '@modelcontextprotocol/sdk@1.17.4':
     dependencies:
