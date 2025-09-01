@@ -780,12 +780,7 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("The timeout per step in milliseconds"),
     },
     async (
-      {
-        testTargetId,
-        testIdAttribute,
-        testRailIntegration,
-        timeoutPerStep,
-      },
+      { testTargetId, testIdAttribute, testRailIntegration, timeoutPerStep },
       { sessionId },
     ) => {
       logger.debug({ testTargetId }, "Updating test target");
