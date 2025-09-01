@@ -413,7 +413,6 @@ export const updateTestTarget = async (
 ): Promise<TestTarget> => {
   const requestBody = {
     app: options.app,
-    discoveryUrl: options.discoveryUrl,
     skipAutomaticTestCreation: options.skipAutomaticTestCreation,
     testIdAttribute: options.testIdAttribute,
     testRailIntegration: options.testRailIntegration,

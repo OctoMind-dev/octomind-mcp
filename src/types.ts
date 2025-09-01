@@ -290,7 +290,6 @@ export interface UpdateTestTargetOptions {
   sessionId: string | undefined;
   testTargetId: string;
   app?: string;
-  discoveryUrl?: string;
   skipAutomaticTestCreation?: boolean;
   testIdAttribute?: string;
   testRailIntegration?: {
