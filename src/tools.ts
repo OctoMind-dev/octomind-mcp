@@ -21,7 +21,7 @@ import {
   updateTestCaseElement,
   updateTestTarget,
 } from "./api";
-import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
+import { BatchGenerationHandler, DiscoveryHandler, registerBatchGenerationTool, registerDiscoveryTool } from "./handlers";
 import { logger } from "./logger";
 import { clearTestReports, reloadTestReports } from "./resources";
 import { search, trieveConfig } from "./search";
@@ -652,6 +652,10 @@ export const registerTools = async (server: McpServer): Promise<void> => {
 
   const discoveryHandler = new DiscoveryHandler();
   registerDiscoveryTool(server, discoveryHandler);
+
+  const batchGenerationHandler = new BatchGenerationHandler();
+  registerBatchGenerationTool(server, batchGenerationHandler);
+
   // Private location endpoints
   server.tool(
     "getPrivateLocations",

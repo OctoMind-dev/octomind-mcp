@@ -140,6 +140,43 @@ export const getTestCase = async ({
   return response;
 };
 
+export type BatchGenerationOptions = {
+  testTargetId: string;
+  entryPointUrlPath?: string;
+  imageUrls: string[];
+  environmentId?: string;
+  prerequisiteId?: string;
+  baseUrl?: string;
+  prompt: string;
+  sessionId: string | undefined;
+};
+
+export type BatchGenerationResponse = {
+  batchGenerationId: string;
+};
+
+export const batchGeneration = async (
+  options: BatchGenerationOptions,
+): Promise<BatchGenerationResponse> => {
+  const requestBody = {
+    prompt: options.prompt,
+    entryPointUrlPath: options.entryPointUrlPath,
+    prerequisiteId: options.prerequisiteId,
+    imageUrls: options.imageUrls,
+    environmentId: options.environmentId,
+    baseUrl: options.baseUrl,
+  };
+
+  const response = await apiCall<BatchGenerationResponse>(
+    "post",
+    `/apiKey/v2/test-targets/${options.testTargetId}/batch-generations`,
+    options.sessionId,
+    requestBody,
+  );
+
+  return response;
+};  
+
 export const discovery = async (
   options: DiscoveryOptions,
 ): Promise<DiscoveryResponse> => {
