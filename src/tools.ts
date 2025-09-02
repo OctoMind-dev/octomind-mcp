@@ -21,7 +21,12 @@ import {
   updateTestCaseElement,
   updateTestTarget,
 } from "./api";
-import { BatchGenerationHandler, DiscoveryHandler, registerBatchGenerationTool, registerDiscoveryTool } from "./handlers";
+import {
+  BatchGenerationHandler,
+  DiscoveryHandler,
+  registerBatchGenerationTool,
+  registerDiscoveryTool,
+} from "./handlers";
 import { logger } from "./logger";
 import { clearTestReports, reloadTestReports } from "./resources";
 import { search, trieveConfig } from "./search";

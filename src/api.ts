@@ -175,7 +175,7 @@ export const batchGeneration = async (
   );
 
   return response;
-};  
+};
 
 export const discovery = async (
   options: DiscoveryOptions,

@@ -190,15 +190,15 @@ EXPECTED RESULT
   );
 }
 
-type BatchGenerationParams = {
+export type BatchGenerationParams = {
   testTargetId: string;
   entryPointUrlPath?: string;
-  imageUrls: string[]
+  imageUrls: string[];
   environmentId?: string;
   prerequisiteId?: string;
   baseUrl?: string;
   prompt: string;
-}
+};
 
 export class BatchGenerationHandler
   implements ToolHandler<BatchGenerationParams, ToolResponse>
@@ -208,7 +208,7 @@ export class BatchGenerationHandler
     sessionId: string | undefined,
   ): Promise<ToolResponse> {
     logger.debug({ params }, "batch generating test cases");
-    const res = await batchGeneration({...params, sessionId});
+    const res = await batchGeneration({ ...params, sessionId });
     logger.debug({ res }, `Retrieved batch generation for: ${params.prompt}`);
     return {
       content: [
@@ -244,9 +244,7 @@ export function registerBatchGenerationTool(
         .describe(
           "Optional entry point URL path, if not provided the predefined url of the test target will be used",
         ),
-      imageUrls: z
-        .array(z.string())
-        .describe("List of image urls"),
+      imageUrls: z.array(z.string()).describe("List of image urls"),
       environmentId: z
         .string()
         .optional()
