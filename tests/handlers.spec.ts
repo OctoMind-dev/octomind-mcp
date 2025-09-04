@@ -41,6 +41,7 @@ describe("BatchGenerationHandler", () => {
       prompt: "Create a test for login functionality",
       entryPointUrlPath: "/login",
       environmentId: "123e4567-e89b-12d3-a456-426614174000",
+      imageUrls: []
     };
 
     const mockResponse = {
@@ -61,6 +62,7 @@ describe("BatchGenerationHandler", () => {
       testTargetId: mockParams.testTargetId,
       entryPointUrlPath: mockParams.entryPointUrlPath,
       environmentId: mockParams.environmentId,
+      imageUrls: mockParams.imageUrls,
     });
 
     // Check the response structure
@@ -80,11 +82,11 @@ describe("BatchGenerationHandler", () => {
   it("should handle API errors gracefully", async () => {
     // Arrange
     const mockParams: BatchGenerationParams = {
-      name: "Test Case",
       testTargetId: "123e4567-e89b-12d3-a456-426614174000",
       prompt: "Create a test for login functionality",
       entryPointUrlPath: "/login",
       environmentId: "123e4567-e89b-12d3-a456-426614174000",
+      imageUrls: []
     };
 
     const mockError = new Error("API error");
