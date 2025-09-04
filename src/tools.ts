@@ -749,11 +749,6 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .string()
         .optional()
         .describe("The app name or project name of the test target"),
-      discoveryUrl: z
-        .string()
-        .url()
-        .optional()
-        .describe("The discovery URL of the test target"),
       skipAutomaticTestCreation: z
         .boolean()
         .optional()
@@ -785,20 +780,13 @@ export const registerTools = async (server: McpServer): Promise<void> => {
         .describe("The timeout per step in milliseconds"),
     },
     async (
-      {
-        testTargetId,
-        discoveryUrl,
-        testIdAttribute,
-        testRailIntegration,
-        timeoutPerStep,
-      },
+      { testTargetId, testIdAttribute, testRailIntegration, timeoutPerStep },
       { sessionId },
     ) => {
       logger.debug({ testTargetId }, "Updating test target");
       const res = await updateTestTarget({
         sessionId,
         testTargetId,
-        discoveryUrl,
         testIdAttribute,
         testRailIntegration,
         timeoutPerStep,

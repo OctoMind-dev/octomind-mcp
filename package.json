@@ -1,6 +1,6 @@
 {
   "name": "@octomind/octomind-mcp",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "an mcp server for the octomind platform",
   "main": "./dist/index.js",
   "packageManager": "pnpm@10.12.3+sha512.467df2c586056165580ad6dfb54ceaad94c5a30f80893ebdec5a44c5aa73c205ae4a5bb9d5ed6bb84ea7c249ece786642bbb49d06a307df218d03da41c317417",
@@ -34,28 +34,27 @@
   "bugs": {
     "url": "https://github.com/Octomind-dev/mcp-octomind/issues"
   },
-
   "homepage": "https://github.com/Octomind-dev/mcp-octomind#readme",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.17.2",
+    "@modelcontextprotocol/sdk": "1.17.5",
     "axios": "1.11.0",
     "commander": "14.0.0",
     "express": "5.1.0",
     "pino": "9.7.0",
-    "redis": "5.8.1",
+    "redis": "5.8.2",
     "uuid": "11.1.0",
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.4",
-    "@types/express": "^5.0.1",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^24.0.1",
-    "genversion": "^3.2.0",
-    "jest": "^30.0.3",
-    "ts-jest": "^29.2.6",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.19.3",
-    "typescript": "^5.0.4"
+    "@biomejs/biome": "2.2.2",
+    "@types/express": "5.0.3",
+    "@types/jest": "30.0.0",
+    "@types/node": "24.3.0",
+    "genversion": "3.2.0",
+    "jest": "30.1.1",
+    "ts-jest": "29.4.1",
+    "ts-node": "10.9.2",
+    "tsx": "4.20.5",
+    "typescript": "5.9.2"
   }
 }
