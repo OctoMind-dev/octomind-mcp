@@ -43,7 +43,7 @@
     "pino": "9.7.0",
     "redis": "5.8.2",
     "uuid": "11.1.0",
-    "zod": "3.25.76"
+    "zod": "4.1.7"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.3",
