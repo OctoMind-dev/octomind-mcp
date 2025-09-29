@@ -78,19 +78,19 @@ export const buildServer = async (): Promise<McpServer> => {
   return server;
 };
 
+const healthCheck = async (_req: Request, res: Response) => {
+  res.json({
+    status: "OK",
+    version,
+    sessions: (await getAllSessions()).length,
+  });
+};
+
 const buildApp = () => {
   const app = express();
   app.use(express.json());
-  app.get("/", async (_req: Request, res: Response) => {
-    // health check
-    const sessions = await getAllSessions();
-    logger.info("Health check, sessions: %s", sessions.length);
-    res.json({
-      status: "OK",
-      version,
-      sessions: sessions.length,
-    });
-  });
+  app.get("/", healthCheck);
+  app.get("/health", healthCheck);
   return app;
 };
 
