@@ -133,7 +133,7 @@ export const getTestCase = async ({
 }): Promise<TestCase> => {
   const response = await apiCall<TestCase>(
     "get",
-    `/apiKey/v2/test-targets/${testTargetId}/test-cases/${testCaseId}`,
+    `/apiKey/v3/test-targets/${testTargetId}/test-cases/${testCaseId}`,
     sessionId,
   );
 
@@ -155,7 +155,7 @@ export const discovery = async (
 
   const response = await apiCall<DiscoveryResponse>(
     "post",
-    `/apiKey/v2/test-targets/${options.testTargetId}/discoveries`,
+    `/apiKey/v3/test-targets/${options.testTargetId}/discoveries`,
     options.sessionId,
     requestBody,
   );
@@ -185,7 +185,7 @@ export const getNotifications = async ({
 }): Promise<Notification[]> => {
   const raw = await apiCall<Notification[]>(
     "get",
-    `/apiKey/v2/test-targets/${testTargetId}/notifications`,
+    `/apiKey/v3/test-targets/${testTargetId}/notifications`,
     sessionId,
   );
   const response = raw.map((n) => notificationSchema.parse(n));
@@ -213,7 +213,7 @@ export const executeTests = async (
 
   const response = await apiCall<TestReportResponse>(
     "post",
-    "/apiKey/v2/execute",
+    "/apiKey/v3/execute",
     options.sessionId,
     requestBody,
   );
@@ -225,7 +225,7 @@ export const getTestReport = async (
 ): Promise<TestReport> => {
   const response = await apiCall<TestReport>(
     "get",
-    `/apiKey/v2/test-targets/${options.testTargetId}/test-reports/${options.reportId}`,
+    `/apiKey/v3/test-targets/${options.testTargetId}/test-reports/${options.reportId}`,
     options.sessionId,
   );
 
@@ -288,7 +288,7 @@ export const listEnvironments = async (
 ): Promise<Environment[]> => {
   const response = await apiCall<Environment[]>(
     "get",
-    `/apiKey/v2/test-targets/${options.testTargetId}/environments`,
+    `/apiKey/v3/test-targets/${options.testTargetId}/environments`,
     options.sessionId,
   );
 
@@ -309,7 +309,7 @@ export const createEnvironment = async (
 
   const response = await apiCall<Environment>(
     "post",
-    `/apiKey/v2/test-targets/${options.testTargetId}/environments`,
+    `/apiKey/v3/test-targets/${options.testTargetId}/environments`,
     options.sessionId,
     requestBody,
   );
@@ -331,7 +331,7 @@ export const updateEnvironment = async (
 
   const response = await apiCall<Environment>(
     "patch",
-    `/apiKey/v2/test-targets/${options.testTargetId}/environments/${options.environmentId}`,
+    `/apiKey/v3/test-targets/${options.testTargetId}/environments/${options.environmentId}`,
     options.sessionId,
     requestBody,
   );
@@ -343,7 +343,7 @@ export const deleteEnvironment = async (
 ): Promise<SuccessResponse> => {
   await apiCall(
     "delete",
-    `/apiKey/v2/test-targets/${options.testTargetId}/environments/${options.environmentId}`,
+    `/apiKey/v3/test-targets/${options.testTargetId}/environments/${options.environmentId}`,
     options.sessionId,
   );
 
@@ -364,7 +364,7 @@ export const getTestReports = async (
   }
 
   const queryString = queryParams.toString();
-  const endpoint = `/apiKey/v2/test-targets/${options.testTargetId}/test-reports${queryString ? `?${queryString}` : ""}`;
+  const endpoint = `/apiKey/v3/test-targets/${options.testTargetId}/test-reports${queryString ? `?${queryString}` : ""}`;
 
   const response = await apiCall<TestReportsResponse>(
     "get",
@@ -382,7 +382,7 @@ export const listTestTargets = async ({
 }): Promise<TestTarget[]> => {
   const response = await apiCall<TestTarget[]>(
     "get",
-    "/apiKey/v2/test-targets",
+    "/apiKey/v3/test-targets",
     sessionId,
   );
   return response;
@@ -400,7 +400,7 @@ export const createTestTarget = async (
 
   const response = await apiCall<TestTarget>(
     "post",
-    "/apiKey/v2/test-targets",
+    "/apiKey/v3/test-targets",
     options.sessionId,
     requestBody,
   );
@@ -421,7 +421,7 @@ export const updateTestTarget = async (
 
   const response = await apiCall<TestTarget>(
     "patch",
-    `/apiKey/v2/test-targets/${options.testTargetId}`,
+    `/apiKey/v3/test-targets/${options.testTargetId}`,
     options.sessionId,
     requestBody,
   );
@@ -434,7 +434,7 @@ export const deleteTestTarget = async (
 ): Promise<SuccessResponse> => {
   const res = await apiCall<SuccessResponse>(
     "delete",
-    `/apiKey/v2/test-targets/${options.testTargetId}`,
+    `/apiKey/v3/test-targets/${options.testTargetId}`,
     options.sessionId,
   );
 
@@ -449,7 +449,7 @@ export const getTestCases = async (
     : "";
   const response = await apiCall<TestCaseListItem[]>(
     "get",
-    `/apiKey/v2/test-targets/${options.testTargetId}/test-cases${queryParams}`,
+    `/apiKey/v3/test-targets/${options.testTargetId}/test-cases${queryParams}`,
     options.sessionId,
   );
 
@@ -473,7 +473,7 @@ export const patchTestCase = async (
 
   const response = await apiCall<TestCase>(
     "patch",
-    `/apiKey/v2/test-targets/${options.testTargetId}/test-cases/${options.testCaseId}`,
+    `/apiKey/v3/test-targets/${options.testTargetId}/test-cases/${options.testCaseId}`,
     options.sessionId,
     requestBody,
   );
@@ -486,7 +486,7 @@ export const updateTestCaseElement = async (
 ): Promise<TestCaseElement> => {
   const response = await apiCall<TestCaseElement>(
     "patch",
-    `/apiKey/v2/test-targets/${options.testTargetId}/test-cases/${options.testCaseId}/elements/${options.elementId}`,
+    `/apiKey/v3/test-targets/${options.testTargetId}/test-cases/${options.testCaseId}/elements/${options.elementId}`,
     options.sessionId,
     { locatorLine: options.locatorLine },
   );
