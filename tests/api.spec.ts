@@ -70,7 +70,7 @@ describe("API calls", () => {
     expect(mockedAxios).toHaveBeenCalledWith(
       expect.objectContaining({
         method: "post",
-        url: `${BASE_URL}/api/apiKey/v2/execute`,
+        url: `${BASE_URL}/api/apiKey/v3/execute`,
         data: expect.any(Object),
         headers: expect.objectContaining({
           "X-API-Key": mockApiKey,
@@ -124,7 +124,7 @@ describe("API calls", () => {
     expect(mockedAxios).toHaveBeenCalledWith(
       expect.objectContaining({
         method: "get",
-        url: `${BASE_URL}/api/apiKey/v2/test-targets/test-target-id/test-reports/test-report-id`,
+        url: `${BASE_URL}/api/apiKey/v3/test-targets/test-target-id/test-reports/test-report-id`,
         headers: expect.objectContaining({
           "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
@@ -231,7 +231,7 @@ describe("API calls", () => {
     expect(mockedAxios).toHaveBeenCalledWith(
       expect.objectContaining({
         method: "get",
-        url: `${BASE_URL}/api/apiKey/v2/test-targets/test-target-id/environments`,
+        url: `${BASE_URL}/api/apiKey/v3/test-targets/test-target-id/environments`,
         headers: expect.objectContaining({
           "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
@@ -263,7 +263,7 @@ describe("API calls", () => {
     expect(mockedAxios).toHaveBeenCalledWith(
       expect.objectContaining({
         method: "post",
-        url: `${BASE_URL}/api/apiKey/v2/test-targets/test-target-id/environments`,
+        url: `${BASE_URL}/api/apiKey/v3/test-targets/test-target-id/environments`,
         data: expect.any(Object),
         headers: expect.objectContaining({
           "X-API-Key": mockApiKey,
@@ -297,7 +297,7 @@ describe("API calls", () => {
     expect(mockedAxios).toHaveBeenCalledWith(
       expect.objectContaining({
         method: "patch",
-        url: `${BASE_URL}/api/apiKey/v2/test-targets/test-target-id/environments/env1`,
+        url: `${BASE_URL}/api/apiKey/v3/test-targets/test-target-id/environments/env1`,
         data: expect.any(Object),
         headers: expect.objectContaining({
           "X-API-Key": mockApiKey,
@@ -322,7 +322,7 @@ describe("API calls", () => {
     expect(mockedAxios).toHaveBeenCalledWith(
       expect.objectContaining({
         method: "delete",
-        url: `${BASE_URL}/api/apiKey/v2/test-targets/test-target-id/environments/env1`,
+        url: `${BASE_URL}/api/apiKey/v3/test-targets/test-target-id/environments/env1`,
         headers: expect.objectContaining({
           "X-API-Key": mockApiKey,
           "Content-Type": "application/json",
