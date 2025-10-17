@@ -3,7 +3,10 @@ import axios from "axios";
 import { logger } from "./logger";
 import { getApiKey } from "./sessionToApiKeyResolver";
 import {
+  BatchGenerationResponse,
+  CreateBatchGenerationOptions,
   CreateEnvironmentOptions,
+  CreateFromTestPlanOptions,
   CreateTestTargetBody,
   CreateTestTargetOptions,
   DeleteEnvironmentOptions,
@@ -12,6 +15,7 @@ import {
   DiscoveryResponse,
   Environment,
   ExecuteTestsOptions,
+  FromTestPlanResponseBody,
   GetTestCasesOptions,
   GetTestReportOptions,
   GetTestReportsOptions,
@@ -491,5 +495,46 @@ export const updateTestCaseElement = async (
     { locatorLine: options.locatorLine },
   );
 
+  return response;
+};
+
+export const createBatchGeneration = async (
+  options: CreateBatchGenerationOptions,
+): Promise<BatchGenerationResponse> => {
+  const requestBody = {
+    prompt: options.prompt,
+    imageUrls: options.imageUrls,
+    entryPointUrlPath: options.entryPointUrlPath ?? null,
+    environmentId: options.environmentId ?? null,
+    prerequisiteId: options.prerequisiteId ?? null,
+    baseUrl: options.baseUrl ?? null,
+    context: options.context,
+    guessDependency: options.guessDependency ?? false,
+  };
+
+  const response = await apiCall<BatchGenerationResponse>(
+    "post",
+    `/apiKey/v3/test-targets/${options.testTargetId}/batch-generations`,
+    options.sessionId,
+    requestBody,
+  );
+  return response;
+};
+
+export const createBatchGenerationFromTestPlan = async (
+  options: CreateFromTestPlanOptions,
+): Promise<FromTestPlanResponseBody> => {
+  const requestBody = {
+    inputText: options.inputText,
+    imageUrls: options.imageUrls,
+    tagNames: options.tagNames,
+  };
+
+  const response = await apiCall<FromTestPlanResponseBody>(
+    "post",
+    `/apiKey/v3/test-targets/${options.testTargetId}/batch-generations/from-test-plan`,
+    options.sessionId,
+    requestBody,
+  );
   return response;
 };
