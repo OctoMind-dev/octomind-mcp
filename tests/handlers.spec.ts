@@ -9,12 +9,11 @@ jest.mock("@/logger", () => ({
     trace: jest.fn(),
   },
 }));
-// Mock the discovery function from the API
+
 jest.mock("@/api", () => ({
   discovery: jest.fn(),
 }));
 
-// Mock the logger to avoid logging during tests
 jest.mock("@/logger", () => ({
   logger: {
     debug: jest.fn(),
@@ -25,10 +24,7 @@ describe("DiscoveryHandler", () => {
   let handler: DiscoveryHandler;
 
   beforeEach(() => {
-    // Create a new handler instance before each test
     handler = new DiscoveryHandler();
-
-    // Clear all mocks before each test
     jest.clearAllMocks();
   });
 
@@ -36,7 +32,6 @@ describe("DiscoveryHandler", () => {
 
   describe("execute", () => {
     it("should call discovery API with correct parameters", async () => {
-      // Arrange
       const mockParams: DiscoveryParams = {
         name: "Test Case",
         testTargetId: "123e4567-e89b-12d3-a456-426614174000",
@@ -51,14 +46,10 @@ describe("DiscoveryHandler", () => {
         testCaseId: "test-case-id",
       };
 
-      // Mock the discovery function to return a successful response
       (discovery as jest.Mock).mockResolvedValue(mockResponse);
 
-      // Act
       const result = await handler.execute(mockParams, sessionId);
 
-      // Assert
-      // Check that discovery was called with the correct parameters
       expect(discovery).toHaveBeenCalledWith({
         sessionId,
         json: true,
@@ -72,7 +63,6 @@ describe("DiscoveryHandler", () => {
         externalId: undefined,
       });
 
-      // Check the response structure
       expect(result).toEqual({
         content: [
           {
@@ -88,7 +78,6 @@ describe("DiscoveryHandler", () => {
     });
 
     it("should handle API errors gracefully", async () => {
-      // Arrange
       const mockParams: DiscoveryParams = {
         name: "Test Case",
         testTargetId: "123e4567-e89b-12d3-a456-426614174000",
@@ -97,17 +86,14 @@ describe("DiscoveryHandler", () => {
 
       const mockError = new Error("API error");
 
-      // Mock the discovery function to throw an error
       (discovery as jest.Mock).mockRejectedValue(mockError);
 
-      // Act & Assert
       await expect(handler.execute(mockParams, sessionId)).rejects.toThrow(
         "API error",
       );
     });
 
     it("should handle optional parameters correctly", async () => {
-      // Arrange
       const mockParams: DiscoveryParams = {
         name: "Test Case with Options",
         testTargetId: "123e4567-e89b-12d3-a456-426614174000",
@@ -123,14 +109,9 @@ describe("DiscoveryHandler", () => {
         testCaseId: "test-case-id-2",
       };
 
-      // Mock the discovery function to return a successful response
       (discovery as jest.Mock).mockResolvedValue(mockResponse);
 
-      // Act
       await handler.execute(mockParams, sessionId);
-
-      // Assert
-      // Check that discovery was called with all the optional parameters
       expect(discovery).toHaveBeenCalledWith({
         sessionId,
         json: true,

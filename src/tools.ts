@@ -22,6 +22,14 @@ import {
   updateTestTarget,
 } from "./api";
 import { DiscoveryHandler, registerDiscoveryTool } from "./handlers";
+import {
+  BatchGenerationHandler,
+  registerBatchGenerationTool,
+} from "./handlers-batch-generation";
+import {
+  FromTestPlanHandler,
+  registerFromTestPlanTool,
+} from "./handlers-from-test-plan";
 import { logger } from "./logger";
 import { clearTestReports, reloadTestReports } from "./resources";
 import { search, trieveConfig } from "./search";
@@ -652,6 +660,10 @@ export const registerTools = async (server: McpServer): Promise<void> => {
 
   const discoveryHandler = new DiscoveryHandler();
   registerDiscoveryTool(server, discoveryHandler);
+  const batchGenerationHandler = new BatchGenerationHandler();
+  registerBatchGenerationTool(server, batchGenerationHandler);
+  const fromTestPlanHandler = new FromTestPlanHandler();
+  registerFromTestPlanTool(server, fromTestPlanHandler);
   // Private location endpoints
   server.tool(
     "getPrivateLocations",
