@@ -1,5 +1,5 @@
 import { FromTestPlanHandler, FromTestPlanParams } from "@/handlers-from-test-plan";
-import { createBatchGenerationFromTestPlan } from "@/api";
+import { createTestCasesFromTestPlan } from "@/api";
 
 jest.mock("@/logger", () => ({
   logger: {
@@ -12,7 +12,7 @@ jest.mock("@/logger", () => ({
 }));
 
 jest.mock("@/api", () => ({
-  createBatchGenerationFromTestPlan: jest.fn(),
+  createTestCasesFromTestPlan: jest.fn(),
 }));
 
 describe("FromTestPlanHandler", () => {
@@ -41,11 +41,11 @@ describe("FromTestPlanHandler", () => {
         errorMessage: null,
       };
 
-      (createBatchGenerationFromTestPlan as jest.Mock).mockResolvedValue(mockResponse);
+      (createTestCasesFromTestPlan as jest.Mock).mockResolvedValue(mockResponse);
 
       const result = await handler.execute(mockParams, sessionId);
 
-      expect(createBatchGenerationFromTestPlan).toHaveBeenCalledWith({
+      expect(createTestCasesFromTestPlan).toHaveBeenCalledWith({
         sessionId,
         testTargetId: mockParams.testTargetId,
         inputText: mockParams.inputText,
@@ -69,7 +69,7 @@ describe("FromTestPlanHandler", () => {
         tagNames: [],
       };
 
-      (createBatchGenerationFromTestPlan as jest.Mock).mockRejectedValue(new Error("API error"));
+      (createTestCasesFromTestPlan as jest.Mock).mockRejectedValue(new Error("API error"));
 
       await expect(handler.execute(mockParams, sessionId)).rejects.toThrow("API error");
     });

@@ -521,7 +521,7 @@ export const createBatchGeneration = async (
   return response;
 };
 
-export const createBatchGenerationFromTestPlan = async (
+export const createTestCasesFromTestPlan = async (
   options: CreateFromTestPlanOptions,
 ): Promise<FromTestPlanResponseBody> => {
   const requestBody = {
