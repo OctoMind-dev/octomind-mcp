@@ -61,7 +61,7 @@ describe("Client", () => {
   });
   describe("tools, prompts", () => {
     it("should find tools", async () => {
-      expect(clientTools.length).toBe(19);
+      expect(clientTools.length).toBe(21);
     });
 
     it("should find prompts", async () => {

@@ -361,3 +361,50 @@ export interface UpdateTestCaseElementOptions {
   elementId: string;
   locatorLine: string;
 }
+
+// Batch generation (external) request/response
+export interface ExternalBatchGenerationBody {
+  prompt?: string;
+  imageUrls?: string[];
+  entryPointUrlPath?: string | null;
+  environmentId?: string | null;
+  prerequisiteId?: string | null;
+  baseUrl?: string | null;
+  context?: ExecutionContext;
+  guessDependency?: boolean | null;
+}
+
+export interface BatchGenerationResponse {
+  batchGenerationId: string;
+}
+
+export interface CreateBatchGenerationOptions
+  extends ExternalBatchGenerationBody {
+  sessionId: string | undefined;
+  testTargetId: string;
+  json?: boolean;
+}
+
+// From test plan request/response
+export interface FromTestPlanRequestBody {
+  inputText: string;
+  imageUrls: string[];
+  tagNames: string[];
+}
+
+export interface FromTestPlanResponseBody {
+  testCases: Array<{
+    testCaseId: string;
+    testCaseUrl: string;
+  }>;
+  errorMessage?: string | null;
+}
+
+export interface CreateFromTestPlanOptions extends FromTestPlanRequestBody {
+  sessionId: string | undefined;
+  testTargetId: string;
+  prerequisiteId?: string;
+  environmentId?: string;
+  executionUrl?: string;
+  json?: boolean;
+}
