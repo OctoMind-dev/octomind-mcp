@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
-import { createBatchGenerationFromTestPlan } from "./api";
+import { createTestCasesFromTestPlan } from "./api";
 import type { ToolResponse } from "./handlers";
 import { logger } from "./logger";
 import { CreateFromTestPlanOptions } from "./types";
@@ -11,6 +11,9 @@ export interface FromTestPlanParams {
   inputText: string;
   imageUrls: string[];
   tagNames: string[];
+  prerequisiteId?: string;
+  environmentId?: string;
+  executionUrl?: string;
 }
 
 export class FromTestPlanHandler {
@@ -26,9 +29,12 @@ export class FromTestPlanHandler {
       inputText: params.inputText,
       imageUrls: params.imageUrls,
       tagNames: params.tagNames,
+      prerequisiteId: params.prerequisiteId,
+      environmentId: params.environmentId,
+      executionUrl: params.executionUrl,
     };
 
-    const res = await createBatchGenerationFromTestPlan(options);
+    const res = await createTestCasesFromTestPlan(options);
     logger.debug({ res }, "Created from test plan generation");
 
     return {
@@ -62,6 +68,18 @@ export function registerFromTestPlanTool(
       tagNames: z
         .array(z.string())
         .describe("Tags to assign to generated test cases"),
+      prerequisiteId: z
+        .string()
+        .optional()
+        .describe("Unique identifier of the prerequisite test case"),
+      environmentId: z
+        .string()
+        .optional()
+        .describe("Unique identifier of the environment"),
+      executionUrl: z
+        .string()
+        .optional()
+        .describe("URL to execute the test cases"),
     },
     async (params, { sessionId }) => handler.execute(params, sessionId),
   );

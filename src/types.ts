@@ -403,5 +403,8 @@ export interface FromTestPlanResponseBody {
 export interface CreateFromTestPlanOptions extends FromTestPlanRequestBody {
   sessionId: string | undefined;
   testTargetId: string;
+  prerequisiteId?: string;
+  environmentId?: string;
+  executionUrl?: string;
   json?: boolean;
 }
