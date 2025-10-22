@@ -46,7 +46,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.6",
+    "@biomejs/biome": "2.2.7",
     "@types/express": "5.0.3",
     "@types/jest": "30.0.0",
     "@types/node": "24.9.1",
