@@ -37,7 +37,7 @@
   "homepage": "https://github.com/Octomind-dev/mcp-octomind#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.20.2",
-    "axios": "1.12.2",
+    "axios": "1.13.2",
     "commander": "14.0.2",
     "express": "5.1.0",
     "pino": "9.7.0",
