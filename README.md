@@ -2,6 +2,7 @@
 
 <img src="images/light.png" alt="Octomind Logo" width="250">
 
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/OctoMind-dev/octomind-mcp)](https://archestra.ai/mcp-catalog/octomind-dev__octomind-mcp)
 [![smithery badge](https://smithery.ai/badge/@OctoMind-dev/octomind-mcp)](https://smithery.ai/server/@OctoMind-dev/octomind-mcp)
 
 Octomind provides a whole e2e platform for test creation, execution and management including auto-fix.
