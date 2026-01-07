@@ -203,7 +203,6 @@ export const readTestReport = async (
         {
           uri: uri.toString(),
           mimeType: "application/json",
-          name: `report: ${reportId}`,
           text: JSON.stringify(result),
         },
       ],
@@ -258,7 +257,6 @@ const readTestResultTrace = async (
       {
         uri: traceUrl,
         mimeType: "application/zip",
-        name: "trace",
         text: base64Data,
       },
     ],
@@ -266,18 +264,20 @@ const readTestResultTrace = async (
 };
 
 export const registerResources = (server: McpServer): void => {
-  server.resource(
+  server.registerResource(
     "test reports",
     new ResourceTemplate("testreport://{id}", {
       list: listTestReports,
     }),
+    {},
     readTestReport,
   );
-  server.resource(
+  server.registerResource(
     "test result traces",
     new ResourceTemplate("testresulttrace://{id}", {
       list: listTestResultTraces,
     }),
+    {},
     readTestResultTrace,
   );
 };
