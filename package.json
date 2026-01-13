@@ -10,7 +10,11 @@
   "bin": {
     "octomind": "./dist/index.js"
   },
-  "files": ["dist", "README.md", "!dist/**/*.map"],
+  "files": [
+    "dist",
+    "README.md",
+    "!dist/**/*.map"
+  ],
   "exports": {
     "import": "./dist/index.js",
     "require": "./dist/index.js"
@@ -28,7 +32,10 @@
     "type": "git",
     "url": "git+https://github.com/Octomind-dev/mcp-octomind.git"
   },
-  "keywords": ["mcp", "octomind"],
+  "keywords": [
+    "mcp",
+    "octomind"
+  ],
   "author": "Stefan Rinke",
   "license": "ISC",
   "bugs": {
@@ -39,6 +46,7 @@
     "@modelcontextprotocol/sdk": "1.25.2",
     "axios": "1.13.2",
     "commander": "14.0.2",
+    "dotenv": "17.2.3",
     "express": "5.2.1",
     "pino": "9.7.0",
     "redis": "5.10.0",

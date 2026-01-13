@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+// Load environment variables from .env file before anything else
+import { config } from "dotenv";
+config();
+
 import { program } from "commander";
 
 import { helpInstall } from "./help";
