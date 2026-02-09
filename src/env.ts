@@ -70,5 +70,3 @@ export const getStdioEnv = () => {
     apiKey: parsed.data.APIKEY,
   };
 };
-
-export const env = runMode === "http" ? getHttpEnv() : getStdioEnv();
