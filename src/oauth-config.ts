@@ -1,5 +1,5 @@
-import { logger } from "./logger";
 import { getHttpEnv } from "./env";
+import { logger } from "./logger";
 
 export interface OAuthConfig {
   authServerUrl: string;

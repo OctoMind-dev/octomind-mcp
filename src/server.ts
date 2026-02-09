@@ -103,14 +103,6 @@ const healthCheck = async (_req: Request, res: Response) => {
 const buildApp = () => {
   const app = express();
 
-  // Log all incoming requests
-  app.use((req, _res, next) => {
-    logger.trace(
-      `${req.method} ${req.url} - Headers: ${JSON.stringify(req.headers)}`,
-    );
-    next();
-  });
-
   // Add CORS headers for all requests
   app.use((req, res, next) => {
     const origin = req.headers.origin;
@@ -172,13 +164,10 @@ const buildApp = () => {
     );
   });
 
-  // Handle requests for OAuth Authorization Server Metadata - redirect to auth server
+  // Handle requests for OAuth Authorization Server Metadata
   app.get("/.well-known/oauth-authorization-server", (_req, res) => {
     logger.info(
       "Received request for /.well-known/oauth-authorization-server - this should be fetched from the authorization server",
-    );
-    logger.info(
-      `Redirecting to authorization server: ${oauthConfig.authServerUrl}/.well-known/oauth-authorization-server`,
     );
     res.json({
       jwksUrl: `${oauthConfig.authServerUrl}/.well-known/jwks.json`,
@@ -344,15 +333,9 @@ const buildTransport = async (
       if (!apiKey) {
         logger.debug(`Session ${sessionId} initialization failed - no API key`);
         const oauthConfig = getOAuthConfig();
-        if (oauthConfig) {
-          const wwwAuthHeader = getWWWAuthenticateHeader(oauthConfig);
-          logger.debug(`Adding WWW-Authenticate header: ${wwwAuthHeader}`);
-          res.setHeader("WWW-Authenticate", wwwAuthHeader);
-        } else {
-          logger.debug(
-            "OAuth not configured, sending 401 without WWW-Authenticate header",
-          );
-        }
+        const wwwAuthHeader = getWWWAuthenticateHeader(oauthConfig);
+        logger.debug(`Adding WWW-Authenticate header: ${wwwAuthHeader}`);
+        res.setHeader("WWW-Authenticate", wwwAuthHeader);
         res.status(401).send("Unauthorized");
         logger.error("Authorization header is required");
         return;
