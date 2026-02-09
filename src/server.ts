@@ -8,6 +8,7 @@ import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import express, { Request, Response } from "express";
 
+import { getStdioEnv } from "./env";
 import { logger } from "./logger";
 import {
   getOAuthConfig,
@@ -46,7 +47,9 @@ const getApiKeyFromRequest = (req: Request): string | undefined => {
     return apiKeyHeader;
   } else if (authHeader.startsWith("Bearer ")) {
     const token = authHeader.substring(7);
-    logger.debug(`Found Bearer token in Authorization header (length: ${token.length})`);
+    logger.debug(
+      `Found Bearer token in Authorization header (length: ${token.length})`,
+    );
     return token;
   }
   logger.debug("Authorization header present but not in Bearer format");
@@ -70,10 +73,7 @@ export const buildServer = async (): Promise<McpServer> => {
       logger.debug("Connecting %s transport", transport.constructor.name);
     } else {
       // For STDIO transport, create session immediately
-      const apiKey = process.env.APIKEY;
-      if (!apiKey) {
-        throw new Error("APIKEY environment variable is required");
-      }
+      const { apiKey } = getStdioEnv();
       logger.debug(
         "Creating session for STDIO transport, using %s",
         theStdioSessionId,
@@ -102,84 +102,92 @@ const healthCheck = async (_req: Request, res: Response) => {
 
 const buildApp = () => {
   const app = express();
-  
+
   // Log all incoming requests
   app.use((req, _res, next) => {
-    logger.debug(`${req.method} ${req.url} - Headers: ${JSON.stringify(req.headers)}`);
+    logger.trace(
+      `${req.method} ${req.url} - Headers: ${JSON.stringify(req.headers)}`,
+    );
     next();
   });
-  
+
   // Add CORS headers for all requests
   app.use((req, res, next) => {
     const origin = req.headers.origin;
     if (origin) {
       res.setHeader("Access-Control-Allow-Origin", origin);
-      res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, mcp-session-id, mcp-protocol-version");
+      res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, DELETE, OPTIONS",
+      );
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, mcp-session-id, mcp-protocol-version",
+      );
       res.setHeader("Access-Control-Allow-Credentials", "true");
     }
-    
+
     // Handle preflight requests
     if (req.method === "OPTIONS") {
       logger.debug(`CORS preflight request for ${req.url}`);
       res.status(204).end();
       return;
     }
-    
+
     next();
   });
-  
+
   app.use(express.json());
   app.get("/", healthCheck);
   app.get("/health", healthCheck);
 
   // OAuth Protected Resource Metadata endpoint (RFC 9728)
   const oauthConfig = getOAuthConfig();
-  if (oauthConfig) {
-    const metadata = getProtectedResourceMetadata(oauthConfig);
-    
-    // Root well-known endpoint
-    app.get("/.well-known/oauth-protected-resource", (_req, res) => {
-      logger.debug("Serving OAuth Protected Resource Metadata (root)");
-      res.json(metadata);
-    });
+  const metadata = getProtectedResourceMetadata(oauthConfig);
 
-    // Sub-path well-known endpoint for /mcp
-    app.get("/.well-known/oauth-protected-resource/mcp", (_req, res) => {
-      logger.debug("Serving OAuth Protected Resource Metadata (mcp sub-path)");
-      res.json(metadata);
-    });
+  logger.debug("OAuth Protected Resource Metadata: %j", metadata);
+  // Root well-known endpoint
+  app.get("/.well-known/oauth-protected-resource", (_req, res) => {
+    logger.debug("Serving OAuth Protected Resource Metadata (root)");
+    res.json(metadata);
+  });
 
-    // Handle requests for OpenID Configuration - redirect to auth server
-    app.get("/.well-known/openid-configuration", (_req, res) => {
-      logger.info(
-        "Received request for /.well-known/openid-configuration - this should be fetched from the authorization server",
-      );
-      logger.info(
-        `Redirecting to authorization server: ${oauthConfig.authServerUrl}/.well-known/openid-configuration`,
-      );
-      res.redirect(
-        301,
-        `${oauthConfig.authServerUrl}/.well-known/openid-configuration`,
-      );
-    });
+  // Sub-path well-known endpoint for /mcp
+  app.get("/.well-known/oauth-protected-resource/mcp", (_req, res) => {
+    logger.debug("Serving OAuth Protected Resource Metadata (mcp sub-path)");
+    res.json(metadata);
+  });
 
-    // Handle requests for OAuth Authorization Server Metadata - redirect to auth server
-    app.get("/.well-known/oauth-authorization-server", (_req, res) => {
-      logger.info(
-        "Received request for /.well-known/oauth-authorization-server - this should be fetched from the authorization server",
-      );
-      logger.info(
-        `Redirecting to authorization server: ${oauthConfig.authServerUrl}/.well-known/oauth-authorization-server`,
-      );
-      res.redirect(
-        301,
-        `${oauthConfig.authServerUrl}/.well-known/oauth-authorization-server`,
-      );
-    });
+  // Handle requests for OpenID Configuration - redirect to auth server
+  app.get("/.well-known/openid-configuration", (_req, res) => {
+    logger.info(
+      "Received request for /.well-known/openid-configuration - this should be fetched from the authorization server",
+    );
+    logger.info(
+      `Redirecting to authorization server: ${oauthConfig.authServerUrl}/.well-known/openid-configuration`,
+    );
+    res.redirect(
+      301,
+      `${oauthConfig.authServerUrl}/.well-known/openid-configuration`,
+    );
+  });
 
-    logger.info("OAuth Protected Resource Metadata endpoints registered");
-  }
+  // Handle requests for OAuth Authorization Server Metadata - redirect to auth server
+  app.get("/.well-known/oauth-authorization-server", (_req, res) => {
+    logger.info(
+      "Received request for /.well-known/oauth-authorization-server - this should be fetched from the authorization server",
+    );
+    logger.info(
+      `Redirecting to authorization server: ${oauthConfig.authServerUrl}/.well-known/oauth-authorization-server`,
+    );
+    res.json({
+      jwksUrl: `${oauthConfig.authServerUrl}/.well-known/jwks.json`,
+      authEndpoint: `${oauthConfig.authServerUrl}/oauth/2.1/authorize`,
+      tokenEndpoint: `${oauthConfig.authServerUrl}/oauth/2.1/token`,
+    });
+  });
+
+  logger.info("OAuth Protected Resource Metadata endpoints registered");
 
   return app;
 };
@@ -191,16 +199,14 @@ const sendError = (
   includeWWWAuthenticate = false,
 ) => {
   logger.error("Error handling request", message);
-  
+
   // Add WWW-Authenticate header for 401 responses if OAuth is configured
   if (code === 401 && includeWWWAuthenticate) {
     const oauthConfig = getOAuthConfig();
-    if (oauthConfig) {
-      const wwwAuthHeader = getWWWAuthenticateHeader(oauthConfig);
-      res.setHeader("WWW-Authenticate", wwwAuthHeader);
-    }
+    const wwwAuthHeader = getWWWAuthenticateHeader(oauthConfig);
+    res.setHeader("WWW-Authenticate", wwwAuthHeader);
   }
-  
+
   res.status(code).json({
     jsonrpc: "2.0",
     error: {
@@ -222,13 +228,9 @@ export const startSSEServer = async (server: McpServer, port: number) => {
     if (!apiKey) {
       logger.debug("SSE authentication failed, sending 401 response");
       const oauthConfig = getOAuthConfig();
-      if (oauthConfig) {
-        const wwwAuthHeader = getWWWAuthenticateHeader(oauthConfig);
-        logger.debug(`Adding WWW-Authenticate header: ${wwwAuthHeader}`);
-        res.setHeader("WWW-Authenticate", wwwAuthHeader);
-      } else {
-        logger.debug("OAuth not configured, sending 401 without WWW-Authenticate header");
-      }
+      const wwwAuthHeader = getWWWAuthenticateHeader(oauthConfig);
+      logger.debug(`Adding WWW-Authenticate header: ${wwwAuthHeader}`);
+      res.setHeader("WWW-Authenticate", wwwAuthHeader);
       res.status(401).send("Unauthorized, authorization header is required");
       return;
     }
@@ -258,15 +260,13 @@ export const startSSEServer = async (server: McpServer, port: number) => {
     const transport = session.transport as SSEServerTransport;
     const apiKey = session.apiKey;
     if (!apiKey) {
-      logger.debug(`Session ${sessionId} has no API key, authentication failed`);
+      logger.debug(
+        `Session ${sessionId} has no API key, authentication failed`,
+      );
       const oauthConfig = getOAuthConfig();
-      if (oauthConfig) {
-        const wwwAuthHeader = getWWWAuthenticateHeader(oauthConfig);
-        logger.debug(`Adding WWW-Authenticate header: ${wwwAuthHeader}`);
-        res.setHeader("WWW-Authenticate", wwwAuthHeader);
-      } else {
-        logger.debug("OAuth not configured, sending 401 without WWW-Authenticate header");
-      }
+      const wwwAuthHeader = getWWWAuthenticateHeader(oauthConfig);
+      logger.debug(`Adding WWW-Authenticate header: ${wwwAuthHeader}`);
+      res.setHeader("WWW-Authenticate", wwwAuthHeader);
       res.status(401).send("Unauthorized, authorization header is required");
       return;
     }
@@ -323,10 +323,7 @@ export const startSSEServer = async (server: McpServer, port: number) => {
 };
 
 export const startStdioServer = async (server: McpServer) => {
-  if (!process.env.APIKEY) {
-    console.error("APIKEY environment variable is required");
-    process.exit(1);
-  }
+  getStdioEnv();
   const transport = new StdioServerTransport();
   console.error("Connecting server to transport...");
   await server.connect(transport);
@@ -352,7 +349,9 @@ const buildTransport = async (
           logger.debug(`Adding WWW-Authenticate header: ${wwwAuthHeader}`);
           res.setHeader("WWW-Authenticate", wwwAuthHeader);
         } else {
-          logger.debug("OAuth not configured, sending 401 without WWW-Authenticate header");
+          logger.debug(
+            "OAuth not configured, sending 401 without WWW-Authenticate header",
+          );
         }
         res.status(401).send("Unauthorized");
         logger.error("Authorization header is required");
@@ -383,9 +382,11 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
     logger.info(
       `Received POST /mcp request for session ${mcpSessionId}, x-session-id: ${xsessionId}`,
     );
-    logger.debug(`Request has Authorization header: ${!!req.headers["authorization"]}`);
+    logger.debug(
+      `Request has Authorization header: ${!!req.headers["authorization"]}`,
+    );
     logger.debug(`Request is initialize: ${isInitializeRequest(req.body)}`);
-    
+
     // Check for existing session ID
     const sessionId = mcpSessionId as string | undefined;
     let transport: StreamableHTTPServerTransport;
@@ -415,7 +416,9 @@ export const startStreamingServer = async (server: McpServer, port: number) => {
           logger.debug(`Adding WWW-Authenticate header: ${wwwAuthHeader}`);
           res.setHeader("WWW-Authenticate", wwwAuthHeader);
         } else {
-          logger.debug("OAuth not configured, sending 401 without WWW-Authenticate header");
+          logger.debug(
+            "OAuth not configured, sending 401 without WWW-Authenticate header",
+          );
         }
         res.status(401).send("Unauthorized, Authorization header is required");
         logger.error("Authorization header is required");

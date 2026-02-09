@@ -1,40 +1,34 @@
 import { logger } from "./logger";
+import { getHttpEnv } from "./env";
 
 export interface OAuthConfig {
   authServerUrl: string;
   serverBaseUrl: string;
   scopes: string[];
+  jwksUrl: string;
+  authEndpoint: string;
+  tokenEndpoint: string;
 }
 
 /**
  * Get OAuth configuration from environment variables
  */
-export const getOAuthConfig = (): OAuthConfig | null => {
+export const getOAuthConfig = (): OAuthConfig => {
   logger.debug("Loading OAuth configuration from environment variables");
-  const authServerUrl = process.env.OAUTH_AUTH_SERVER_URL;
-  const serverBaseUrl = process.env.SERVER_BASE_URL;
+  const {
+    oauthAuthServerUrl: authServerUrl,
+    serverBaseUrl,
+    oauthScopes,
+  } = getHttpEnv();
 
   logger.debug(
     `OAUTH_AUTH_SERVER_URL: ${authServerUrl ? authServerUrl : "(not set)"}`,
   );
-  logger.debug(`SERVER_BASE_URL: ${serverBaseUrl ? serverBaseUrl : "(not set)"}`);
+  logger.debug(
+    `SERVER_BASE_URL: ${serverBaseUrl ? serverBaseUrl : "(not set)"}`,
+  );
 
-  // OAuth is optional - if not configured, fall back to API key auth
-  if (!authServerUrl) {
-    logger.debug("OAuth not configured - using API key authentication only");
-    return null;
-  }
-
-  if (!serverBaseUrl) {
-    logger.warn(
-      "OAUTH_AUTH_SERVER_URL is set but SERVER_BASE_URL is not - OAuth discovery will not work properly",
-    );
-    return null;
-  }
-
-  const scopes = process.env.OAUTH_SCOPES
-    ? process.env.OAUTH_SCOPES.split(",").map((s) => s.trim())
-    : ["octomind:read", "octomind:write"];
+  const scopes = oauthScopes;
 
   logger.debug(`OAUTH_SCOPES: ${scopes.join(", ")}`);
   logger.info(
@@ -42,6 +36,9 @@ export const getOAuthConfig = (): OAuthConfig | null => {
   );
 
   return {
+    jwksUrl: `${authServerUrl}/.well-known/jwks.json`,
+    authEndpoint: `${authServerUrl}/oauth/2.1/authorize`,
+    tokenEndpoint: `${authServerUrl}/oauth/2.1/token`,
     authServerUrl,
     serverBaseUrl,
     scopes,
@@ -55,7 +52,7 @@ export const getOAuthConfig = (): OAuthConfig | null => {
 export const getProtectedResourceMetadata = (config: OAuthConfig) => {
   return {
     resource: config.serverBaseUrl,
-    authorization_servers: [config.authServerUrl],
+    authorization_servers: [`${config.authServerUrl}/oauth/2.1`],
     scopes_supported: config.scopes,
     bearer_methods_supported: ["header"],
     resource_documentation: "https://github.com/Octomind-dev/mcp-octomind",
