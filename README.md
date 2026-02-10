@@ -19,10 +19,18 @@ https://octomind.dev/docs/mcp/install-octomind-mcp for more details.
 
 The server uses the following environment variables:
 
-- `APIKEY` - The API key for Octomind API (required)
+- `APIKEY` - The API key for Octomind API (required for STDIO mode, optional for HTTP modes if OAuth is configured)
 - `OCTOMIND_API_URL` - Base URL for the API endpoint to use (defaults to https://app.octomind.dev/api)
 - `REDIS_URL` - Redis connection URL for session storage (optional, format: redis://host:port)
 - `SESSION_EXPIRATION_SECONDS` - Time in seconds after which sessions expire (optional, Redis only)
+
+#### OAuth Configuration (Optional)
+
+For OAuth 2.1 authentication support (see [OAUTH.md](OAUTH.md) for details):
+
+- `OAUTH_AUTH_SERVER_URL` - Your OAuth authorization server URL (e.g., PropelAuth)
+- `SERVER_BASE_URL` - Your MCP server's public base URL
+- `OAUTH_SCOPES` - Comma-separated list of OAuth scopes (defaults to `octomind:read,octomind:write`)
 
 ### Command Line Options
 

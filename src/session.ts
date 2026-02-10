@@ -108,6 +108,8 @@ export class InMemorySessionStore implements SessionStore {
       this.cleanupIntervalId = setInterval(() => {
         this.removeExpiredSessions();
       }, cleanupIntervalSeconds * 1000);
+
+      this.cleanupIntervalId.unref();
     }
   }
 
