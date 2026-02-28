@@ -34,6 +34,8 @@ describe("Client", () => {
   let client: Client;
   let server: McpServer;
   let clientTools: ClientTools;
+  let clientTransport: InMemoryTransport;
+  let serverTransport: InMemoryTransport;
 
   beforeAll(async () => {
     process.env.APIKEY = "test-api-key";
@@ -44,8 +46,7 @@ describe("Client", () => {
       name: "test",
       version: "1.0.0",
     });
-    const [clientTransport, serverTransport] =
-      InMemoryTransport.createLinkedPair();
+    [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     clientTransport.sessionId = theStdioSessionId;
     serverTransport.sessionId = theStdioSessionId;
     await client.connect(clientTransport);
@@ -58,6 +59,13 @@ describe("Client", () => {
     jest
       .spyOn(tools, "setLastTestTargetId")
       .mockImplementation(() => Promise.resolve());
+  });
+
+  afterEach(async () => {
+    await (client as unknown as { close?: () => Promise<void> }).close?.();
+    await (server as unknown as { close?: () => Promise<void> }).close?.();
+    await (clientTransport as unknown as { close?: () => Promise<void> }).close?.();
+    await (serverTransport as unknown as { close?: () => Promise<void> }).close?.();
   });
   describe("tools, prompts", () => {
     it("should find tools", async () => {
