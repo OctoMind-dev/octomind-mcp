@@ -66,6 +66,10 @@ The following tools are implemented in this MCP server:
 - `getPrivateLocations` - List all private locations configured for the organization
 - `getVersion` - Get the current version of the Octomind MCP server
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/octomind-dev-octomind-mcp).
+
 ## Installation
 
 You can get configuration snippets for different clients by running:
